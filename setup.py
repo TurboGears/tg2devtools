@@ -18,15 +18,18 @@ setup(
     include_package_data=True,
     zip_safe=False,
     install_requires=[
-        'TurboGears2', 'sqlalchemy-migrate >= 0.4.4', 
+        'TurboGears2', 'sqlalchemy-migrate >= 0.4.4',
+        'tw.forms', 'DBSprockets',
     ],
     entry_points='''
         [paste.global_paster_command]
         quickstart = devtools.commands.quickstart:QuickstartCommand
         [paste.paster_command]
+        crud = crud.commands.crud:CrudCommand
         migrate = devtools.commands.migration:MigrateCommand
         [turbogears2.command]
         quickstart = devtools.commands.quickstart:QuickstartCommand
+        crud = crud.commands.crud:CrudCommand
         migrate = devtools.commands.migration:MigrateCommand
         [paste.paster_create_template]
         turbogears2=devtools.pastetemplate:TurboGearsTemplate
