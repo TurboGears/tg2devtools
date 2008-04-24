@@ -5,7 +5,7 @@ class TurboGearsTemplate(templates.Template):
     """
     TurboGears 2 default paste template class
     """
-    egg_plugins = ['TurboGears2', 'Pylons', 'WebHelpers']
+    egg_plugins = ['TurboGears2', 'Pylons', 'WebHelpers', 'tg.devtools']
     required_templates = []
     _template_dir = 'templates/turbogears'
     summary = 'TurboGears 2.0 Standard Quickstart Template'
