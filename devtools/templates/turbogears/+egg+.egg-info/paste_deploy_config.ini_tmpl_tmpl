@@ -1,5 +1,5 @@
 #
-# ${project} - Pylons configuration
+# {{project}} - Pylons configuration
 #
 # The %(here)s variable will be replaced with the parent directory of this file
 #
@@ -15,12 +15,12 @@ host = 0.0.0.0
 port = 8080
 
 [app:main]
-use = egg:${project}
+use = egg:{{project}}
 full_stack = true
 cache_dir = %(here)s/data
-beaker.session.key = ${package}
-beaker.session.secret = $${app_instance_secret}
-app_instance_uuid = $${app_instance_uuid}
+beaker.session.key = {{package}}
+beaker.session.secret = ${app_instance_secret}
+app_instance_uuid = ${app_instance_uuid}
 
 # If you'd like to fine-tune the individual locations of the cache data dirs
 # for the Cache data, or the Session saves, un-comment the desired settings
@@ -28,14 +28,19 @@ app_instance_uuid = $${app_instance_uuid}
 #beaker.cache.data_dir = %(here)s/data/cache
 #beaker.session.data_dir = %(here)s/data/sessions
 
+{{if sqlalchemy}}
 # Specify the database for SQLAlchemy to use via
 # turbogears.database
 # %(here) may include a ':' character on Windows environments; this can
 # invalidate the URI when specifying a SQLite db via path name
 #sqlalchemy.dburi = sqlite:///%(here)s/somedb.db
+sqlalchemy.echo = False
+{{endif}}
 
+{{if sqlobject}}
 # Specify the database for SQLObject to use via turbogears.database.PackageHub.
 #sqlobject.dburi = sqlite://%(here)s/somedb.db
+{{endif}}
 
 # WARNING: *THE LINE BELOW MUST BE UNCOMMENTED ON A PRODUCTION ENVIRONMENT*
 # Debug mode will enable the interactive debugging tool, allowing ANYONE to

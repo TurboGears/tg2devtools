@@ -1,4 +1,4 @@
-from tg.pastetemplate import TurboGearsTemplate
+from devtools.pastetemplate import TurboGearsTemplate
 import os, shutil
 import pkg_resources
 from paste.deploy import loadapp

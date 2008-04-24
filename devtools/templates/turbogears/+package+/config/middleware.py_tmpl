@@ -12,7 +12,7 @@ from routes.middleware import RoutesMiddleware
 from tw.core.middleware import TGWidgetsMiddleware
 from tw.mods.pylonshf import PylonsHostFramework
 
-from  ${package}.config.environment import load_environment
+from {{package}}.config.environment import load_environment
 
 def make_app(global_conf, full_stack=True, **app_conf):
     """Create a Pylons WSGI application and return it

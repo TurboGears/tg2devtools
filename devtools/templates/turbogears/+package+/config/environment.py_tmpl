@@ -1,23 +1,33 @@
 """Pylons environment configuration"""
 import os
 
-#from mako.lookup import TemplateLookup
+{{if template_engine == 'mako'}}
+from mako.lookup import TemplateLookup
+{{elif template_engine == 'genshi'}}
 from genshi.template import TemplateLoader
-
+{{endif}}
 from pylons import config
 
 from pylons.i18n import ugettext
 from genshi.filters import Translator
 from tg import defaults
+
+{{if sqlalchemy}}
 from sqlalchemy import engine_from_config
+{{endif}}
 
-import ${package}.lib.app_globals as app_globals
-#from ${package}.config.routing import make_map
-from ${package}.model import init_model, DBSession, metadata
+import {{package}}.lib.app_globals as app_globals
+#import {{package}}.lib.helpers
+#from {{package}}.config.routing import make_map
+{{if sqlalchemy}}
+from {{package}}.model import init_model, DBSession, metadata
+{{endif}}
 
+{{if template_engine == 'genshi'}}
 def template_loaded(template):
     "Plug-in our i18n function to Genshi."
     template.filters.insert(0, Translator(ugettext))
+{{endif}}
 
 def load_environment(global_conf, app_conf):
     """Configure the Pylons environment via the ``pylons.config``
@@ -31,7 +41,7 @@ def load_environment(global_conf, app_conf):
                  templates=[os.path.join(root, 'templates')])
 
     # Initialize config with the basic options
-    config.init_app(global_conf, app_conf, package='${package}', paths=paths)
+    config.init_app(global_conf, app_conf, package='{{package}}', paths=paths)
 
     # This setups up a set of default route that enables a standard
     # TG2 style object dispatch.   Fell free to overide it with
@@ -41,6 +51,7 @@ def load_environment(global_conf, app_conf):
     config['routes.map'] = make_map()
     config['pylons.app_globals'] = app_globals.Globals()
     #config['pylons.h'] = {{package}}.lib.helpers
+    {{if sqlalchemy}}
     
     # Setup SQLAlchemy database engine
     engine = engine_from_config(config, 'sqlalchemy.')
@@ -57,17 +68,21 @@ def load_environment(global_conf, app_conf):
     config['buffet.template_engines'].pop()
     config.add_template_engine(template_engine, '${package}.templates',
                                template_engine_options)
-
+    {{endif}}
+    
+    {{if template_engine == 'mako'}}
     # Create the Mako TemplateLookup, with the default auto-escaping
-    #config['pylons.app_globals'].mako_lookup = TemplateLookup(
-    #    directories=paths['templates'], input_encoding='utf-8',
-    #    imports=['from webhelpers.html import escape'],
-    #    default_filters=['escape'], output_encoding='utf-8',
-    #    module_directory=os.path.join(app_conf['cache_dir'], 'templates'),
-
+    config['pylons.app_globals'].mako_lookup = TemplateLookup(
+        directories=paths['templates'], input_encoding='utf-8',
+        imports=['from webhelpers.html import escape'],
+        default_filters=['escape'], output_encoding='utf-8',
+        module_directory=os.path.join(app_conf['cache_dir'], 'templates'),
+    )
+    {{elif template_engine == 'genshi'}}
     # Create the Genshi TemplateLoader
     config['pylons.app_globals'].genshi_loader = TemplateLoader(
         paths['templates'], auto_reload=True)
-
+    {{endif}}
+    
     # CONFIGURATION OPTIONS HERE (note: all config options will override
     # any Pylons config options)

@@ -1,5 +1,5 @@
 #
-# ${project} - TurboGears/Pylons development environment configuration
+# {{project}} - Pylons development environment configuration
 #
 # The %(here)s variable will be replaced with the parent directory of this file
 #
@@ -20,11 +20,11 @@ host = 0.0.0.0
 port = 8080
 
 [app:main]
-use = egg:${project}
+use = egg:{{project}}
 full_stack = true
 #lang = ru
 cache_dir = %(here)s/data
-beaker.session.key = ${package}
+beaker.session.key = {{package}}
 beaker.session.secret = somesecret
 
 # If you'd like to fine-tune the individual locations of the cache data dirs
@@ -36,6 +36,7 @@ beaker.session.secret = somesecret
 # pick the form for your database
 # %(here) may include a ':' character on Windows environments; this can
 # invalidate the URI when specifying a SQLite db via path name
+{{if sqlalchemy}}
 # sqlalchemy.url=postgres://username:password:port@hostname/databasename 
 # sqlalchemy.url=mysql://username:password@hostname:port/databasename
 
@@ -47,6 +48,7 @@ sqlalchemy.url = sqlite:///%(here)s/devdata.db
 sqlalchemy.echo = true
 sqlalchemy.echo_pool = false
 sqlalchemy.pool_recycle = 3600
+{{endif}}
 
 # WARNING: *THE LINE BELOW MUST BE UNCOMMENTED ON A PRODUCTION ENVIRONMENT*
 # Debug mode will enable the interactive debugging tool, allowing ANYONE to
@@ -72,6 +74,13 @@ keys = generic
 level = INFO
 handlers = console
 
+[logger_{{package_logger}}]
+level = DEBUG
+handlers =
+qualname = {{package_logger}}
+
+{{if sqlalchemy}}
+
 [logger_sqlalchemy]
 level = INFO
 handlers =
@@ -79,6 +88,7 @@ qualname = sqlalchemy.engine
 # "level = INFO" logs SQL queries.
 # "level = DEBUG" logs SQL queries and results.
 # "level = WARN" logs neither.  (Recommended for production systems.)
+{{endif}}
 
 # If you create additional handlers, add them as a key to [handlers]
 [handler_console]

@@ -185,3 +185,8 @@ class CrudCommand(command.Command):
                                             self.modelpackageLower),
                          filename='edit_form.html',
                          add_py=False)
+        file_op.copy_file(template='crud/master.html_tmpl',
+                         dest=os.path.join(templatepath,
+                                            self.modelpackageLower),
+                         filename='master.html',
+                         add_py=False)

@@ -1,7 +1,8 @@
+{{if sqlalchemy}}
+"""The application's model objects"""
+
 from sqlalchemy.orm import scoped_session, sessionmaker
 from pylons import config
-import sqlalchemy as sa
-from sqlalchemy import orm
 
 from sqlalchemy import Column, MetaData, Table, types
 from sqlalchemy.orm import mapper, relation
@@ -32,7 +33,7 @@ def init_model(engine):
     #mapper(Reflected, t_reflected)
 
 # Normal tables may be defined and mapped at module level.
-#
+
 #foo_table = Table("Foo", meta.metadata,
 #    Column("id", types.Integer, primary_key=True),
 #    Column("bar", types.String(255), nullable=False),
@@ -54,4 +55,4 @@ def init_model(engine):
 #
 #class Reflected(object):
 #    pass
-
+{{endif}}
