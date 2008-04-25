@@ -12,7 +12,7 @@ from genshi import HTML
 
 provider = SAProvider(metadata)
 
-def my_make_links(viewConfig, row):
+def admin_links(viewConfig, row):
     pks = viewConfig.metadata.primaryKeys()
     pkString = viewConfig._writePKsToURL(pks, row)
     links = StringIO()
@@ -27,7 +27,7 @@ def my_make_links(viewConfig, row):
     links.write('">delete</a>')
     return HTML(links.getvalue())
 
-${modelnameLower}_list = makeTable(${modelname}, '${modelnameLower}', makeLinks=my_make_links)
+${modelnameLower}_list = makeTable(${modelname}, '${modelnameLower}', makeLinks = admin_links)
 recordView = makeRecordView(${modelname})
 #dbsprockets end
 

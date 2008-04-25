@@ -4,7 +4,7 @@ from ${package}.model import DBSession, ${modelname}
 
 from dbsprockets.primitives import makeForm
 new_form    = makeForm(${modelname}, action="create", omittedFields=['${id}'])
-edit_form    = makeForm(${modelname}, action="update", omittedFields=['${id}'])
+edit_form    = makeForm(${modelname}, action="update", hiddenFields=['${id}'])
 
 # Use Widget Form
 #from toscawidgets.widgets import forms#from toscawidgets.api import WidgetsList#from toscawidgets.widgets.forms import validators
