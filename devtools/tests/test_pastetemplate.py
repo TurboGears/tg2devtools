@@ -28,6 +28,8 @@ def setup():
     command.options = MochOptions()
     command.interactive=False
     command.args=['TGTest',]
+    command.args.append("sqlalchemy=%s"%True)
+    command.args.append("sqlobject==%s"%False)
 #    command.templates = TurboGearsTemplate('TGTest')
 #    command.create_template(TurboGearsTemplate('TGTest'), testDataPath+'/TGTest', {'package':'TGTest', 'project':'tgtest', 'egg':'tgtest'})
     command.command()
