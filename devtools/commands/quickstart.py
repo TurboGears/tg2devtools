@@ -98,9 +98,9 @@ or start project with elixir::
     parser.add_option("-e", "--elixir",
             help="use SQLAlchemy Elixir instead of SQLObject",
             action="store_true", dest="elixir", default = False)
-#    parser.add_option("-i", "--identity",
-#            help="provide Identity support",
-#            action="store_true", dest="identity", default = False)
+    parser.add_option("-i", "--identity",
+            help="provide Identity support",
+            action="store_true", dest="identity", default = False)
     parser.add_option("-p", "--package",
             help="package name for the code",
             dest="package")
@@ -139,12 +139,12 @@ or start project with elixir::
                 self.package = package
 
         doidentity = self.identity
-        """while not doidentity:
+        while not doidentity:
             doidentity = raw_input("Do you need Identity "
                         "(usernames/passwords) in this project? [no] ")
             doidentity = doidentity.lower()
             if not doidentity or doidentity.startswith('n'):
-                self.identity="none"
+                self.identity = False
                 break
             if doidentity.startswith("y"):
                 doidentity = True
@@ -157,7 +157,7 @@ or start project with elixir::
                 self.identity = "sqlalchemy"
             else:
                 self.identity = "sqlobject"
-        """
+
         self.name = pkg_resources.safe_name(self.name)
 
         env = pkg_resources.Environment()

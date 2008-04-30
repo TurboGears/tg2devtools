@@ -3,10 +3,17 @@ from {{package}}.lib.base import BaseController
 from tg import expose, flash
 from pylons.i18n import ugettext as _
 #from tg import redirect, validate
-#from {{package}}.model import DBSession
+#from {{package}}.model import DBSession, metadata
+
+{{if identity == "sqlalchemy"}}
+from tgrepozewho import authorize
+#from dbsprockets.dbmechanic.frameworks.tg2 import DBMechanic#from dbsprockets.saprovider import SAProvider
+{{endif}}
 
 class RootController(BaseController):
-
+{{if identity == "sqlalchemy"}}
+    #dbmechanic = DBMechanic(SAProvider(metadata), '/dbmechanic')
+{{endif}}
     @expose('{{package}}.templates.index')
     def index(self):
         flash(_("You're running TG2! (change me in root.py)"))
@@ -15,3 +22,7 @@ class RootController(BaseController):
     @expose('{{package}}.templates.about')
     def about(self):
         return dict(page='about')
+
+{{if identity == "sqlalchemy"}}
+    @expose('{{package}}.templates.about')    @authorize.require(authorize.has_permission('manage'))    def manage_permission_only(self, **kw):        return dict(page='about')    @expose('{{package}}.templates.about')    @authorize.require(authorize.is_user('editor'))    def editor_user_only(self, **kw):        return dict(page='about')    @expose('{{package}}.templates.login')    def login(self, **kw):        came_from = kw.get('came_from', '/')        return dict(page='login', header=lambda *arg: None,                    footer=lambda *arg: None, came_from=came_from)
+{{endif}}

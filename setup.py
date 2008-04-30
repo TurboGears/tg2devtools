@@ -20,6 +20,7 @@ setup(
     install_requires=[
         'TurboGears2', 'sqlalchemy-migrate >= 0.4.4',
         'tw.forms', 'DBSprockets',
+        'tgrepozewho'
     ],
     entry_points='''
         [paste.global_paster_command]
