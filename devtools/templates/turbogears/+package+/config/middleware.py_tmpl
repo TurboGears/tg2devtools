@@ -17,7 +17,11 @@ from {{package}}.config.environment import load_environment
 from tgrepozewho.middleware import make_who_middleware
 from {{package}}.model import User, Group, Permission, DBSession
 
-# the criterion (ie instance of column) against which to mach# the user name coming from a tentative login formuser_criterion = User.user_name# the name of the column which is used as a unique identifieruser_id_col = 'user_id'
+# the criterion (ie instance of column) against which to mach
+# the user name coming from a tentative login form
+user_criterion = User.user_name
+# the name of the column which is used as a unique identifier
+user_id_col = 'user_id'
 {{endif}}
 
 def make_app(global_conf, full_stack=True, **app_conf):

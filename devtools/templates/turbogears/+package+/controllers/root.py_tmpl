@@ -7,7 +7,8 @@ from pylons.i18n import ugettext as _
 
 {{if identity == "sqlalchemy"}}
 from tgrepozewho import authorize
-#from dbsprockets.dbmechanic.frameworks.tg2 import DBMechanic#from dbsprockets.saprovider import SAProvider
+#from dbsprockets.dbmechanic.frameworks.tg2 import DBMechanic
+#from dbsprockets.saprovider import SAProvider
 {{endif}}
 
 class RootController(BaseController):
@@ -24,5 +25,19 @@ class RootController(BaseController):
         return dict(page='about')
 
 {{if identity == "sqlalchemy"}}
-    @expose('{{package}}.templates.about')    @authorize.require(authorize.has_permission('manage'))    def manage_permission_only(self, **kw):        return dict(page='about')    @expose('{{package}}.templates.about')    @authorize.require(authorize.is_user('editor'))    def editor_user_only(self, **kw):        return dict(page='about')    @expose('{{package}}.templates.login')    def login(self, **kw):        came_from = kw.get('came_from', '/')        return dict(page='login', header=lambda *arg: None,                    footer=lambda *arg: None, came_from=came_from)
+    @expose('{{package}}.templates.about')
+    @authorize.require(authorize.has_permission('manage'))
+    def manage_permission_only(self, **kw):
+        return dict(page='about')
+
+    @expose('{{package}}.templates.about')
+    @authorize.require(authorize.is_user('editor'))
+    def editor_user_only(self, **kw):
+        return dict(page='about')
+
+    @expose('{{package}}.templates.login')
+    def login(self, **kw):
+        came_from = kw.get('came_from', '/')
+        return dict(page='login', header=lambda *arg: None,
+                    footer=lambda *arg: None, came_from=came_from)
 {{endif}}
