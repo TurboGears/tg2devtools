@@ -61,7 +61,7 @@ sqlalchemy.pool_recycle = 3600
 # http://docs.python.org/lib/logging-config-fileformat.html
 
 [loggers]
-keys = root
+keys = root, {{package_logger}}{{if sqlalchemy}}, sqlalchemy{{endif}}
 
 [handlers]
 keys = console

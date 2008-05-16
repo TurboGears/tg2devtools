@@ -13,7 +13,7 @@ from tgrepozewho import authorize
 
 class RootController(BaseController):
 {{if identity == "sqlalchemy"}}
-    #dbmechanic = DBMechanic(SAProvider(metadata), '/dbmechanic')
+    #admin = DBMechanic(SAProvider(metadata), '/admin')
 {{endif}}
     @expose('{{package}}.templates.index')
     def index(self):

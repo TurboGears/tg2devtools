@@ -3,11 +3,12 @@
 Provides the BaseController class for subclassing.
 """
 from tg import TGController, tmpl_context
-{{if template_engine in ('genshi', 'mako')}}
+{{if template_engine in ('genshi', 'jinja', 'mako')}}
 from pylons.templating import render_{{template_engine}} as render
 {{endif}}
 
 {{if sqlalchemy}}
+
 import {{package}}.model as model
 {{endif}}
 
@@ -45,6 +46,9 @@ class BaseController(TGController):
             #after everything is done clear out the Database Session
             #to eliminate possible cross request DBSession polution.
             model.DBSession.remove()
+        {{if identity == "sqlalchemy"}}
+        tmpl_context.identity =  request.environ.get('repoze.who.identity') 
+        {{endif}}
         {{else}}
         return TGController.__call__(self, environ, start_response)
         {{endif}}
