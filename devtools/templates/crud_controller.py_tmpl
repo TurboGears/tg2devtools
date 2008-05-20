@@ -49,7 +49,7 @@ class ${modelpackage}(Controller):
         #return dict(records = records, modelname = self.modelname)
 
         #dbsprockets
-        value = provider.select(tableName=self.tablename,values=kw)
+        value = getTableValue(${modelname})
 
         pylons.c.w.table = ${modelnameLower}_list
         return dict(value=value, modelname=self.modelname)
