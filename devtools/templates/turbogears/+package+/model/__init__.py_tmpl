@@ -189,9 +189,10 @@ mapper(Permission, permissions_table,
         properties=dict(groups=relation(Group,
                 secondary=group_permission_table, backref='permissions')))
 {{endif}}
+
 # Normal tables may be defined and mapped at module level.
 
-#foo_table = Table("Foo", meta.metadata,
+#foo_table = Table("Foo", metadata,
 #    Column("id", types.Integer, primary_key=True),
 #    Column("bar", types.String(255), nullable=False),
 #    )

@@ -4,17 +4,16 @@ from tg import expose, flash
 from pylons.i18n import ugettext as _
 #from tg import redirect, validate
 #from {{package}}.model import DBSession, metadata
+#from dbsprockets.dbmechanic.frameworks.tg2 import DBMechanic
+#from dbsprockets.saprovider import SAProvider
 
 {{if identity == "sqlalchemy"}}
 from tgrepozewho import authorize
-#from dbsprockets.dbmechanic.frameworks.tg2 import DBMechanic
-#from dbsprockets.saprovider import SAProvider
 {{endif}}
 
 class RootController(BaseController):
-{{if identity == "sqlalchemy"}}
     #admin = DBMechanic(SAProvider(metadata), '/admin')
-{{endif}}
+
     @expose('{{package}}.templates.index')
     def index(self):
         flash(_("You're running TG2! (change me in root.py)"))
