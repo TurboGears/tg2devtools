@@ -53,24 +53,6 @@ def load_environment(global_conf, app_conf):
     config['routes.map'] = make_map()
     config['pylons.app_globals'] = app_globals.Globals()
     #config['pylons.h'] = {{package}}.lib.helpers
-
-    {{if sqlalchemy}}    
-    # Setup SQLAlchemy database engine
-    engine = engine_from_config(config, 'sqlalchemy.')
-    config['pylons.app_globals'].sa_engine = engine
-    # Pass the engine to initmodel, to be able to introspect tables
-    init_model(engine)
-    DBSession.configure(bind=engine)
-    metadata.bind = engine
-
-    # If you'd like to change the default template engine used to render
-    # text/html content, edit these options.
-    template_engine = 'genshi'
-    template_engine_options = {}
-    config['buffet.template_engines'].pop()
-    config.add_template_engine(template_engine, '${package}.templates',
-                               template_engine_options)
-    {{endif}}
     
     {{if template_engine == 'mako'}}
     # Create the Mako TemplateLookup, with the default auto-escaping
@@ -92,10 +74,14 @@ def load_environment(global_conf, app_conf):
     # Jinja's unable to request c's attributes without strict_c
     config['pylons.strict_c'] = True
     {{endif}}
-    {{if sqlalchemy}}
+    {{if sqlalchemy}}    
     # Setup SQLAlchemy database engine
     engine = engine_from_config(config, 'sqlalchemy.')
+    config['pylons.app_globals'].sa_engine = engine
+    # Pass the engine to initmodel, to be able to introspect tables
     init_model(engine)
+    DBSession.configure(bind=engine)
+    metadata.bind = engine
     {{endif}}
     
     # CONFIGURATION OPTIONS HERE (note: all config options will override
