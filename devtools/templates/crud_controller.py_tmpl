@@ -34,7 +34,7 @@ recordView = makeRecordView(${modelname})
 class ${modelpackage}(Controller):
     """Basic ${modelname} admin interface"""
     modelname    = '${modelname}'
-    tablename    = '${modelnameLower}'
+    tablename    = '${tablename}'
     
     @expose()
     def index(self):

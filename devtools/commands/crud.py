@@ -18,6 +18,8 @@ Usage:
 
   -m, --model
       model name
+  -t, --table
+      table name
   -p, --package
       package name
   -f, --form
@@ -49,6 +51,7 @@ class CrudCommand(command.Command):
     group_name = "TurboGears2"
 
     modelname = None
+    tablename = None
     modelpackage = None
     modelform = None
     templates = "tgcrud2"
@@ -61,6 +64,9 @@ class CrudCommand(command.Command):
     parser.add_option("-m", "--model",
             help="class name in the model",
             dest="modelname")
+    parser.add_option("-t", "--table",
+            help="table name in the model",
+            dest="tablename")
     parser.add_option("-p", "--package",
             help="package name for the code",
             dest="modelpackage")
@@ -116,6 +122,9 @@ class CrudCommand(command.Command):
         while not self.modelname:
             print "Note: Make sure you have created your models first"
             self.modelname = raw_input("Enter the model name: ")
+        while not self.tablename:
+            self.tablename = raw_input("Enter the table name [%s]: "
+                            % self.modelname.lower())
         while not self.primary_key:
             self.primary_key = raw_input("Enter the primary key [id]: ")
             if not self.primary_key:
@@ -143,6 +152,7 @@ class CrudCommand(command.Command):
                  'modelnameLower': self.modelnameLower,
                  'modelpackage': self.modelpackage,
                  'modelpackageLower': self.modelpackageLower,
+                 'tablename': self.tablename,
                  'id': self.primary_key})
         file_op.copy_file(template='crud_controller.py_tmpl',
                          dest=os.path.join('controllers', directory),
