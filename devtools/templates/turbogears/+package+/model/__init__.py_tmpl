@@ -44,7 +44,7 @@ def init_model(engine):
 # Import your model modules here. 
 
 {{if identity == "sqlalchemy"}}
-from identity import User, Group, Permission, 
+from identity import User, Group, Permission 
 from identity import users_table, groups_table, permissions_table, \
               user_group_table, group_permission_table
 {{endif}}
