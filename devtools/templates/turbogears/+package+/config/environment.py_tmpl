@@ -54,6 +54,20 @@ def load_environment(global_conf, app_conf):
     config['pylons.app_globals'] = app_globals.Globals()
     #config['pylons.h'] = {{package}}.lib.helpers
     
+    {{if identity == "sqlalchemy"}}
+
+    config['identity'] = {'user_class':User, 
+                      'group_class':Group, 
+                      'permission_class':Permission,
+                      'users_table':'tg_user',
+                      'groups_table':'tg_group',
+                      'permissions_table':'tg_permission',
+                      'password_encryption_method':'sha',
+                      }
+    
+
+    {{endif}}
+    
     {{if template_engine == 'mako'}}
     # Create the Mako TemplateLookup, with the default auto-escaping
     config['pylons.app_globals'].mako_lookup = TemplateLookup(
