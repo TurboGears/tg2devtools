@@ -14,7 +14,7 @@ from tw.api import make_middleware as tw_middleware
 
 from {{package}}.config.environment import load_environment
 {{if identity == "sqlalchemy"}}
-from tgrepozewho.middleware import make_who_middleware
+from tg.ext.repoze.who.middleware import make_who_middleware
 from {{package}}.model import User, Group, Permission, DBSession
 
 # the criterion (ie instance of column) against which to mach

@@ -8,7 +8,7 @@ from pylons.i18n import ugettext as _
 #from dbsprockets.saprovider import SAProvider
 
 {{if identity == "sqlalchemy"}}
-from tgrepozewho import authorize
+from tg.ext.repoze.who import authorize
 {{endif}}
 
 class RootController(BaseController):
