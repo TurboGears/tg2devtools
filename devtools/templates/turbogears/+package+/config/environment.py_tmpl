@@ -22,7 +22,7 @@ import {{package}}.lib.app_globals as app_globals
 #import {{package}}.lib.helpers
 #from {{package}}.config.routing import make_map
 {{if sqlalchemy}}
-from {{package}}.model import init_model, DBSession, metadata
+from {{package}}.model import init_model, DBSession, metadata, User, Group, Permission
 {{endif}}
 
 {{if template_engine == 'genshi'}}
