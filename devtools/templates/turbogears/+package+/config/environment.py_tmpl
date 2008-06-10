@@ -25,7 +25,7 @@ import {{package}}.lib.app_globals as app_globals
 from {{package}}.model import init_model, DBSession, metadata
 {{endif}}
 {{if identity=='sqlalchemy'}}
-from {package}}.model import User, Group, Permission
+from {{package}}.model import User, Group, Permission
 {{endif}}
 
 {{if template_engine == 'genshi'}}
