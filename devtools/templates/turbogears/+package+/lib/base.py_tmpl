@@ -17,18 +17,18 @@ from tw.api import WidgetBunch
 
 class Controller(object):
     """Base class for a web application's controller.
-    
+
     Currently, this provides positional parameters functionality
     via a standard default method.
     """
-    
+
 class BaseController(TGController):
     """Base class for the root of a web application.
-    
+
     Your web application should have one of these. The root of
     your application is used to compute URLs used by your app.
     """
-    
+
     def __call__(self, environ, start_response):
         """Invoke the Controller"""
         # TGController.__call__ dispatches to the Controller method
@@ -47,7 +47,7 @@ class BaseController(TGController):
             #to eliminate possible cross request DBSession polution.
             model.DBSession.remove()
         {{if identity == "sqlalchemy"}}
-        tmpl_context.identity =  request.environ.get('repoze.who.identity') 
+        tmpl_context.identity = request.environ.get('repoze.who.identity')
         {{endif}}
         {{else}}
         return TGController.__call__(self, environ, start_response)
