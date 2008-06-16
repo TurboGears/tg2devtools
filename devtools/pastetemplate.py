@@ -9,7 +9,7 @@ class TurboGearsTemplate(templates.Template):
     _template_dir = 'templates/turbogears'
     template_renderer = staticmethod(paste_script_template_renderer)
     summary = 'TurboGears 2.0 Standard Quickstart Template'
-    egg_plugins = ['PasteScript', 'Pylons', 'TurboGears2', 'tg.devtools', 'tg.ext.geo']
+    egg_plugins = ['PasteScript', 'Pylons', 'TurboGears2', 'tg.devtools']
 
     def pre(self, command, output_dir, vars):
         """Called before template is applied."""

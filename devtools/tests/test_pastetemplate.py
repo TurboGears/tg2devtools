@@ -29,7 +29,9 @@ def setup():
     command.interactive=False
     command.args=['TGTest',]
     command.args.append("sqlalchemy=%s"%True)
-    command.args.append("sqlobject==%s"%False)
+    command.args.append("sqlobject=%s"%False)
+    command.args.append("identity=%s"%False)
+    print command.args
 #    command.templates = TurboGearsTemplate('TGTest')
 #    command.create_template(TurboGearsTemplate('TGTest'), testDataPath+'/TGTest', {'package':'TGTest', 'project':'tgtest', 'egg':'tgtest'})
     command.command()

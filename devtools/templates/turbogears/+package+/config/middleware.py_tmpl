@@ -22,12 +22,8 @@ setup_vars['identity.user_criterion'] = model.User.user_name
 setup_vars['identity.user_id_col'] = 'user_id'
 {{endif}}
 
-
 make_base_app = setup_tg_wsgi_app(load_environment, setup_vars)
-
-#Don't ever use setup_vars, directly they are recoded in the special
-#config object directly. (This is needed in case you do nested versions
-#of the same app in a single process)
+#Don't ever use setup_vars directly
 setup_vars = {}
 
 def make_app(global_conf, full_stack=True, **app_conf):

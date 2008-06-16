@@ -35,10 +35,6 @@ Usage:
       user specific templates
   -s, --sqlalchemy
       use SQLAlchemy instead of SQLObject
-  -o, --sqlobject
-      use SQLObject instead of SQLAlchemy
-  -e, --elixir
-      use Elixir instead of SQLAlchemy
   -i, --identity
       provide Identity support
 """
@@ -92,12 +88,6 @@ or start project with elixir::
     parser.add_option("-s", "--sqlalchemy",
             help="use SQLAlchemy instead of SQLObject",
             action="store_true", dest="sqlalchemy", default = True)
-    parser.add_option("-o", "--sqlobject",
-            help="use SQLObject instead of SQLAlchemy",
-            action="store_true", dest="sqlobject", default = False)
-    parser.add_option("-e", "--elixir",
-            help="use SQLAlchemy Elixir instead of SQLObject",
-            action="store_true", dest="elixir", default = False)
     parser.add_option("-i", "--identity",
             help="provide Identity support",
             action="store_true", dest="identity", default = False)
