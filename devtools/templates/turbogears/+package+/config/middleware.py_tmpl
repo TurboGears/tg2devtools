@@ -1,30 +1,33 @@
 """Pylons middleware initialization"""
 
 from tg.middleware import setup_tg_wsgi_app
+from tg.config import AppConfig, Bunch
 from {{package}}.config.environment import load_environment
 from {{package}} import model
 
-setup_vars = {}
+base_config = AppConfig()
+
 #Set the default renderer
 {{if template_engine == 'mako'}}
-setup_vars['default_renderer'] = 'mako' 
+base_config.default_renderer = 'mako' 
 {{elif template_engine == 'jinja'}}
-setup_vars['default_renderer'] = 'jinja' 
+base_config.default_renderer = 'jinja' 
 {{elif template_engine == 'genshi'}}
-setup_vars['default_renderer'] = 'genshi' 
+base_config.default_renderer = 'genshi' 
 {{endif}}
 
 {{if identity == "sqlalchemy"}}
-setup_vars['identity'] = 'sqlalchemy'
-setup_vars['identity.dbsession'] = model.DBSession
-setup_vars['identity.user'] = model.User
-setup_vars['identity.user_criterion'] = model.User.user_name
-setup_vars['identity.user_id_col'] = 'user_id'
+base_config.auth_backend = 'sqlalchemy'
+base_config.sa_auth = Bunch()
+base_config.sa_auth.dbsession = model.DBSession
+base_config.sa_auth.user = model.User
+base_config.sa_auth.criterion = model.User.user_name
+base_config.sa_auth.user_id_column = 'user_id'
 {{endif}}
 
-make_base_app = setup_tg_wsgi_app(load_environment, setup_vars)
-#Don't ever use setup_vars directly
-setup_vars = {}
+make_base_app = setup_tg_wsgi_app(load_environment, base_config)
+#Don't ever use base_config directly
+base_config = {}
 
 def make_app(global_conf, full_stack=True, **app_conf):
     app = make_base_app(global_conf, full_stack=True, **app_conf)
