@@ -2,21 +2,35 @@
 
 from tg.middleware import setup_tg_wsgi_app
 from tg.config import AppConfig, Bunch
-from {{package}}.config.environment import load_environment
+from tg.environment import make_load_environment
+import {{package}}
 from {{package}} import model
+from {{package}}.lib import app_globals, helpers
 
 base_config = AppConfig()
+base_config.renderers = []
+
+
+base_config.package = {{package}}
 
 #Set the default renderer
 {{if template_engine == 'mako'}}
-base_config.default_renderer = 'mako' 
+base_config.default_renderer = 'mako'
+base_config.renderers.append('mako')  
 {{elif template_engine == 'jinja'}}
-base_config.default_renderer = 'jinja' 
+base_config.default_renderer = 'jinja'
+base_config.renderers.append('jinja')  
 {{elif template_engine == 'genshi'}}
-base_config.default_renderer = 'genshi' 
+base_config.default_renderer = 'genshi'
+base_config.renderers.append('genshi') 
 {{endif}}
 
+#Configure the base SQLALchemy Setup
+base_config.use_sqlalchemy = True
+base_config.model = model
+
 {{if identity == "sqlalchemy"}}
+#Configure the authentication backend
 base_config.auth_backend = 'sqlalchemy'
 base_config.sa_auth = Bunch()
 base_config.sa_auth.dbsession = model.DBSession
@@ -25,9 +39,12 @@ base_config.sa_auth.user_criterion = model.User.user_name
 base_config.sa_auth.user_id_column = 'user_id'
 {{endif}}
 
+#Use base_config to setup the environment loader function
+load_environment = make_load_environment(base_config)
+
+#Use base_config to setup the nessisary WSGI App factory. 
+#make_base_app will wrap the TG2 app with all the middleware it needs. 
 make_base_app = setup_tg_wsgi_app(load_environment, base_config)
-#Don't ever use base_config directly
-base_config = {}
 
 def make_app(global_conf, full_stack=True, **app_conf):
     app = make_base_app(global_conf, full_stack=True, **app_conf)
