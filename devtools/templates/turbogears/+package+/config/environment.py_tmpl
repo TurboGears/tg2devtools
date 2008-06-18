@@ -1,0 +1,2 @@
+from {project}.config.middleware import load_environment
+
