@@ -1,2 +1,5 @@
-from {{package}}.config.middleware import load_environment
+from tg.environment import make_load_environment
+from {{project}}.config.app_cfg import base_config
 
+#Use base_config to setup the environment loader function
+load_environment = make_load_environment(base_config)
