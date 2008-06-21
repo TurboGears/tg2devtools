@@ -23,14 +23,13 @@
     <ol id="getting_started_steps">
       <li class="getting_started">
         <h3>Code your data model</h3>
-        <p> There is no data model! For the quickstart site, we don't know what database you'll want to use, and in TG you can build a fairly dynamic site without any data model at all.</p>
-        <p> But when you want a model for storing your favorite links or wiki content, the /model folder in your site is ready to go. .</p>
+        <p> If you didn't enable identity, there's no data-model, because we don't know what you need.  And TG you can build a dynamic site without any data model at all.</p>
+        <p> But when/if you want a model for storing your favorite links or wiki content, the /model folder in your site is ready to go. .</p>
       </li>
       <li class="getting_started">
         <h3>Design your site architecture</h3>
         <p> The "<span class="code">root.py</span>" file has your URLs, all two of them.  When you called this url (<span class="code">about</span>), the command went through the RootController class to the <span class="code">about</span><span class="code">()</span> method. </p>
-        <p> That method uses Python code to create a dictionary of interesting variables (in this case just "now" for the copyright date in the footer and "page" which is the name of this page, "about").</p>
-        <p> Note that your URL is <span class="code">about</span>, and not "about.html".  The template (stored in /templates) is named "about.html", but the method is simply "about".  You can't get to "about.html" right now as a URL... TG2 won't let you.  That's what the Controller part of the MVC architecture is all about.</p>
+        <p> That method uses Python code to create a dictionary of variables that you'll use in your template.</p>
       </li>
       <li class="getting_started">
         <h3>Parts of the Page</h3>
@@ -49,7 +48,16 @@
         <p> <strong><span class="code">footer.html</span></strong> - The "footer.html" block is simple, but also utilizes a special "replace" method to set the current YEAR in the footer copyright message. The code is: <span class="code">&lt;span py:replace="now.strftime('%Y')"&gt;</span> and it uses the variable "now" that was passed in with the dictionary of variables.  But because "now" is a datetime object, we can use the Python <span class="code">"strftime()"</span> method with the "replace" call to say "Just Display The Year Here".  Simple, elegant; we format the date display in the template (the View in the Model/View/Controller architecture) rather than formatting it in the Controller method and sending it to the template as a string variable.</p>
         <p> <strong><span class="code">master.html</span></strong> - The "master.html" template is called last, by design.  The "master.html" template controls the overall design of the page we're looking at, calling first the "header" py:def macro, then the putting everything from this "about.html" template into the "main_content" div, and then calling the "footer" macro at the end.  Thus the "master.html" template provides the overall architecture for each page in this site.</p>
         <p>But why then shouldn't we call it first?  Isn't it the most important?  Perhaps, but that's precisely why we call it LAST. The "master.html" template needs to know where to find everything else, everything that it will use in py:def macros to build the page.  So that means we call the other templates first, and then call "master.html". </p>
-        <p>There's more to the "master.html" template... study it to see how the &lt;title&gt; tags and static JS and CSS files are brought into the page.  Templating with Genshi is a powerful tool and we've only scratched the surface.  There are also a few little CSS tricks hidden in these pages, like the use of a "clearingdiv" to make sure that your footer stays below the sidebars and always looks right.  That's not TG2 at work, just CSS.  You'll need all your skills to build a fine web app, but TG2 will make the hard parts easier so that you can concentrate more on good design and content rather than struggling with mechanics.</p>
+        <p>There's more to the "master.html" template... study it to see how 
+           the &lt;title&gt; tags and static JS and CSS files are brought into 
+           the page.  Templating with Genshi is a powerful tool and we've only 
+           scratched the surface.  There are also a few little CSS tricks 
+           hidden in these pages, like the use of a "clearingdiv" to make 
+           sure that your footer stays below the sidebars and always looks 
+           right.  That's not TG2 at work, just CSS.  You'll need all your 
+           skills to build a fine web app, but TG2 will make the hard parts 
+           easier so that you can concentrate more on good design and content 
+           rather than struggling with mechanics.</p>
       </li>
     </ol>
     <p>Good luck with TurboGears 2!</p>
