@@ -45,22 +45,21 @@ h1,h2,h3,h4,h5,h6 {
 
 
 .sidebar {
-  border: 1px solid #aaa;
-  background-color: #eee;
+  border: 1px solid #cce;
+  background-color: #ffffab;
   margin: 0.5em;
   margin-left: 1.5em;
   padding: 1em;
   float: right;
   width: 200px;
   font-size: 88%;
-  background-color:#FF8E4E;
-  background-image:url(../images/grad_orange_11x100.png);
+  background-color:#fffe1;
   background-repeat:repeat-x;
 }
 
 .sidebar h2 {
   margin-top: 0;
-  color: white;
+  color: black;
 }
 
 .sidebar ul {
@@ -110,9 +109,9 @@ h1,h2,h3,h4,h5,h6 {
 
 
 #header {
-  height: 80px;
+  height: 125px;
   width: 777px;
-  background: blue URL('../images/grad_blue_7x80.png') repeat-x;
+  background: blue URL('../images/strype.png') repeat-x;
   border-left: 1px solid #aaa;
   border-right: 1px solid #aaa;
   margin: 0 auto 0 auto;
@@ -120,20 +119,28 @@ h1,h2,h3,h4,h5,h6 {
 }
 
 .alogo {
-  color: white;
   font-size: 36px;
-  padding-left: 20px;
-  padding-top: 20px;
+  padding-left: 5px;
+  padding-top: 5px;
   padding-right: 20px;
-  margin-bottom: 0px;
   float: left;
 }
 
 .headtext {
   color: white;
-  font-size: 24px;
+  font: x-small "Lucida Grande", "Lucida Sans Unicode", geneva, verdana, sans-serif;
+  font-size: 44px;
   padding-left: 20px;
-  padding-top: 30px;
+  padding-top: 20px;
+  padding-right: 20px;
+  margin-bottom: 0px;
+}
+
+.curentpage {
+  color: white;
+  font: x-small "Lucida Grande", "Lucida Sans Unicode", geneva, verdana, sans-serif;
+  font-size: 18px;
+  padding-top: 20px;
   padding-right: 20px;
   margin-bottom: 0px;
   float: left;
@@ -173,10 +180,10 @@ span.code {
 
 #status_block {
   margin: 0 auto 0.5em auto;
-  padding: 15px 10px 15px 55px;
-  background: #cec URL('../images/ok.png') left center no-repeat;
-  border: 1px solid #9c9;
-  width: 450px;
+  padding: 5px 15px 15px 55px;
+  background: #eef URL('../images/ok.png') left center no-repeat;
+  border: 1px solid #cce;
+  width: 680px;
   font-size: 120%;
   font-weight: bolder;
 }
@@ -184,7 +191,7 @@ span.code {
 .notice {
   margin: 0.5em auto 0.5em auto;
   padding: 15px 10px 15px 55px;
-  width: 450px;
+  width: 680px;
   background: #eef URL('../images/info.png') left center no-repeat;
   border: 1px solid #cce;
 }
