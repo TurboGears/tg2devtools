@@ -1,0 +1,31 @@
+"""Test Secure Controller"""
+{{if identity == "sqlalchemy"}}
+from {{package}}.lib.base import BaseController, SecureController
+from tg import expose, flash
+from pylons.i18n import ugettext as _
+#from tg import redirect, validate
+#from {{package}}.model import DBSession, metadata
+#from dbsprockets.dbmechanic.frameworks.tg2 import DBMechanic
+#from dbsprockets.saprovider import SAProvider
+from tg.ext.repoze.who import authorize
+
+
+class Secc(SecureController):
+
+    require = authorize.has_permission('manage')
+
+    @expose('{{package}}.templates.index')
+    def index(self):
+        flash(_("Secure Controller here"))
+        return dict(page='index')
+
+    @expose('{{package}}.templates.index')
+    def some_where(self):
+        """should be protected because of the require attr
+        at the controller level.
+        """
+        return dict()
+{{else}}
+# This controller is only used when you activate identity. You can safely remove
+# this file from your project.
+{{endif}}

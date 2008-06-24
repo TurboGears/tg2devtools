@@ -9,10 +9,14 @@ from pylons.i18n import ugettext as _
 
 {{if identity == "sqlalchemy"}}
 from tg.ext.repoze.who import authorize
+from {{package}}.controllers.secc import Secc
 {{endif}}
 
 class RootController(BaseController):
     #admin = DBMechanic(SAProvider(metadata), '/admin')
+    {{if identity == "sqlalchemy"}}
+    secc = Secc()
+    {{endif}}
 
     @expose('{{package}}.templates.index')
     def index(self):
