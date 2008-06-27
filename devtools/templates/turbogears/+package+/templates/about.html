@@ -22,19 +22,19 @@
     <p>The TG2 quickstart command produces this basic TG site.  Here's how it works.</p>
     <ol id="getting_started_steps">
       <li class="getting_started">
-        <h3>Code your data model</h3>
-        <p> If you didn't enable identity, there's no data-model, because we don't know what you need.  And TG you can build a dynamic site without any data model at all.</p>
-        <p> But when/if you want a model for storing your favorite links or wiki content, the /model folder in your site is ready to go. .</p>
+        <h3>Code my data model</h3>
+        <p> When you want a model for storing favorite links or wiki content, the <strong>/model</strong> folder in your site is ready to go. .</p>
+        <p> You can build a dynamic site without any data model at all. There still be a default data-model template for you if you didn't enable identity in quickstart. If you enable identity, you'll got identity data-model settled for you.</p>
       </li>
       <li class="getting_started">
-        <h3>Design your site architecture</h3>
-        <p> The "<span class="code">root.py</span>" file has your URLs, all two of them.  When you called this url (<span class="code">about</span>), the command went through the RootController class to the <span class="code">about</span><span class="code">()</span> method. </p>
-        <p> That method uses Python code to create a dictionary of variables that you'll use in your template.</p>
+        <h3>Design my site architecture</h3>
+        <p> The "<span class="code">root.py</span>" file under the <strong>/controllers</strong> folder has your URLs.  When you called this url (<span class="code"><a href="/about">about</a></span>), the command went through the RootController class to the <span class="code">about</span><span class="code">()</span> method. </p>
+        <p> Those Python methods are responsible to create the dictionary of variables that will be used in your web views (template).</p>
       </li>
       <li class="getting_started">
-        <h3>Parts of the Page</h3>
-        <p> This "about" page consists of several separate templates, each one generating a part of the page.  There's a master.html, sidebars.html, header.html and footer.html in addition to the about.html template we mentioned above. We'll cover them in the order they are found, listed near the top of the about.html template</p>
-        <p> <strong><span class="code">header.html</span></strong> - The "header.html" template contains the HTML code to display the blue gradient, TG2 logo, and some site text at the top of every page it is included on.  When the "about.html" template is called, it includes this "header.html" template (and the others) with a <span class="code">&lt;xi:include /&gt;</span> tag, part of the Genshi templating system.  But the "header.html" template isn't completely static HTML -- it also dynamically displays the current page name with a Genshi template method called "replace".  The code looks like this: <span class="code">&lt;span py:replace="page"/&gt;</span>, and it means: Replace this <span class="code">&lt;span /&gt;</span> with the contents found in the variable 'page' that has been sent in the dictionary to this "about.html" template, and is available through that namespace for use by this "header.html" template.  That's how it changes in the header depending on what page you are visiting.
+        <h3>Reuse the web page elements</h3>
+        <p> A web page viewed by user could be constructed by single or several reusable templates under <strong>/templates</strong>. Take 'about' page for example, each reusable templates generating a part of the page. We'll cover them in the order of where they are found, listed near the top of the about.html template</p>
+        <p> <strong><span class="code">header.html</span></strong> - The "header.html" template contains the HTML code to display the 'header': The blue gradient, TG2 logo, and some site text at the top of every page it is included on. When the "about.html" template is called, it includes this "header.html" template (and the others) with a <span class="code">&lt;xi:include /&gt;</span> tag, part of the Genshi templating system. The "header.html" template is not a completely static HTML -- it also dynamically displays the current page name with a Genshi template method called "replace" with the code: <span class="code">&lt;span py:replace="page"/&gt;</span>. It means replace this <span class="code">&lt;span /&gt;</span> region with the contents found in the variable 'page' that has been sent in the dictionary to this "about.html" template, and is available through that namespace for use by this "header.html" template.  That's how it changes in the header depending on what page you are visiting.
         </p>
         <p> <strong><span class="code">sidebars.html</span></strong> - The sidebars (navigation areas on the right side of the page) are generated as two separate <span class="code">py:def</span> blocks in the "sidebars.html" template.  The <span class="code">py:def</span> construct is best thought of as a "macro" code... a simple way to separate and reuse common code snippets.  All it takes to include these on the "about.html" page template is to write  <span class="code">
 <br/><br/>
