@@ -7,7 +7,7 @@ from sqlalchemy import MetaData
 
 # Global session manager.  DBSession() returns the session object
 # appropriate for the current web request.
-DBSession = scoped_session(sessionmaker(autoflush=True, transactional=True))
+DBSession = scoped_session(sessionmaker(autoflush=True, autocommit=False))
 
 # Global metadata. If you have multiple databases with overlapping table
 # names, you'll need a metadata for each database.
