@@ -21,7 +21,7 @@ setup(
         'SQLAlchemy>=0.5beta1', 'PEAK-Rules',
         'sqlalchemy-migrate>=0.4.4', 'ToscaWidgets>=0.9', 
         'tw.forms>=0.9', 'DBSprockets >= 0.2, <0.5',
-        'tg.ext.repoze.who',
+        'tg.ext.repoze.who', 'TurboJson>=1.2'
         'wsgiref==0.1.2',
     ],
     entry_points='''
