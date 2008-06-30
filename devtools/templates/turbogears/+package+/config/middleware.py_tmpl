@@ -1,4 +1,5 @@
-"""Pylons middleware initialization"""
+"""TurboGears middleware initialization"""
+from pylons.wsgiapp import PylonsApp
 from tg.middleware import setup_tg_wsgi_app
 from {{package}}.config.app_cfg import base_config
 from {{package}}.config.environment import load_environment
@@ -8,7 +9,11 @@ from {{package}}.config.environment import load_environment
 make_base_app = setup_tg_wsgi_app(load_environment, base_config)
 
 def make_app(global_conf, full_stack=True, **app_conf):
+    
+    # Wrapp the app in the Standard TG middleware
     app = make_base_app(global_conf, full_stack=True, **app_conf)
-    #Wrap your base turbogears app with custom middleware
+    
+    #wrap your app with more middleware (on the outside)
+    
     return app
     
