@@ -17,7 +17,7 @@ setup(
     packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
     include_package_data=True,
     zip_safe=False,
-    install_requires=['Pylons>=0.9.7beta5','TurboGears2==1.9.7a1', 
+    install_requires=['Pylons>=0.9.7beta5','TurboGears2>=1.9.7a1', 
         'SQLAlchemy>=0.5beta1', 'PEAK-Rules',
         'sqlalchemy-migrate>=0.4.4', 'ToscaWidgets>=0.9', 
         'tw.forms>=0.9', 'DBSprockets >=0.5dev-r380',
