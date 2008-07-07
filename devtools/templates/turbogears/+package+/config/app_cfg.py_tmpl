@@ -33,4 +33,9 @@ base_config.sa_auth.dbsession = model.DBSession
 base_config.sa_auth.user = model.User
 base_config.sa_auth.user_criterion = model.User.user_name
 base_config.sa_auth.user_id_column = 'user_id'
+
+# override this if you would like to provide a different who plugin for 
+# managing login and logout of your application
+base_config.sa_auth.form_plugin = None
+
 {{endif}}
