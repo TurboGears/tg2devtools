@@ -2,7 +2,7 @@
 from pylons import config
 from sqlalchemy import *
 from sqlalchemy.orm import mapper, relation
-from {{package}}.model import metadata
+from {{package}}.model import metadata, DBSession
 
 import datetime
 from sqlalchemy import ForeignKey
