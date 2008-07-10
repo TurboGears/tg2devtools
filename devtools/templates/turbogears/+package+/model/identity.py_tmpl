@@ -141,8 +141,12 @@ class User(object):
     def validate_password(self, password):
         """Check the password against existing credentials.
         """
-        algorithm = config.get('authorize.hashmethod', None)
+        identity = config.get('identity', None)
+        if identity is None:
+            return password
+        algorithm = identity.get('password_encryption_method', None)
         return self.password == self.__encrypt_password(algorithm, password)
+
 
 class Permission(object):
     """A relationship that determines what each Group can do
