@@ -14,12 +14,3 @@ def make_app(global_conf, full_stack=True, **app_conf):
     return app
 
 
-def make_app(global_conf, full_stack=True, **app_conf):
-    
-    # Wrapp the app in the Standard TG middleware
-    app = make_base_app(global_conf, full_stack=True, **app_conf)
-    
-    #wrap your app with more middleware (on the outside)
-    
-    return app
-    
