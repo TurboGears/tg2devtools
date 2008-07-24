@@ -67,21 +67,21 @@ class User(object):
         return perms
     permissions = property(permissions)
 
-    def by_email_address(klass, email):
+    def by_email_address(cls, email):
         """A class method that can be used to search users
         based on their email addresses since it is unique.
         """
         session = DBSession()
-        return session.query(klass).filter(klass.email_address==email).first()
+        return session.query(cls).filter(cls.email_address==email).first()
 
     by_email_address = classmethod(by_email_address)
 
-    def by_user_name(klass, username):
+    def by_user_name(cls, username):
         """A class method that permits to search users
         based on their user_name attribute.
         """
         session = DBSession()
-        return session.query(klass).filter(klass.user_name==username).first()
+        return session.query(cls).filter(cls.user_name==username).first()
 
     by_user_name = classmethod(by_user_name)
 
