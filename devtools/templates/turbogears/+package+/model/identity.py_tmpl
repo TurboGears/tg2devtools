@@ -60,13 +60,14 @@ class User(object):
         return '<User: email="%s", display name="%s">' % (
                 self.email_address, self.display_name)
 
+    @property
     def permissions(self):
         perms = set()
         for g in self.groups:
             perms = perms | set(g.permissions)
         return perms
-    permissions = property(permissions)
 
+    @classmethod
     def by_email_address(cls, email):
         """A class method that can be used to search users
         based on their email addresses since it is unique.
@@ -74,8 +75,7 @@ class User(object):
         session = DBSession()
         return session.query(cls).filter(cls.email_address==email).first()
 
-    by_email_address = classmethod(by_email_address)
-
+    @classmethod
     def by_user_name(cls, username):
         """A class method that permits to search users
         based on their user_name attribute.
@@ -83,7 +83,6 @@ class User(object):
         session = DBSession()
         return session.query(cls).filter(cls.user_name==username).first()
 
-    by_user_name = classmethod(by_user_name)
 
     def _set_password(self, password):
         """encrypts password on the fly using the encryption
