@@ -3,7 +3,6 @@
 #
 # The %(here)s variable will be replaced with the parent directory of this file
 #
-
 [DEFAULT]
 debug = true
 email_to = you@yourdomain.com
