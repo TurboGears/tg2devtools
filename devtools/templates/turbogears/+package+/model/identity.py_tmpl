@@ -72,16 +72,14 @@ class User(object):
         """A class method that can be used to search users
         based on their email addresses since it is unique.
         """
-        session = DBSession()
-        return session.query(cls).filter(cls.email_address==email).first()
+        return cls.query.filter(cls.email_address==email).first()
 
     @classmethod
     def by_user_name(cls, username):
         """A class method that permits to search users
         based on their user_name attribute.
         """
-        session = DBSession()
-        return session.query(cls).filter(cls.user_name==username).first()
+        return cls.query.filter(cls.user_name==username).first()
 
 
     def _set_password(self, password):
@@ -153,14 +151,14 @@ class Permission(object):
     pass
 
 
-mapper(User, users_table,
+DBSession.mapper(User, users_table,
         properties=dict(_password=users_table.c.password))
 
-mapper(Group, groups_table,
+DBSession.mapper(Group, groups_table,
         properties=dict(users=relation(User,
                 secondary=user_group_table, backref='groups')))
 
-mapper(Permission, permissions_table,
+DBSession.mapper(Permission, permissions_table,
         properties=dict(groups=relation(Group,
                 secondary=group_permission_table, backref='permissions')))
 {{endif}}
