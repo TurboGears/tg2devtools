@@ -5,7 +5,7 @@ from ${modelnameLower}form import new_form, edit_form
 import pylons
 
 #dbsprockets
-from dbsprockets.primitives import makeForm, makeTable, getTableValue, makeRecordView
+from dbsprockets.primitives import make_form, make_table, get_table_value, make_record_view
 from dbsprockets.saprovider import SAProvider
 from cStringIO import StringIO
 from genshi import HTML
@@ -13,7 +13,7 @@ from genshi import HTML
 provider = SAProvider(metadata)
 
 def admin_links(viewConfig, row):
-    pks = viewConfig.metadata.primaryKeys()
+    pks = viewConfig.metadata.primary_keys()
     pkString = viewConfig._writePKsToURL(pks, row)
     links = StringIO()
     links.write('<a href="show')
@@ -27,15 +27,15 @@ def admin_links(viewConfig, row):
     links.write('">delete</a>')
     return HTML(links.getvalue())
 
-${modelnameLower}_list = makeTable(${modelname}, '${modelnameLower}', makeLinks = admin_links)
-recordView = makeRecordView(${modelname})
+${modelnameLower}_list = make_table(${modelname}, '${modelnameLower}', make_links = admin_links)
+recordView = make_record_view(${modelname})
 #dbsprockets end
 
 class ${modelpackage}(Controller):
     """Basic ${modelname} admin interface"""
     modelname    = '${modelname}'
     tablename    = '${tablename}'
-    
+
     @expose()
     def index(self):
         """handle front page"""
@@ -49,9 +49,9 @@ class ${modelpackage}(Controller):
         #return dict(records = records, modelname = self.modelname)
 
         #dbsprockets
-        value = getTableValue(${modelname})
+        value = get_table_value(${modelname})
 
-        pylons.c.w.table = ${modelnameLower}_list
+        pylons.c.table = ${modelnameLower}_list
         return dict(value=value, modelname=self.modelname)
 
     @expose("genshi:${package}.templates.${modelpackageLower}.show")
@@ -61,14 +61,14 @@ class ${modelpackage}(Controller):
         #value = DBSession.query(${modelname}).get(int(kw['${id}']))
 
         #dbsprockets
-        pylons.c.w.widget = recordView
-        value = provider.selectOnPks(tableName=self.tablename,values=kw)[0]
-        return dict(value=value)
+        pylons.c.widget = recordView
+        value = provider.select_on_primary_keys(table_name=self.tablename,values=kw)[0]
+        return dict(value=value, modelname='{modelname}')
 
     @expose("genshi:${package}.templates.${modelpackageLower}.new_form")
     def new(self, **kw):
         """Form to add new record"""
-        pylons.c.w.form = new_form
+        pylons.c.form = new_form
         return dict(modelname = self.modelname)
 
     @validate(new_form, error_handler=new)
@@ -86,14 +86,14 @@ class ${modelpackage}(Controller):
         #DBSession.commit()
 
         #dbsprockets
-        provider.add(tableName=self.tablename, values=kw)
+        provider.add(table_name=self.tablename, values=kw)
 
         flash("${modelname} was successfully created.")
         raise redirect("list")
 
     @expose("genshi:${package}.templates.${modelpackageLower}.edit_form")
     def edit(self, **kw):
-        pylons.c.w.form = edit_form
+        pylons.c.form = edit_form
 
         #raw sqlalchemy
         #try:
@@ -101,12 +101,12 @@ class ${modelpackage}(Controller):
         #except:
         #    flash("Not valid edit")
         #    raise redirect("list")
-        
-        #dbsprockets     
+
+        #dbsprockets
         value = {}
-        pks = sorted(provider.getPrimaryKeys(self.tablename))
+        pks = sorted(provider.get_primary_keys(self.tablename))
         if pks == sorted(kw.keys()):
-            value = dict(provider.selectOnPks(self.tablename, values=kw)[0])
+            value = dict(provider.select_on_primary_keys(self.tablename, values=kw)[0])
         else:
             value.update(kw)
 
@@ -123,7 +123,7 @@ class ${modelpackage}(Controller):
         #DBSession.commit()
 
         #dbsprockets
-        provider.edit(tableName=self.tablename, values=kw)
+        provider.edit(table_name=self.tablename, values=kw)
 
         flash("${modelname} was successfully updated.")
         raise redirect("list")
@@ -137,7 +137,7 @@ class ${modelpackage}(Controller):
         #DBSession.commit()
 
         #dbsprockets
-        provider.delete(tableName=self.tablename, values=kw)
+        provider.delete(table_name=self.tablename, values=kw)
 
         flash("${modelname} was successfully destroyed.")
         raise redirect("list")
