@@ -9,4 +9,4 @@ app = TestApp(config)
 class TestTGController:
     def test_index(self):
         resp = app.get('/')
-        assert 'TurboGears 2 is a open source front-to-back web development' in resp.body, resp.body
+        assert 'TurboGears 2 is rapid web application development toolkit designed to make your life easier.' in resp.body, resp.body
