@@ -21,9 +21,12 @@ base_config.default_renderer = 'genshi'
 base_config.renderers.append('genshi') 
 {{endif}}
 
+{{if sqlalchemy}}
 #Configure the base SQLALchemy Setup
 base_config.use_sqlalchemy = True
 base_config.model = {{package}}.model
+base_config.DBSession = {{package}}.model.DBSession
+{{endif}}
 
 {{if identity == "sqlalchemy"}}
 #Configure the authentication backend

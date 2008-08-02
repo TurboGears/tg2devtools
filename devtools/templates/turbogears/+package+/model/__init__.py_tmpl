@@ -1,13 +1,16 @@
 {{if sqlalchemy}}
 """The application's model objects"""
 
+from zope.sqlalchemy import ZopeTransactionExtension
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy import MetaData
 
 
 # Global session manager.  DBSession() returns the session object
 # appropriate for the current web request.
-DBSession = scoped_session(sessionmaker(autoflush=True, autocommit=False))
+maker = sessionmaker(autoflush=True, autocommit=False,
+                     extension=ZopeTransactionExtension())
+DBSession = scoped_session(maker)
 
 # Global metadata. If you have multiple databases with overlapping table
 # names, you'll need a metadata for each database.
