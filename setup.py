@@ -20,7 +20,7 @@ setup(
     install_requires=[
         'Pylons>=0.9.7beta5',
         'TurboGears2', 
-        'SQLAlchemy>=dev', 
+        'SQLAlchemy>=0.5.0beta3', 
         'PEAK-Rules',
         'sqlalchemy-migrate>=0.4.4', 
         'ToscaWidgets>=0.9', 
