@@ -3,11 +3,9 @@
 Provides the BaseController class for subclassing.
 """
 from tg import TGController, tmpl_context
-{{if template_engine in ('genshi', 'jinja', 'mako')}}
-from pylons.templating import render_{{template_engine}} as render
-{{endif}}
+from tg.render import render
 {{if identity == "sqlalchemy"}}
-from pylons import request
+from tg import request
 {{endif}}
 {{if sqlalchemy}}
 

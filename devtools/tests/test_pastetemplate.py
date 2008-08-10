@@ -23,7 +23,7 @@ class MochOptions:
 def setup():
     global app
     command = CreateDistroCommand('name')
-    command.verbose = False
+    command.verbose = True
     command.simulate = False
     command.options = MochOptions()
     command.interactive=False
@@ -31,11 +31,11 @@ def setup():
     command.args.append("sqlalchemy=%s"%True)
     command.args.append("sqlobject=%s"%False)
     command.args.append("identity=%s"%False)
-    print command.args
-#    command.templates = TurboGearsTemplate('TGTest')
-#    command.create_template(TurboGearsTemplate('TGTest'), testDataPath+'/TGTest', {'package':'TGTest', 'project':'tgtest', 'egg':'tgtest'})
+    print command
+    command.templates = TurboGearsTemplate('TGTest')
+    command.create_template(TurboGearsTemplate('TGTest'), testDataPath+'/TGTest', {'package':'TGTest', 'project':'tgtest', 'egg':'tgtest'})
     command.command()
-#    here_dir = os.path.dirname(os.path.abspath(__file__))
+    here_dir = os.path.dirname(os.path.abspath(__file__))
     proj_dir = testDataPath+'/TGTest'
     
     pkg_resources.working_set.add_entry(proj_dir)

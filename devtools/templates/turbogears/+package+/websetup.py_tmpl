@@ -3,7 +3,7 @@ import logging
 
 import transaction
 from paste.deploy import appconfig
-from pylons import config
+from tg import config
 
 from {{package}}.config.environment import load_environment
 

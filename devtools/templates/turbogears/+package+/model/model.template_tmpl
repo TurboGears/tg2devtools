@@ -1,4 +1,4 @@
-from pylons import config
+from tg import config
 from sqlalchemy import *
 from sqlalchemy.orm import mapper, relation
 from {{package}}.model import metadata

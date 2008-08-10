@@ -1,5 +1,5 @@
 {{if identity == "sqlalchemy"}}
-from pylons import config
+from tg.config import config
 from sqlalchemy import *
 from sqlalchemy.orm import mapper, relation
 from {{package}}.model import metadata, DBSession

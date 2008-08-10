@@ -10,8 +10,9 @@ Create a new project named helloworld with this command::
 
     $ paster quickstart helloworld
 
-You could use TurboGears2, Pylons, and WebHelper paster commands within the
-project.
+You can use TurboGears2, Pylons, and WebHelper paster commands within the
+project, as well as any paster commands that are provided by a plugin, or you
+create yourself.  
 
 Usage:
 

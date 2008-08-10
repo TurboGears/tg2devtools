@@ -2,7 +2,7 @@ from ${package}.lib.base import Controller
 from tg import expose, validate, flash, redirect
 from ${package}.model import DBSession, ${modelname}, metadata
 from ${modelnameLower}form import new_form, edit_form
-import pylons
+import tg
 
 #dbsprockets
 from dbsprockets.primitives import make_form, make_table, get_table_value, make_record_view
@@ -51,7 +51,7 @@ class ${modelpackage}(Controller):
         #dbsprockets
         value = get_table_value(${modelname})
 
-        pylons.c.table = ${modelnameLower}_list
+        tg.tmpl_context.c.table = ${modelnameLower}_list
         return dict(value=value, modelname=self.modelname)
 
     @expose("genshi:${package}.templates.${modelpackageLower}.show")
@@ -61,14 +61,14 @@ class ${modelpackage}(Controller):
         #value = DBSession.query(${modelname}).get(int(kw['${id}']))
 
         #dbsprockets
-        pylons.c.widget = recordView
+        tg.tmpl_context.widget = recordView
         value = provider.select_on_primary_keys(table_name=self.tablename,values=kw)[0]
         return dict(value=value, modelname='{modelname}')
 
     @expose("genshi:${package}.templates.${modelpackageLower}.new_form")
     def new(self, **kw):
         """Form to add new record"""
-        pylons.c.form = new_form
+        tg.tmpl_context.form = new_form
         return dict(modelname = self.modelname)
 
     @validate(new_form, error_handler=new)
@@ -93,7 +93,7 @@ class ${modelpackage}(Controller):
 
     @expose("genshi:${package}.templates.${modelpackageLower}.edit_form")
     def edit(self, **kw):
-        pylons.c.form = edit_form
+        tg.tmpl_context.form = edit_form
 
         #raw sqlalchemy
         #try:
