@@ -33,7 +33,9 @@ base_config.DBSession = {{package}}.model.DBSession
 base_config.auth_backend = 'sqlalchemy'
 base_config.sa_auth = Bunch()
 base_config.sa_auth.dbsession = model.DBSession
-base_config.sa_auth.user = model.User
+base_config.sa_auth.user_class = model.User
+base_config.sa_auth.group_class = model.Group
+base_config.sa_auth.permission_class = model.Permission
 base_config.sa_auth.user_criterion = model.User.user_name
 base_config.sa_auth.user_id_column = 'user_id'
 
