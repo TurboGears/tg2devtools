@@ -1,4 +1,4 @@
-from tg.config import AppConfig, Bunch
+from tg.configuration import AppConfig, Bunch
 import {{package}}
 from {{package}} import model
 from {{package}}.lib import app_globals, helpers
