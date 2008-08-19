@@ -1,43 +1,19 @@
 {{if identity == "sqlalchemy"}}
-from tg import config
-from sqlalchemy import *
-from sqlalchemy.orm import mapper, relation
-from {{package}}.model import metadata, DBSession
-
-import datetime
-from sqlalchemy import ForeignKey
 import md5
 import sha
+from datetime import datetime
 
-groups_table = Table('tg_group', metadata,
-    Column('group_id', Integer, primary_key=True),
-    Column('group_name', Unicode(16), unique=True),
-    Column('display_name', Unicode(255)),
-    Column('created', DateTime, default=datetime.datetime.now)
-)
+from tg import config
+from sqlalchemy import Table, ForeignKey, Column
+from sqlalchemy.types import String, Unicode, UnicodeText, Integer, DateTime, \
+                             Boolean, Float
+from sqlalchemy.orm import relation, backref, synonym
 
-users_table = Table('tg_user', metadata,
-    Column('user_id', Integer, primary_key=True),
-    Column('user_name', Unicode(16), unique=True),
-    Column('email_address', Unicode(255), unique=True),
-    Column('display_name', Unicode(255)),
-    Column('password', Unicode(40)),
-    Column('created', DateTime, default=datetime.datetime.now)
-)
+from {{package}}.model import DeclarativeBase, metadata, DBSession
 
-permissions_table = Table('tg_permission', metadata,
-    Column('permission_id', Integer, primary_key=True),
-    Column('permission_name', Unicode(16), unique=True),
-    Column('description', Unicode(255))
-)
 
-user_group_table = Table('tg_user_group', metadata,
-    Column('user_id', Integer, ForeignKey('tg_user.user_id',
-        onupdate="CASCADE", ondelete="CASCADE")),
-    Column('group_id', Integer, ForeignKey('tg_group.group_id',
-        onupdate="CASCADE", ondelete="CASCADE"))
-)
-
+# This is the association table for the many-to-many relationship between
+# groups and permissions.
 group_permission_table = Table('tg_group_permission', metadata,
     Column('group_id', Integer, ForeignKey('tg_group.group_id',
         onupdate="CASCADE", ondelete="CASCADE")),
@@ -45,17 +21,54 @@ group_permission_table = Table('tg_group_permission', metadata,
         onupdate="CASCADE", ondelete="CASCADE"))
 )
 
+# This is the association table for the many-to-many relationship between
+# groups and members - this is, the memberships.
+user_group_table = Table('tg_user_group', metadata,
+    Column('user_id', Integer, ForeignKey('tg_user.user_id',
+        onupdate="CASCADE", ondelete="CASCADE")),
+    Column('group_id', Integer, ForeignKey('tg_group.group_id',
+        onupdate="CASCADE", ondelete="CASCADE"))
+)
+
 # identity model
-class Group(object):
+
+class Group(DeclarativeBase):
     """An ultra-simple group definition.
     """
+    __tablename__ = 'tg_group'
+    
+    group_id = Column(Integer, autoincrement=True, primary_key=True)
+    
+    group_name = Column(Unicode(16), unique=True)
+    
+    display_name = Column(Unicode(255))
+    
+    created = Column(DateTime, default=datetime.now)
+    
+    users = relation('User', secondary=user_group_table, backref='groups')
+    
     def __repr__(self):
         return '<Group: name=%s>' % self.group_name
 
-class User(object):
+
+class User(DeclarativeBase):
     """Reasonably basic User definition. Probably would want additional
     attributes.
     """
+    __tablename__ = 'tg_user'
+    
+    user_id = Column(Integer, autoincrement=True, primary_key=True)
+    
+    user_name = Column(Unicode(16), unique=True)
+    
+    email_address = Column(Unicode(255), unique=True)
+    
+    display_name = Column(Unicode(255))
+    
+    _password = Column('password', Unicode(40))
+    
+    created = Column(DateTime, default=datetime.now)
+    
     def __repr__(self):
         return '<User: email="%s", display name="%s">' % (
                 self.email_address, self.display_name)
@@ -72,14 +85,14 @@ class User(object):
         """A class method that can be used to search users
         based on their email addresses since it is unique.
         """
-        return cls.query.filter(cls.email_address==email).first()
+        return DBSession.query(cls).filter(cls.email_address==email).first()
 
     @classmethod
     def by_user_name(cls, username):
         """A class method that permits to search users
         based on their user_name attribute.
         """
-        return cls.query.filter(cls.user_name==username).first()
+        return DBSession.query(cls).filter(cls.user_name==username).first()
 
 
     def _set_password(self, password):
@@ -94,7 +107,8 @@ class User(object):
         """
         return self._password
 
-    password = property(_get_password, _set_password)
+    password = synonym('password', descriptor=property(_get_password,
+                                                       _set_password))
 
     def __encrypt_password(self, algorithm, password):
         """Hash the given password with the specified algorithm. Valid values
@@ -145,20 +159,18 @@ class User(object):
         return self.password == self.__encrypt_password(algorithm, password)
 
 
-class Permission(object):
+class Permission(DeclarativeBase):
     """A relationship that determines what each Group can do
     """
-    pass
+    __tablename__ = 'tg_permission'
+    
+    permission_id = Column(Integer, autoincrement=True, primary_key=True)
+    
+    permission_name = Column(Unicode(16), unique=True)
+    
+    description = Column(Unicode(255))
+    
+    groups = relation(Group, secondary=group_permission_table,
+                      backref='permissions')
 
-
-DBSession.mapper(User, users_table,
-        properties=dict(_password=users_table.c.password))
-
-DBSession.mapper(Group, groups_table,
-        properties=dict(users=relation(User,
-                secondary=user_group_table, backref='groups')))
-
-DBSession.mapper(Permission, permissions_table,
-        properties=dict(groups=relation(Group,
-                secondary=group_permission_table, backref='permissions')))
 {{endif}}
