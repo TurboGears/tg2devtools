@@ -4,16 +4,21 @@ you would include information such as the information below:
 Installation and Setup
 ======================
 
-Install ``{{project}}`` using easy_install::
+Install ``{{project}}`` using the setup.py script::
 
-    easy_install {{project}}
+    $ cd {{project}}
+    $ python setup.py install
 
-Make a config file as follows::
+Create the project database for any model classes defined::
 
-    paster make-config {{project}} config.ini
+    $ paster setup-app development.ini
 
-Tweak the config file as appropriate and then setup the application::
+Start the paste http server::
 
-    paster setup-app config.ini
+    $ paster serve development.ini
+
+While developing you may want the server to reload after changes in package files (or its dependencies) are saved. This can be achieved easily by adding the --reload option::
+
+    $ paster serve --reload development.ini
 
 Then you are ready to go.
