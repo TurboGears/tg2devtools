@@ -104,6 +104,10 @@ or start project with elixir::
     parser.add_option("--dry-run",
             help="dry run (don't actually do anything)",
             action="store_true", dest="dry_run")
+    parser.add_option("-e", "--elixir", 
+            help="use elixir as ORM.", action="store_true",
+            dest="elixir", default = False,)
+
 
     def command(self):
         """Quickstarts the new project."""

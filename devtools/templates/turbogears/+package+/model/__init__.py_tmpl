@@ -3,9 +3,13 @@
 
 from zope.sqlalchemy import ZopeTransactionExtension
 from sqlalchemy.orm import scoped_session, sessionmaker
+{{if not elixir}}
 #from sqlalchemy import MetaData
 from sqlalchemy.ext.declarative import declarative_base
-
+{{endif}}
+{{if elixir}}
+import elixir
+{{endif}}
 
 # Global session manager.  DBSession() returns the session object
 # appropriate for the current web request.
@@ -16,11 +20,16 @@ DBSession = scoped_session(maker)
 # By default, the data model is defined with SQLAlchemy's declarative
 # extension, but if you need more control, you can switch to the traditional
 # method.
+{{if not elixir}}
 DeclarativeBase = declarative_base()
 
 # Global metadata.
 # The default metadata is the one from the declarative base.
 metadata = DeclarativeBase.metadata
+{{endif}}
+{{if elixir}}
+metadata = elixir.metadata
+{{endif}}
 # If you have multiple databases with overlapping table names, you'll need a
 # metadata for each database. Feel free to rename 'metadata2'.
 #metadata2 = MetaData()
@@ -61,3 +70,7 @@ def init_model(engine):
 from identity import User, Group, Permission
 {{endif}}
 
+{{if elixir}}
+# setup the elixir models
+elixir.setup_all()
+{{endif}}
