@@ -18,6 +18,9 @@ setup(
         {{if sqlalchemy}}
         "zope.sqlalchemy",
         {{endif}}
+        {{if elixir == "True"}}
+        "elixir",
+        {{endif}}
         ],
     packages=find_packages(exclude=['ez_setup']),
     include_package_data=True,
@@ -31,7 +34,7 @@ setup(
     #        ('templates/**.mako', 'mako', None),
     #        ('templates/**.html', 'genshi', None),
     #        {{babel_templates_extractor}}('public/**', 'ignore', None)]},
-    
+
     entry_points="""
     [paste.app_factory]
     main = {{package}}.config.middleware:make_app

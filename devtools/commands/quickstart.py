@@ -12,7 +12,7 @@ Create a new project named helloworld with this command::
 
 You can use TurboGears2, Pylons, and WebHelper paster commands within the
 project, as well as any paster commands that are provided by a plugin, or you
-create yourself.  
+create yourself.
 
 Usage:
 
@@ -104,7 +104,7 @@ or start project with elixir::
     parser.add_option("--dry-run",
             help="dry run (don't actually do anything)",
             action="store_true", dest="dry_run")
-    parser.add_option("-e", "--elixir", 
+    parser.add_option("-e", "--elixir",
             help="use elixir as ORM.", action="store_true",
             dest="elixir", default = False,)
 
@@ -113,7 +113,6 @@ or start project with elixir::
         """Quickstarts the new project."""
 
         self.__dict__.update(self.options.__dict__)
-
         if not True in [self.elixir, self.sqlalchemy, self.sqlobject]:
             self.sqlalchemy = True
         if self.elixir:
