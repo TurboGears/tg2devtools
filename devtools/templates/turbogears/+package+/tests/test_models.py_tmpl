@@ -14,6 +14,7 @@ class TestModel(DBTest):
     database = test_database
 
     
+{{if identity == "sqlalchemy"}}
 class TestUser(TestModel):
     """Test case for the User model."""
     
@@ -40,3 +41,5 @@ class TestUser(TestModel):
         model.DBSession.add(self.member)
         him = model.User.by_email_address(u"ignucius@example.org")
         self.assertEqual(him, self.member)
+
+{{endif}}
