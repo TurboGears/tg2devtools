@@ -29,6 +29,7 @@ metadata = DeclarativeBase.metadata
 {{endif}}
 {{if elixir == "True"}}
 metadata = elixir.metadata
+elixir.session = DBSession
 {{endif}}
 # If you have multiple databases with overlapping table names, you'll need a
 # metadata for each database. Feel free to rename 'metadata2'.
