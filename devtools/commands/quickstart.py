@@ -35,7 +35,9 @@ Usage:
   -t TEMPLATES, --templates=TEMPLATES
       user specific templates
   -s, --sqlalchemy
-      use SQLAlchemy instead of SQLObject
+      use SQLAlchemy as ORM
+  -e, --elixir
+      use Elixir as ORM
   -i, --identity
       provide Identity support
 """
@@ -59,11 +61,11 @@ Create a new Turbogears project with this command.
 
 Example usage::
 
-    $ paster quickstart yourproj
+    $ paster quickstart yourproject
 
-or start project with elixir::
+or start project with Elixir::
 
-    $ paster quickstart -e yourproj
+    $ paster quickstart -e yourproject
     """
 
     version = pkg_resources.get_distribution('turbogears2').version
@@ -87,8 +89,11 @@ or start project with elixir::
                     usage="%prog quickstart [options] [project name]",
                     version="%prog " + version)
     parser.add_option("-s", "--sqlalchemy",
-            help="use SQLAlchemy instead of SQLObject",
+            help="use SQLAlchemy as ORM",
             action="store_true", dest="sqlalchemy", default = True)
+    parser.add_option("-e", "--elixir",
+            help="use Elixir as ORM.", action="store_true",
+            dest="elixir", default = False)
     parser.add_option("-i", "--identity",
             help="provide Identity support",
             action="store_true", dest="identity", default = False)
@@ -104,9 +109,6 @@ or start project with elixir::
     parser.add_option("--dry-run",
             help="dry run (don't actually do anything)",
             action="store_true", dest="dry_run")
-    parser.add_option("-e", "--elixir",
-            help="use elixir as ORM.", action="store_true",
-            dest="elixir", default = False,)
 
 
     def command(self):
@@ -117,6 +119,11 @@ or start project with elixir::
             self.sqlalchemy = True
         if self.elixir:
             self.sqlalchemy = True
+            try:
+                import elixir
+            except ImportError:
+                print """\nElixir is an optional module for TurboGears2, \
+remember to install Elixir before serving this project.\n"""
 
         if self.args:
             self.name = self.args[0]
