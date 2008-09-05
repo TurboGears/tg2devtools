@@ -2,18 +2,15 @@
 """Test suite for the TG app's models"""
 
 from tg.testutil import DBTest
-from sqlalchemy import create_engine
 
 from {{package}} import model
 
-test_database = create_engine("sqlite:///:memory:")
 
 class TestModel(DBTest):
     """The base class for testing models in you TG project."""
     model = model
-    database = test_database
 
-    
+
 {{if identity == "sqlalchemy"}}
 class TestUser(TestModel):
     """Test case for the User model."""
