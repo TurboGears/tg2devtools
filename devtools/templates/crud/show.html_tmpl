@@ -12,7 +12,7 @@
 </head>
 
 <body>
-    $${tmpl_context.widget(value)}
+    $${widget(value)}
     <br/>
     <a href="$${tg.url('edit?${id}=%s'%value.${id})}">Edit</a> | <a href="$${tg.url('list')}">Back</a>
 </body>
