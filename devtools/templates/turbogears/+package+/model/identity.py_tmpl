@@ -100,7 +100,7 @@ class User(DeclarativeBase):
         """encrypts password on the fly using the encryption
         algo defined in the configuration
         """
-        algorithm = config.get('authorize.hashmethod', None)
+        algorithm = self.get_encryption_method()
         self._password = self.__encrypt_password(algorithm, password)
 
     def _get_password(self):
@@ -150,13 +150,28 @@ class User(DeclarativeBase):
 
         return hashed_password
 
+    def get_encryption_method(self):
+        """returns the encryption method from the config
+        If None is set, or identity is disabled this will return None
+        """
+        identity_system = config.get('sa_auth', None)
+        if identity_system is None:
+            # if identity is not activated in the config we should warn
+            # the admin through the logs... and return None
+            return None
+
+        return identity_system.get('password_encryption_method', None)
+
     def validate_password(self, password):
         """Check the password against existing credentials.
+        this method _MUST_ return a boolean.
+
+        @param password: the password that was provided by the user to
+        try and authenticate. This is the clear text version that we will
+        need to match against the (possibly) encrypted one in the database.
+        @type password: unicode object
         """
-        identity = config.get('identity', None)
-        if identity is None:
-            return password
-        algorithm = identity.get('password_encryption_method', None)
+        algorithm = self.get_encryption_method()
         return self.password == self.__encrypt_password(algorithm, password)
 
 
@@ -252,7 +267,7 @@ class User(Entity):
         """encrypts password on the fly using the encryption
         algo defined in the configuration
         """
-        algorithm = config.get('authorize.hashmethod', None)
+        algorithm = self.get_encryption_method()
         self._password = self.__encrypt_password(algorithm, password)
 
     def _get_password(self):
@@ -301,13 +316,28 @@ class User(Entity):
 
         return hashed_password
 
+    def get_encryption_method(self):
+        """returns the encryption method from the config
+        If None is set, or identity is disabled this will return None
+        """
+        identity_system = config.get('sa_auth', None)
+        if identity_system is None:
+            # if identity is not activated in the config we should warn
+            # the admin through the logs... and return None
+            return None
+
+        return identity_system.get('password_encryption_method', None)
+
     def validate_password(self, password):
         """Check the password against existing credentials.
+        this method _MUST_ return a boolean.
+
+        @param password: the password that was provided by the user to
+        try and authenticate. This is the clear text version that we will
+        need to match against the (possibly) encrypted one in the database.
+        @type password: unicode object
         """
-        identity = config.get('identity', None)
-        if identity is None:
-            return password
-        algorithm = identity.get('password_encryption_method', None)
+        algorithm = self.get_encryption_method()
         return self.password == self.__encrypt_password(algorithm, password)
 
 
