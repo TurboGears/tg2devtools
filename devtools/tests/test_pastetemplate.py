@@ -30,7 +30,7 @@ def setup():
     command.args=['TGTest',]
     command.args.append("sqlalchemy=%s"%True)
     command.args.append("sqlobject=%s"%False)
-    command.args.append("identity=%s"%False)
+    command.args.append("auth=%s"%False)
     print command
     command.templates = TurboGearsTemplate('TGTest')
     command.create_template(TurboGearsTemplate('TGTest'), testDataPath+'/TGTest', {'package':'TGTest', 'project':'tgtest', 'egg':'tgtest'})

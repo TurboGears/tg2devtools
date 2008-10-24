@@ -69,8 +69,8 @@ def init_model(engine):
 
 # Import your model modules here.
 
-{{if identity == "sqlalchemy"}}
-from identity import User, Group, Permission
+{{if auth == "sqlalchemy"}}
+from auth import User, Group, Permission
 {{endif}}
 
 {{if elixir == "True"}}

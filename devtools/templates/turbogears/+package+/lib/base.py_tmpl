@@ -4,7 +4,7 @@ Provides the BaseController class for subclassing.
 """
 from tg import TGController, tmpl_context
 from tg.render import render
-{{if identity == "sqlalchemy"}}
+{{if auth == "sqlalchemy"}}
 from tg import request
 {{endif}}
 {{if sqlalchemy}}
@@ -35,15 +35,15 @@ class BaseController(TGController):
         # the request is routed to. This routing information is
         # available in environ['pylons.routes_dict']
         
-        {{if identity == "sqlalchemy"}}
+        {{if auth == "sqlalchemy"}}
         tmpl_context.identity = request.environ.get('repoze.who.identity')
         {{endif}}
         return TGController.__call__(self, environ, start_response)
 
-{{if identity == "sqlalchemy"}}
+{{if auth == "sqlalchemy"}}
 class SecureController(BaseController):
-    """this is a SecureController implementation for the
-    tg.ext.repoze.who plugin.
+    """SecureController implementation for the tgext.authorization extension.
+    
     it will permit to protect whole controllers with a single predicate
     placed at the controller level.
     The only thing you need to have is a 'require' attribute which must

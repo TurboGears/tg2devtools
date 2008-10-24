@@ -11,7 +11,7 @@ class TestModel(DBTest):
     model = model
 
 
-{{if identity == "sqlalchemy"}}
+{{if auth == "sqlalchemy"}}
 class TestUser(TestModel):
     """Test case for the User model."""
     

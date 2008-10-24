@@ -20,7 +20,7 @@ Usage:
 
     paster quickstart [--version][-h|--help]
             [-p *PACKAGE*][--dry-run][-t|--templates *TEMPLATES*]
-            [-s|--sqlalchemy][-o|--sqlobject][-e|--elixir][-i|--identity]
+            [-s|--sqlalchemy][-o|--sqlobject][-e|--elixir][-a|--auth]
 
 .. container:: paster-usage
 
@@ -38,8 +38,8 @@ Usage:
       use SQLAlchemy as ORM
   -e, --elixir
       use Elixir as ORM
-  -i, --identity
-      provide Identity support
+  -a, --auth
+      provide authentication and authorization support
 """
 
 import pkg_resources
@@ -82,7 +82,7 @@ or start project with Elixir::
     sqlalchemy = False
     sqlobject = False
     elixir = False
-    identity = False
+    auth = False
 
     parser = command.Command.standard_parser(quiet=True)
     parser = optparse.OptionParser(
@@ -94,9 +94,9 @@ or start project with Elixir::
     parser.add_option("-e", "--elixir",
             help="use Elixir as ORM.", action="store_true",
             dest="elixir", default = False)
-    parser.add_option("-i", "--identity",
-            help="provide Identity support",
-            action="store_true", dest="identity", default = False)
+    parser.add_option("-a", "--auth",
+            help="provide authentication and authorization support",
+            action="store_true", dest="auth", default = True)
     parser.add_option("-p", "--package",
             help="package name for the code",
             dest="package")
@@ -139,25 +139,33 @@ remember to install Elixir before serving this project.\n"""
             if not self.package:
                 self.package = package
 
-        doidentity = self.identity
-        while not doidentity:
-            doidentity = raw_input("Do you need Identity "
-                        "(usernames/passwords) in this project? [no] ")
-            doidentity = doidentity.lower()
-            if not doidentity or doidentity.startswith('n'):
-                self.identity = False
+        doauth = self.auth
+        while not doauth:
+            doauth = raw_input("Do you need authentication and authorization "
+                               "in this project? [yes] ")
+            doauth = doauth.lower()
+            if not doauth or doauth.startswith("y"):
+                doauth = True
                 break
-            if doidentity.startswith("y"):
-                doidentity = True
+            if doauth.startswith('n'):
+                self.auth = False
                 break
             print "Please enter y(es) or n(o)."
-            doidentity = None
+            doauth = None
 
-        if doidentity is True:
-            if self.sqlalchemy:
-                self.identity = "sqlalchemy"
+        if doauth is True:
+            if self.sqlalchemy and not self.elixir:
+                self.auth = "sqlalchemy"
             else:
-                self.identity = "sqlobject"
+                print 'You can only use authentication and authorization ' \
+                      'in a new project if you use SQLAlchemy. Please check ' \
+                      'the documentation of tgext.authorization to learn ' \
+                      'how to implement authentication/authorization with ' \
+                      'other sources.'
+                return
+                # TODO: As far as I know, SQLObject has never been supported in
+                # TG2
+                # self.auth = "sqlobject"
 
         self.name = pkg_resources.safe_name(self.name)
 
@@ -193,7 +201,7 @@ remember to install Elixir before serving this project.\n"""
         cmd_args.append("sqlalchemy=%s" % self.sqlalchemy)
         cmd_args.append("elixir=%s" % self.elixir)
         cmd_args.append("sqlobject=%s" % self.sqlobject)
-        cmd_args.append("identity=%s" % self.identity)
+        cmd_args.append("auth=%s" % self.auth)
         cmd_args.append("package=%s" % self.package)
         cmd_args.append("tgversion=%s"%self.version)
         # set the exact ORM-version for the proper requirements

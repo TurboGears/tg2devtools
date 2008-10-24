@@ -1,4 +1,4 @@
-{{if identity == "sqlalchemy"}}
+{{if auth == "sqlalchemy"}}
 {{if not elixir == "True"}}
 import md5
 import sha
@@ -31,7 +31,7 @@ user_group_table = Table('tg_user_group', metadata,
         onupdate="CASCADE", ondelete="CASCADE"))
 )
 
-# identity model
+# auth model
 
 class Group(DeclarativeBase):
     """An ultra-simple group definition.
@@ -134,7 +134,7 @@ class User(DeclarativeBase):
 
         #elif "custom" == algorithm:
         #    custom_encryption_path = turbogears.config.get(
-        #        "identity.custom_encryption", None )
+        #        "auth.custom_encryption", None )
         #
         #    if custom_encryption_path:
         #        custom_encryption = turbogears.util.load_class(
@@ -152,15 +152,15 @@ class User(DeclarativeBase):
 
     def get_encryption_method(self):
         """returns the encryption method from the config
-        If None is set, or identity is disabled this will return None
+        If None is set, or auth is disabled this will return None
         """
-        identity_system = config.get('sa_auth', None)
-        if identity_system is None:
-            # if identity is not activated in the config we should warn
+        auth_system = config.get('sa_auth', None)
+        if auth_system is None:
+            # if auth is not activated in the config we should warn
             # the admin through the logs... and return None
             return None
 
-        return identity_system.get('password_encryption_method', None)
+        return auth_system.get('password_encryption_method', None)
 
     def validate_password(self, password):
         """Check the password against existing credentials.
@@ -300,7 +300,7 @@ class User(Entity):
 
         #elif "custom" == algorithm:
         #    custom_encryption_path = turbogears.config.get(
-        #        "identity.custom_encryption", None )
+        #        "auth.custom_encryption", None )
         #
         #    if custom_encryption_path:
         #        custom_encryption = turbogears.util.load_class(
@@ -318,15 +318,15 @@ class User(Entity):
 
     def get_encryption_method(self):
         """returns the encryption method from the config
-        If None is set, or identity is disabled this will return None
+        If None is set, or auth is disabled this will return None
         """
-        identity_system = config.get('sa_auth', None)
-        if identity_system is None:
-            # if identity is not activated in the config we should warn
+        auth_system = config.get('sa_auth', None)
+        if auth_system is None:
+            # if auth is not activated in the config we should warn
             # the admin through the logs... and return None
             return None
 
-        return identity_system.get('password_encryption_method', None)
+        return auth_system.get('password_encryption_method', None)
 
     def validate_password(self, password):
         """Check the password against existing credentials.

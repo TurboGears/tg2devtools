@@ -1,5 +1,5 @@
 """Test Secure Controller"""
-{{if identity == "sqlalchemy"}}
+{{if auth == "sqlalchemy"}}
 from {{package}}.lib.base import BaseController, SecureController
 from tg import expose, flash
 from pylons.i18n import ugettext as _
@@ -7,7 +7,7 @@ from pylons.i18n import ugettext as _
 #from {{package}}.model import DBSession, metadata
 #from dbsprockets.dbmechanic.frameworks.tg2 import DBMechanic
 #from dbsprockets.saprovider import SAProvider
-from tg.ext.repoze.who import authorize
+from tgext.authorization import authorize
 
 
 class Secc(SecureController):
@@ -26,6 +26,6 @@ class Secc(SecureController):
         """
         return dict()
 {{else}}
-# This controller is only used when you activate identity. You can safely remove
+# This controller is only used when you activate auth. You can safely remove
 # this file from your project.
 {{endif}}
