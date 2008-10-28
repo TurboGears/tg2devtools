@@ -46,7 +46,7 @@ def setup_config(command, filename, section, vars):
 
     u1 = model.User()
     u1.user_name = u'editor'
-    u1.display_name = u'Exemple editor'
+    u1.display_name = u'Example editor'
     u1.email_address = u'editor@somedomain.com'
     u1.password = u'editpass'
 
