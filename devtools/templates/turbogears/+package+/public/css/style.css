@@ -186,14 +186,27 @@ span.code {
   background: #eee;
 }
 
-#status_block {
+.flash { 
   margin: 0 auto 0.5em auto;
   padding: 5px 15px 15px 55px;
-  background: #eef URL('../images/ok.png') left center no-repeat;
-  border: 1px solid #cce;
   width: 680px;
   font-size: 120%;
   font-weight: bolder;
+}
+
+#status_ok {
+  background: #eef URL('../images/ok.png') left center no-repeat;
+  border: 1px solid #cce;
+}
+
+#status_warning {
+  background: #f99 URL('../images/error.png') left center no-repeat;
+  border: 1px solid #f33;
+}
+
+#status_alert {
+  background: #ff9 URL('../images/info.png') left center no-repeat;
+  border: 1px solid #ff0;
 }
 
 .notice {

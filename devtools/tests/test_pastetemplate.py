@@ -33,7 +33,7 @@ def setup():
     command.args.append("auth=%s"%False)
     print command
     command.templates = TurboGearsTemplate('TGTest')
-    command.create_template(TurboGearsTemplate('TGTest'), testDataPath+'/TGTest', {'package':'TGTest', 'project':'tgtest', 'egg':'tgtest'})
+    command.create_template(TurboGearsTemplate('TGTest'), testDataPath+'/TGTest', {'package':'TGTest', 'project':'tgtest', 'egg':'tgtest', 'sqlalchemy':True, 'sqlobject':False, 'identity':False})
     command.command()
     here_dir = os.path.dirname(os.path.abspath(__file__))
     proj_dir = testDataPath+'/TGTest'

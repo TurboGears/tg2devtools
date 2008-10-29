@@ -50,9 +50,8 @@ class ${modelpackage}(Controller):
 
         #dbsprockets
         value = get_table_value(${modelname})
-
-        tg.tmpl_context.c.table = ${modelnameLower}_list
-        return dict(value=value, modelname=self.modelname)
+        return dict(value=value, modelname=self.modelname, 
+                    table = ${modelnameLower}_list)
 
     @expose("genshi:${package}.templates.${modelpackageLower}.show")
     def show(self, **kw):
@@ -61,15 +60,13 @@ class ${modelpackage}(Controller):
         #value = DBSession.query(${modelname}).get(int(kw['${id}']))
 
         #dbsprockets
-        tg.tmpl_context.widget = recordView
         value = provider.select_on_primary_keys(table_name=self.tablename,values=kw)[0]
-        return dict(value=value, modelname='{modelname}')
+        return dict(value=value, modelname='{modelname}', widget = recordView)
 
     @expose("genshi:${package}.templates.${modelpackageLower}.new_form")
     def new(self, **kw):
         """Form to add new record"""
-        tg.tmpl_context.form = new_form
-        return dict(modelname = self.modelname)
+        return dict(modelname = self.modelname, form = new_form)
 
     @validate(new_form, error_handler=new)
     @expose()
@@ -93,7 +90,6 @@ class ${modelpackage}(Controller):
 
     @expose("genshi:${package}.templates.${modelpackageLower}.edit_form")
     def edit(self, **kw):
-        tg.tmpl_context.form = edit_form
 
         #raw sqlalchemy
         #try:
@@ -110,7 +106,7 @@ class ${modelpackage}(Controller):
         else:
             value.update(kw)
 
-        return dict(modelname = self.modelname, value=value)
+        return dict(modelname = self.modelname, value=value, form = edit_form)
 
     @validate(edit_form, error_handler=edit)
     @expose()

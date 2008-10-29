@@ -17,10 +17,14 @@ setup(
     packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
     include_package_data=True,
     zip_safe=False,
+    index=[
+        'http://turbogears.org/2.0/downloads/current',
+    ],
     install_requires=[
         'Pylons>=0.9.7beta5',
         'TurboGears2', 
-        'SQLAlchemy>=0.5.0beta3', 
+        'SQLAlchemy>=0.5.0beta3',
+        'repoze.tm2', 
         'zope.sqlalchemy',
         'PEAK-Rules',
         'sqlalchemy-migrate>=0.4.4', 
@@ -28,9 +32,12 @@ setup(
         'tw.forms>=0.9', 
         'DBSprockets >=0.5dev-r380',
         'tgext.authorization', 
-        'TurboJson>=1.2',
         'wsgiref==0.1.2', 
-        'Paste>=1.7'
+        'Paste>=1.7',
+        'TurboJson', 
+        'SQLAlchemy>=0.5beta3',
+        'WebTest',
+        'BeautifulSoup'
     ],
     entry_points='''
         [paste.global_paster_command]
