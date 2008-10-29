@@ -139,7 +139,7 @@ remember to install Elixir before serving this project.\n"""
             if not self.package:
                 self.package = package
 
-        doauth = self.auth
+        doauth = None
         while not doauth:
             doauth = raw_input("Do you need authentication and authorization "
                                "in this project? [yes] ")
@@ -154,7 +154,7 @@ remember to install Elixir before serving this project.\n"""
             doauth = None
 
         if doauth is True:
-            if self.sqlalchemy and not self.elixir:
+            if self.sqlalchemy:
                 self.auth = "sqlalchemy"
             else:
                 print 'You can only use authentication and authorization ' \
