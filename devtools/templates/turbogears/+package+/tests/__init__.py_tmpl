@@ -10,7 +10,6 @@ setup-app) with the project's test.ini configuration file.
 """
 import os
 import sys
-from unittest import TestCase
 
 import pkg_resources
 import webtest
@@ -32,9 +31,8 @@ test_file = os.path.join(conf_dir, 'test.ini')
 cmd = paste.script.appinstall.SetupCommand('setup-app')
 cmd.run([test_file])
 
-class TestController(TestCase):
+class TestController(object):
 
     def __init__(self, *args, **kwargs):
         wsgiapp = loadapp('config:test.ini', relative_to=conf_dir)
         self.app = webtest.TestApp(wsgiapp)
-        TestCase.__init__(self, *args, **kwargs)

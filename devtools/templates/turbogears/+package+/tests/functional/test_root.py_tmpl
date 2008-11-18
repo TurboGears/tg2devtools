@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from {{package}}.tests import TestController
+from nose.tools import assert_true
 
 # This is an example of how you can write functional tests for your controller.
 # As opposed to a pure unit-test which test a small unit of functionallity,
@@ -13,7 +14,8 @@ class TestRootController(TestController):
         msg = 'TurboGears 2 is rapid web application development toolkit '\
               'designed to make your life easier.'
         # You can look for specific strings:
-        self.failUnless(msg in response)
-        # You cam also access a BeautifulSoup'ed version
+        assert_true(msg in response)
+        # You can also access a BeautifulSoup'ed version
+        # first run $ easy_install BeautifulSoup and then run this test 
         links = response.html.findAll('a')
-        self.failUnless(links, "Mummy, there are no links here!")
+        assert_true(links, "Mummy, there are no links here!")

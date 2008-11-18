@@ -2,6 +2,7 @@
 """Test suite for the TG app's models"""
 
 from tg.testutil import DBTest
+from nose.tools import eq_
 
 from {{package}} import model
 
@@ -23,20 +24,20 @@ class TestUser(TestModel):
         
     def test_member_creation_username(self):
         """The member constructor must set the user name right"""
-        self.assertEqual(self.member.user_name, u"ignucius")
+        eq_(self.member.user_name, u"ignucius")
         
     def test_member_creation_email(self):
         """The member constructor must set the email right"""
-        self.assertEqual(self.member.email_address, u"ignucius@example.org")
+        eq_(self.member.email_address, u"ignucius@example.org")
     
     def test_no_permissions_by_default(self):
         """User objects should have no permission by default."""
-        self.assertEqual(len(self.member.permissions), 0)
+        eq_(len(self.member.permissions), 0)
         
     def test_getting_by_email(self):
         """Users should be fetcheable by their email addresses"""
         model.DBSession.add(self.member)
         him = model.User.by_email_address(u"ignucius@example.org")
-        self.assertEqual(him, self.member)
+        eq_(him, self.member)
 
 {{endif}}

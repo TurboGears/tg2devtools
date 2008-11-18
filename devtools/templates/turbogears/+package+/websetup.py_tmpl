@@ -42,7 +42,6 @@ def setup_config(command, filename, section, vars):
     p.groups.append(g)
 
     model.DBSession.save(p)
-    model.DBSession.flush()
 
     u1 = model.User()
     u1.user_name = u'editor'
