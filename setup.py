@@ -31,7 +31,7 @@ setup(
         'ToscaWidgets>=0.9', 
         'tw.forms>=0.9', 
         'DBSprockets >=0.5dev-r380',
-        'tgext.authorization', 
+        'repoze.what', 
         'wsgiref==0.1.2', 
         'Paste>=1.7',
         'TurboJson', 

@@ -159,7 +159,7 @@ remember to install Elixir before serving this project.\n"""
             else:
                 print 'You can only use authentication and authorization ' \
                       'in a new project if you use SQLAlchemy. Please check ' \
-                      'the documentation of tgext.authorization to learn ' \
+                      'the documentation of repoze.what to learn ' \
                       'how to implement authentication/authorization with ' \
                       'other sources.'
                 return

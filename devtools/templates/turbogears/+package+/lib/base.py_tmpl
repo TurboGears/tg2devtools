@@ -42,7 +42,7 @@ class BaseController(TGController):
 
 {{if auth == "sqlalchemy"}}
 class SecureController(BaseController):
-    """SecureController implementation for the tgext.authorization extension.
+    """SecureController implementation for the repoze.what extension.
     
     it will permit to protect whole controllers with a single predicate
     placed at the controller level.
