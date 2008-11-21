@@ -4,23 +4,18 @@
       xmlns:py="http://genshi.edgewall.org/"
       xmlns:xi="http://www.w3.org/2001/XInclude"
       py:strip="">
-<?python
-import tg
-tg_flash = tg.get_flash()
-tg_status = tg.get_status() 
-?>
 <head py:match="head" py:attrs="select('@*')">
     <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
     <title py:replace="''">Your title goes here</title>
     <meta py:replace="select('*')"/>
-    <link rel="stylesheet" type="text/css" media="screen" href="/css/style.css" />
+    <link rel="stylesheet" type="text/css" media="screen" href="${tg.url('/css/style.css')}" />
 </head>
 
 <body py:match="body" py:attrs="select('@*')">
   ${header()}
   <div id="main_content">
-    <div id="${tg_status}" py:if="tg_flash" class="flash"
-     py:content="tg_flash">
+    <div id="${tg.flash_status}" py:if="tg.flash" class="flash"
+     py:content="tg.flash">
     </div> 
     <div py:replace="select('*|text()')"/>
     <!-- End of main_content -->
