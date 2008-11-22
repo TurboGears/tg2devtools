@@ -1,6 +1,6 @@
 """Main Controller"""
 from {{package}}.lib.base import BaseController
-from tg import expose, flash
+from tg import expose, flash, require
 from pylons.i18n import ugettext as _
 #from tg import redirect, validate
 #from {{package}}.model import DBSession, metadata
@@ -29,12 +29,12 @@ class RootController(BaseController):
 
 {{if auth == "sqlalchemy"}}
     @expose('{{package}}.templates.index')
-    @authorize.require(authorize.has_permission('manage'))
+    @require(authorize.has_permission('manage'))
     def manage_permission_only(self, **kw):
         return dict(page='managers stuff')
 
     @expose('{{package}}.templates.index')
-    @authorize.require(authorize.is_user('editor'))
+    @require(authorize.is_user('editor'))
     def editor_user_only(self, **kw):
         return dict(page='editor stuff')
 
