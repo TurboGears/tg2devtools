@@ -8,7 +8,7 @@ from pylons.i18n import ugettext as _
 #from dbsprockets.saprovider import SAProvider
 
 {{if auth == "sqlalchemy"}}
-from repoze.what import authorize
+from repoze.what import predicates
 from {{package}}.controllers.secc import Secc
 {{endif}}
 
@@ -29,12 +29,12 @@ class RootController(BaseController):
 
 {{if auth == "sqlalchemy"}}
     @expose('{{package}}.templates.index')
-    @require(authorize.has_permission('manage'))
+    @require(predicates.has_permission('manage'))
     def manage_permission_only(self, **kw):
         return dict(page='managers stuff')
 
     @expose('{{package}}.templates.index')
-    @require(authorize.is_user('editor'))
+    @require(predicates.is_user('editor'))
     def editor_user_only(self, **kw):
         return dict(page='editor stuff')
 
