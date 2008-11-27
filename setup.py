@@ -5,7 +5,7 @@ import sys, os
 
 setup(
     name='tg.devtools',
-    version="1.9.7b1",
+    version="1.9.7b2",
     description="",
     long_description="""""",
     classifiers=[],
