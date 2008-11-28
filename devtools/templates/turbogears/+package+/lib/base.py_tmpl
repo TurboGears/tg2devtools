@@ -39,29 +39,3 @@ class BaseController(TGController):
         tmpl_context.identity = request.environ.get('repoze.who.identity')
         {{endif}}
         return TGController.__call__(self, environ, start_response)
-
-{{if auth == "sqlalchemy"}}
-class SecureController(BaseController):
-    """SecureController implementation for the repoze.what extension.
-    
-    it will permit to protect whole controllers with a single predicate
-    placed at the controller level.
-    The only thing you need to have is a 'require' attribute which must
-    be a callable. This callable will only be authorized to return True
-    if the user is allowed and False otherwise. This may change to convey info
-    when securecontroller is fully debugged...
-    """
-
-    def check_security(self):
-        errors = []
-        environ = request.environ
-        if not hasattr(self, "require") or \
-            self.require is None or \
-            self.require.eval_with_environ(environ, errors):
-            return True
-
-        # if we did not return this is an error :)
-        # TODO: do something with the errors variable like informing our user...
-        return False
-
-{{endif}}

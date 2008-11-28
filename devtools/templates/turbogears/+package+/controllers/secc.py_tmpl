@@ -1,6 +1,6 @@
 """Test Secure Controller"""
 {{if auth == "sqlalchemy"}}
-from {{package}}.lib.base import BaseController, SecureController
+from {{package}}.lib.base import BaseController
 from tg import expose, flash
 from pylons.i18n import ugettext as _
 #from tg import redirect, validate
@@ -10,8 +10,10 @@ from pylons.i18n import ugettext as _
 from repoze.what.predicates import has_permission
 
 
-class Secc(SecureController):
+class Secc(BaseController):
+    """Sample controller-wide authorization"""
 
+    # The predicate that must be met for all the actions in this controller:
     require = has_permission('manage')
 
     @expose('{{package}}.templates.index')
@@ -24,7 +26,7 @@ class Secc(SecureController):
         """should be protected because of the require attr
         at the controller level.
         """
-        return dict()
+        return dict(page='some_where')
 {{else}}
 # This controller is only used when you activate auth. You can safely remove
 # this file from your project.
