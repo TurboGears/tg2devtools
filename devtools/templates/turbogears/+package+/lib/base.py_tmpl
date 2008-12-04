@@ -36,6 +36,7 @@ class BaseController(TGController):
         # available in environ['pylons.routes_dict']
         
         {{if auth == "sqlalchemy"}}
-        tmpl_context.identity = request.environ.get('repoze.who.identity')
+        request.identity = request.environ.get('repoze.who.identity')
+        tmpl_context.identity = request.identity
         {{endif}}
         return TGController.__call__(self, environ, start_response)
