@@ -5,7 +5,7 @@ import sys, os
 
 setup(
     name='tg.devtools',
-    version="1.9.7b2",
+    version="2.0b1",
     description="",
     long_description="""""",
     classifiers=[],
@@ -22,6 +22,7 @@ setup(
     ],
     install_requires=[
         'Pylons>=0.9.7beta5',
+        'FormEncode>=1.2',
         'TurboGears2', 
         'SQLAlchemy>=0.5.0beta3',
         'repoze.tm2', 
