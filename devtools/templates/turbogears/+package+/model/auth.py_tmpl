@@ -39,13 +39,9 @@ class Group(DeclarativeBase):
     __tablename__ = 'tg_group'
 
     group_id = Column(Integer, autoincrement=True, primary_key=True)
-
     group_name = Column(Unicode(16), unique=True)
-
     display_name = Column(Unicode(255))
-
     created = Column(DateTime, default=datetime.now)
-
     users = relation('User', secondary=user_group_table, backref='groups')
 
     def __repr__(self):
@@ -59,15 +55,10 @@ class User(DeclarativeBase):
     __tablename__ = 'tg_user'
 
     user_id = Column(Integer, autoincrement=True, primary_key=True)
-
     user_name = Column(Unicode(16), unique=True)
-
     email_address = Column(Unicode(255), unique=True)
-
     display_name = Column(Unicode(255))
-
     _password = Column('password', Unicode(40))
-
     created = Column(DateTime, default=datetime.now)
 
     def __repr__(self):
@@ -129,20 +120,6 @@ class User(DeclarativeBase):
         elif "sha1" == algorithm:
             hashed_password = sha.new(password_8bit).hexdigest()
 
-        # TODO: re-add the possibility to provide own hasing algo
-        # here... just get the real config...
-
-        #elif "custom" == algorithm:
-        #    custom_encryption_path = turbogears.config.get(
-        #        "auth.custom_encryption", None )
-        #
-        #    if custom_encryption_path:
-        #        custom_encryption = turbogears.util.load_class(
-        #            custom_encryption_path)
-
-        #    if custom_encryption:
-        #        hashed_password = custom_encryption(password_8bit)
-
         # make sure the hased password is an UTF-8 object at the end of the
         # process because SQLAlchemy _wants_ a unicode object for Unicode columns
         if not isinstance(hashed_password, unicode):
@@ -181,11 +158,8 @@ class Permission(DeclarativeBase):
     __tablename__ = 'tg_permission'
 
     permission_id = Column(Integer, autoincrement=True, primary_key=True)
-
     permission_name = Column(Unicode(16), unique=True)
-
     description = Column(Unicode(255))
-
     groups = relation(Group, secondary=group_permission_table,
                       backref='permissions')
 {{endif}}
@@ -216,17 +190,11 @@ class User(Entity):
     attributes.
     """
     using_options(tablename="tg_user", auto_primarykey="user_id")
-
     user_name = Field(Unicode(16), required=True, unique=True)
-
     email_address = Field(Unicode(255), required=True, unique=True)
-
     display_name = Field(Unicode(255))
-
     created = Field(DateTime, default=datetime.now)
-
     _password = Field(Unicode(40), colname="password", required=True)
-
     groups = ManyToMany(
         "Group",
         inverse="users",
@@ -238,8 +206,6 @@ class User(Entity):
     def __repr__(self):
         return '<User: email="%s", display name="%s">' % (
                 self.email_address, self.display_name)
-
-
 
     @property
     def permissions(self):
@@ -295,20 +261,6 @@ class User(Entity):
         elif "sha1" == algorithm:
             hashed_password = sha.new(password_8bit).hexdigest()
 
-        # TODO: re-add the possibility to provide own hasing algo
-        # here... just get the real config...
-
-        #elif "custom" == algorithm:
-        #    custom_encryption_path = turbogears.config.get(
-        #        "auth.custom_encryption", None )
-        #
-        #    if custom_encryption_path:
-        #        custom_encryption = turbogears.util.load_class(
-        #            custom_encryption_path)
-
-        #    if custom_encryption:
-        #        hashed_password = custom_encryption(password_8bit)
-
         # make sure the hased password is an UTF-8 object at the end of the
         # process because SQLAlchemy _wants_ a unicode object for Unicode columns
         if not isinstance(hashed_password, unicode):
@@ -345,13 +297,10 @@ class Group(Entity):
     """An ultra-simple group definition.
     """
     using_options(tablename="tg_group", auto_primarykey="group_id")
-
+    
     group_name = Field(Unicode(16), unique=True)
-
     display_name = Field(Unicode(255))
-
     created = Field(DateTime, default=datetime.now)
-
     users = ManyToMany("User")
 
     permissions = ManyToMany(
@@ -370,11 +319,8 @@ class Permission(Entity):
     """A relationship that determines what each Group can do
     """
     using_options(tablename="tg_permission", auto_primarykey="permission_id")
-
     permission_name = Field(Unicode(16), unique=True)
-
     description = Field(Unicode(255))
-
     groups = ManyToMany("Group")
 
 {{endif}}
