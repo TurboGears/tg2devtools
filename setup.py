@@ -1,4 +1,4 @@
-# -*- coding: UTF-8 -*-
+# -*- coding: utf-8 -*-
 
 from setuptools import setup, find_packages
 import sys, os
@@ -26,20 +26,20 @@ setup(
         'FormEncode>=1.2',
         'Paste>=1.7',
         'PEAK-Rules',
-        'repoze.tm2', 
+        'repoze.tm2',
         'repoze.what',
-        'repose.who>=1.0.7', 
-        'sqlalchemy-migrate>=0.4.4', 
+        'repoze.who>=1.0.7',
+        'sqlalchemy-migrate>=0.4.4',
         'SQLAlchemy>=0.5.0beta3',
         'SQLAlchemy>=0.5beta3',
-        'ToscaWidgets>=0.9', 
-        'TurboGears2', 
-        'TurboJson', 
-        'tw.forms>=0.9', 
+        'ToscaWidgets>=0.9',
+        'TurboGears2',
+        'TurboJson',
+        'tw.forms>=0.9',
         'WebTest',
-        'wsgiref==0.1.2', 
+        'wsgiref==0.1.2',
         'zope.sqlalchemy',
-                
+
         'Pylons>=0.9.7beta5',
     ],
     entry_points='''
