@@ -1,49 +1,101 @@
-/*
- * Quick mash-up of CSS for the TG quick start page.
- */
-
-html, body {
-  color: black;
-  background-color: #ddd;
-  font: x-small "Lucida Grande", "Lucida Sans Unicode", geneva, verdana, sans-serif;
-  font-size: 83%;
-  margin: 0;
-  padding: 0;
+html {
+	background: #555555 url('../images/pagebg.png') top left repeat-x;
+	text-align: center;
+	margin: 0;
+	padding: 0;
 }
 
-td, th {padding:3px;border:none;}
-tr th {text-align:left;background-color:#f0f0f0;color:#333;}
-tr.odd td {background-color:#edf3fe;}
-tr.even td {background-color:#fff;}
-
-
-a.link, a, a.active {
-  color: #369;
+body {
+	text-align: left;
+	width: 960px;
+	margin: 0 auto;
+	padding: 0;
+	font-size: 12px;
+	font-family:"Lucida Grande","Lucida Sans Unicode",geneva,verdana,sans-serif;
 }
 
-.white {
-  color: white;    
+a {
+	color: #286571;
 }
 
-h1,h2,h3,h4,h5,h6 {
-  font-family: "Century Schoolbook L", Georgia, serif;
-  font-weight: bold;
+#header {
+	height: 132px;
+	margin: 10px 10px 0 10px;
+	background: url('../images/headerbg.png') top left no-repeat;
+}
+
+#header h1 {
+	padding: 0;
+	margin: 0;
+	padding-top: 30px;
+	padding-left: 180px;
+	color: #fff;
+	position: relative;
+	font-size: 36px;
+}
+
+#header h1 .subtitle {
+	font-size: 60%;
+	position: absolute;
+	left: 240px;
+	top: 70px;
+}
+
+ul#mainmenu {
+	margin: 0;
+	padding: 0 10px;
+	background: url('../images/menubg.png') top left no-repeat;
+	height: 38px;
+}
+
+ul#mainmenu li {
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+	position: relative;
+	display: inline;
+	float: left;
+}
+
+ul#mainmenu li a {
+	color: #fff;
+	float: left;
+	height: 31px;
+	display: block;
+	line-height: 30px;
+	vertical-align: middle;
+	padding: 0 10px;
+	font-size: 12px;
+	text-decoration: none;
+	background: url('../images/menu-item-border.png') left top no-repeat;
+}
+
+ul#mainmenu li a:hover, ul#mainmenu li a.active {
+	background: url('../images/menu-item-actibg.png') left top no-repeat;
+}
+
+ul#mainmenu li.first a {
+	background: none;
+}
+
+ul#mainmenu li.first a:hover, ul#mainmenu li.first a.active {
+	background: url('../images/menu-item-actibg-first.png') left top no-repeat;
+}
+
+#content {
+	background: #fff url('../images/contentbg.png') left bottom no-repeat;
+	margin : 0 10px;
+	padding: 0 10px;
+}
+
+#content .currentpage {
+	margin-top: 0;
 }
 
 
-#main_content {
-  color: black;
-  font-size: 127%;
-  background-color: white;
-  width: 757px;
-  margin: 0 auto 1em auto;
-  border: 1px solid #aaa;
-  border-top: 0px solid #aaa;
-  padding: 10px;
-  clear: both;
-}
 
 
+/* Sidebar */
 .sidebar {
   border: 1px solid #cce;
   background-color: #eee;
@@ -53,7 +105,7 @@ h1,h2,h3,h4,h5,h6 {
   float: right;
   width: 200px;
   font-size: 88%;
-  background-color:#fffe1;
+  background-color: #fffe1;
   background-repeat:repeat-x;
 }
 
@@ -90,138 +142,64 @@ h1,h2,h3,h4,h5,h6 {
 }
 
 #getting_started_steps li {
-  font-size: 80%;
   margin-bottom: 0.5em;
 }
 
-#getting_started_steps h2 {
-  font-size: 120%;
-}
-
-#getting_started_steps p {
-  font: 100% "Lucida Grande", "Lucida Sans Unicode", geneva, verdana, sans-serif;
-}
-
-#getting_started_steps,.alogo,.headtext {
-  font-family: "Century Schoolbook L", Georgia, serif;
-  font-weight: bold;
-}
-
-
-#header {
-  height: 125px;
-  width: 777px;
-  background: blue URL('../images/strype2.png') repeat-y;
-  border-left: 1px solid #aaa;
-  border-right: 1px solid #aaa;
-  margin: 0 auto 0 auto;
-  color: black;
-}
-
-.alogo {
-  font-size: 36px;
-  padding-left: 5px;
-  padding-top: 5px;
-  padding-right: 20px;
-  float: left;
-}
-
-.headtext {
-  color: white;
-  font: x-small "Lucida Grande", "Lucida Sans Unicode", geneva, verdana, sans-serif;
-  font-size: 44px;
-  padding-left: 20px;
-  padding-top: 20px;
-  padding-right: 20px;
-  margin-bottom: 0px;
-}
-
-.currentpage {
- /* color: white;
-  font: x-small "Lucida Grande", "Lucida Sans Unicode", geneva, verdana, sans-serif;
-  font-size: 18px;
-  padding-top: 20px;
-  padding-right: 20px;
-  margin-bottom: 0px;
-  float: left;*/
-  margin: 0 auto 0.5em auto;
-  padding: 5px 5px 5px 50px;
-  background: #cec URL('../images/ok.png') left center no-repeat;
-  border: 1px solid #9c9;
-  width: 400px;
-  font-size: 120%;
-  font-weight: bolder;
-
-}
-
+/* Other and footer */
 #footer {
-  border: 0px solid #aaa;
-  color: #888;
-  background-color: white;
-  padding: 10px;
-  font-size: 90%;
-  text-align: center;
-  width: 600px;
-  margin-left: 40px;
+	background: #fff;
+	padding: 10px;
+	color:#888888;
+	font-size:90%;
 }
-
 .flogo {
-  padding-left: 20px;
-  padding-top: 0px;
-  padding-right: 20px;
-  margin-bottom: 0px;
-  float: left;
+	float:left;
+	margin-bottom:0px;
+	padding-left:20px;
+	padding-right:20px;
+	padding-top:0px;
 }
-
-.foottext{
+.foottext p {
+	margin: 0; padding: 0;
 }
-
 .code {
-  font-family: monospace;
-  font-size: 127%;
+font-family:monospace;
+font-size:127%;
 }
-
 span.code {
-  font-weight: bold;
-  background: #eee;
+background:#EEEEEE none repeat scroll 0% 0%;
+font-weight:bold;
 }
-
-.flash { 
-  margin: 0 auto 0.5em auto;
-  padding: 5px 15px 15px 55px;
-  width: 680px;
-  font-size: 120%;
-  font-weight: bolder;
+.flash {
+font-size:120%;
+font-weight:bolder;
+margin:0pt auto 0.5em;
+padding:5px 15px 15px 55px;
+width:680px;
 }
-
 #status_ok {
-  background: #eef URL('../images/ok.png') left center no-repeat;
-  border: 1px solid #cce;
+background:#EEEEFF url(../images/ok.png) no-repeat scroll left center;
+border:1px solid #CCCCEE;
 }
-
 #status_warning {
-  background: #f99 URL('../images/error.png') left center no-repeat;
-  border: 1px solid #f33;
+background:#FF9999 url(../images/error.png) no-repeat scroll left center;
+border:1px solid #FF3333;
 }
-
 #status_alert {
-  background: #ff9 URL('../images/info.png') left center no-repeat;
-  border: 1px solid #ff0;
+background:#FFFF99 url(../images/info.png) no-repeat scroll left center;
+border:1px solid #FFFF00;
 }
-
 .notice {
-  margin: 0.5em auto 0.5em auto;
-  padding: 15px 10px 15px 55px;
-  width: 680px;
-  background: #eef URL('../images/info.png') left center no-repeat;
-  border: 1px solid #cce;
+background:#EEEEFF url(../images/info.png) no-repeat scroll left center;
+border:1px solid #CCCCEE;
+margin:0.5em auto;
+padding:15px 10px 15px 55px;
+width:680px;
 }
-
 .fielderror {
-    color: red;
-    font-weight: bold;
+color:red;
+font-weight:bold;
 }
-
 div.clearingdiv {
-  clear:both;
+clear:both;
 }

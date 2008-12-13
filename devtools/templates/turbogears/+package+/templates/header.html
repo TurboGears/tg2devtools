@@ -3,17 +3,10 @@
       py:strip="">
 <py:def function="header">
   <div id="header">
-    <div class="alogo">
-      <img src='${tg.url("/images/logo.png")}' alt="TG2!"/>
-    </div>
-    <div class="headtext">
-        Welcome to TurboGears 2
-    </div>
-    <py:if test="defined('page')">
-    <div class="currentpage">
-     Now Viewing: <span py:replace="page"/>
-     </div>
-    </py:if>
+  	<h1>
+  		Welcome to TurboGears 2
+		<span class="subtitle">The Python web metaframework</span>
+	</h1>
   </div>
 </py:def>
 </html>
