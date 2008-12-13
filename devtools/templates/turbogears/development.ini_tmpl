@@ -61,7 +61,7 @@ sqlalchemy.pool_recycle = 3600
 # http://docs.python.org/lib/logging-config-fileformat.html
 
 [loggers]
-keys = root, {{package_logger}}{{if sqlalchemy}}, sqlalchemy{{endif}}
+keys = root, {{package_logger}}{{if sqlalchemy}}, sqlalchemy{{endif}}{{if auth == "sqlalchemy"}}, auth{{endif}}
 
 [handlers]
 keys = console
@@ -88,6 +88,16 @@ qualname = sqlalchemy.engine
 # "level = INFO" logs SQL queries.
 # "level = DEBUG" logs SQL queries and results.
 # "level = WARN" logs neither.  (Recommended for production systems.)
+{{endif}}
+
+{{if auth == "sqlalchemy"}}
+
+# A logger for authentication, identification and authorization -- this is
+# repoze.who and repoze.what:
+[logger_auth]
+level = INFO
+handlers = 
+qualname = auth
 {{endif}}
 
 # If you create additional handlers, add them as a key to [handlers]

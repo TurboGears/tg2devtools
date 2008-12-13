@@ -28,7 +28,7 @@ setup(
         'PEAK-Rules',
         'repoze.tm2',
         'repoze.what',
-        'repoze.who>=1.0.7',
+        'repoze.who>=1.0.8',
         'sqlalchemy-migrate>=0.4.4',
         'SQLAlchemy>=0.5.0beta3',
         'SQLAlchemy>=0.5beta3',
