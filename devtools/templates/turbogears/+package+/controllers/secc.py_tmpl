@@ -14,7 +14,7 @@ class Secc(BaseController):
     """Sample controller-wide authorization"""
 
     # The predicate that must be met for all the actions in this controller:
-    require = has_permission('manage')
+    _require = has_permission('manage')
 
     @expose('{{package}}.templates.index')
     def index(self):
