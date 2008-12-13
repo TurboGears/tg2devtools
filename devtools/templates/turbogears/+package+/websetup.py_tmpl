@@ -26,7 +26,7 @@ def setup_config(command, filename, section, vars):
     u.email_address = u'manager@somedomain.com'
     u.password = u'managepass'
 
-    model.DBSession.save(u)
+    model.DBSession.add(u)
 
     g = model.Group()
     g.group_name = u'managers'
@@ -34,14 +34,14 @@ def setup_config(command, filename, section, vars):
 
     g.users.append(u)
 
-    model.DBSession.save(g)
+    model.DBSession.add(g)
 
     p = model.Permission()
     p.permission_name = u'manage'
     p.description = u'This permission give an administrative right to the bearer'
     p.groups.append(g)
 
-    model.DBSession.save(p)
+    model.DBSession.add(p)
 
     u1 = model.User()
     u1.user_name = u'editor'
@@ -49,7 +49,7 @@ def setup_config(command, filename, section, vars):
     u1.email_address = u'editor@somedomain.com'
     u1.password = u'editpass'
 
-    model.DBSession.save(u1)
+    model.DBSession.add(u1)
     model.DBSession.flush()
     {{endif}}
 

@@ -79,7 +79,7 @@ class ${modelpackage}(Controller):
         #    entry = ${modelname}() #if not mapped
         #    for attr in kw:
         #        setattr(entry, attr, kw[attr])
-        #DBSession.save(entry)
+        #DBSession.add(entry)
         #DBSession.commit()
 
         #dbsprockets
