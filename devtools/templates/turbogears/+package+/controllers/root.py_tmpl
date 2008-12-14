@@ -26,6 +26,11 @@ class RootController(BaseController):
     def about(self):
         return dict(page='about')
 
+    {{if auth == "sqlalchemy"}}
+    @expose('{{package}}.templates.authentication')
+    def auth(self):
+        return dict(page='auth')
+    {{endif}}
 
 {{if auth == "sqlalchemy"}}
     @expose('{{package}}.templates.index')
