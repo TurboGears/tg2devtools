@@ -207,7 +207,7 @@ class User(Entity):
     email_address = Field(Unicode(255), required=True, unique=True)
     display_name = Field(Unicode(255))
     created = Field(DateTime, default=datetime.now)
-    _password = Field(Unicode(40), colname="password", required=True)
+    _password = Field(Unicode(80), colname="password", required=True)
     groups = ManyToMany(
         "Group",
         inverse="users",
