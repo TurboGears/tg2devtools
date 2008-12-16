@@ -82,6 +82,17 @@ ul#mainmenu li.first a:hover, ul#mainmenu li.first a.active {
 	background: url('../images/menu-item-actibg-first.png') left top no-repeat;
 }
 
+ul#mainmenu li.loginlogout
+{
+    float: right;
+    right: 10px;
+}
+
+ul#mainmenu li.loginlogout a:hover
+{
+    background: url('../images/menu-item-border.png') left top no-repeat;
+}
+
 #content {
 	background: #fff url('../images/contentbg.png') left bottom no-repeat;
 	margin : 0 10px;
