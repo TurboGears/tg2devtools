@@ -3,6 +3,16 @@
 from setuptools import setup, find_packages
 import sys, os
 
+test_requirements = ['coverage',
+                    'nose',
+                    'repoze.tm2',
+                    'TurboKid',
+                    'TurboJson',
+                    'zope.sqlalchemy',
+                    'SQLAlchemy>=0.5beta3',
+                    'repoze.what >= 1.0rc1'
+                    ]
+
 setup(
     name='tg.devtools',
     version="2.0b1",
@@ -17,9 +27,6 @@ setup(
     packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
     include_package_data=True,
     zip_safe=False,
-    index=[
-        'http://turbogears.org/2.0/downloads/current',
-    ],
     install_requires=[
         'BeautifulSoup',
         'DBSprockets>=0.5dev-r380',
@@ -57,4 +64,6 @@ setup(
         [turbogears2.template]
         turbogears2=devtools.pastetemplate:TurboGearsTemplate
     ''',
+    test_suite='nose.collector',
+    tests_require = test_requirements,
 )
