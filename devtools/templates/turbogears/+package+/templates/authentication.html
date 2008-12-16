@@ -59,7 +59,7 @@
     </p>
     <p>
     The last kind of protected resource in this quickstarted app is a full so called <a href="${tg.url('/secc')}">secure controller</a>. This controller is protected globally.
-    Instead of having a @require decorator on each method, we have set an _require attribute at the class level. All the methods in this controller will
+    Instead of having a @require decorator on each method, we have set an allow_only attribute at the class level. All the methods in this controller will
     require the same level of access. You need to be manager to access <a href="${tg.url('/secc')}">secc</a> or <a href="${tg.url('/secc/some_where')}">secc/some_where</a>.
     </p>
   </div>
