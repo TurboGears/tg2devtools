@@ -6,8 +6,6 @@ from tg import config
 
 from {{package}}.config.environment import load_environment
 
-from {{package}}.model import DBSession
-
 log = logging.getLogger(__name__)
 
 def setup_app(command, conf, vars):
