@@ -70,7 +70,7 @@ def init_model(engine):
 # Import your model modules here.
 
 {{if auth == "sqlalchemy"}}
-from auth import User, Group, Permission
+from {{package}}.model.auth import User, Group, Permission
 {{endif}}
 
 {{if elixir == "True"}}
