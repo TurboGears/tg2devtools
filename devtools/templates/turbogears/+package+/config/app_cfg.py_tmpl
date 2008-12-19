@@ -18,6 +18,10 @@ base_config.renderers.append('jinja')
 {{elif template_engine == 'genshi'}}
 base_config.default_renderer = 'genshi'
 base_config.renderers.append('genshi') 
+# if you want raw speed and have installed chameleon.genshi
+# you should try to use this renderer instead.
+# warning: for the moment chameleon does not handle i18n translations
+#base_config.renderers.append('chameleon_genshi') 
 {{endif}}
 
 {{if sqlalchemy}}
