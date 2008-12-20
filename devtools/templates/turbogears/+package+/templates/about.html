@@ -31,7 +31,7 @@
         <h3>Design my URL structure</h3>
         <p> The "<span class="code">root.py</span>" file under the 
             <strong>/controllers</strong> folder has your URLs.  When you 
-            called this url (<span class="code"><a href="/about">about</a></span>), 
+            called this url (<span class="code"><a href="${tg.url('/about')}">about</a></span>), 
             the command went through the RootController class to the 
             <span class="code">about</span><span class="code">()</span> method.</p>
         <p> Those Python methods are responsible to create the dictionary of
