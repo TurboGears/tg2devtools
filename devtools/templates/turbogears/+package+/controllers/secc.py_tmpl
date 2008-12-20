@@ -14,7 +14,8 @@ class Secc(BaseController):
     """Sample controller-wide authorization"""
 
     # The predicate that must be met for all the actions in this controller:
-    allow_only = has_permission('manage')
+    allow_only = has_permission('manage',
+                                msg=_('Only for people with the "manage" permission'))
 
     @expose('{{package}}.templates.index')
     def index(self):
