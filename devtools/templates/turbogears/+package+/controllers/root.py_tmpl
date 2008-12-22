@@ -3,18 +3,25 @@ from {{package}}.lib.base import BaseController
 from tg import expose, flash, require
 from pylons.i18n import ugettext as _
 #from tg import redirect, validate
-#from {{package}}.model import DBSession, metadata
-#from dbsprockets.dbmechanic.frameworks.tg2 import DBMechanic
-#from dbsprockets.saprovider import SAProvider
+from {{package}}.model import DBSession, metadata
+from catwalk.tg2 import Catwalk
 
 {{if auth == "sqlalchemy"}}
 from repoze.what import predicates
 from {{package}}.controllers.secc import Secc
+
+class SecuredCatwalk(Catwalk):
+    allow_only = predicates.has_permission('manage',
+                            msg=_('Only for people with the "manage" permission'))
 {{endif}}
 
 class RootController(BaseController):
-    #admin = DBMechanic(SAProvider(metadata), '/admin')
+    {{if auth != "sqlalchemy"}}
+    admin = Catwalk(DBSession, metadata)
+    {{endif}}
     {{if auth == "sqlalchemy"}}
+    admin = SecuredCatwalk(DBSession, metadata)
+
     secc = Secc()
     {{endif}}
 
