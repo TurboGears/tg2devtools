@@ -20,7 +20,7 @@ Usage:
 
     paster quickstart [--version][-h|--help]
             [-p *PACKAGE*][--dry-run][-t|--templates *TEMPLATES*]
-            [-s|--sqlalchemy][-o|--sqlobject][-e|--elixir][-a|--auth]
+            [-s|--sqlalchemy][-o|--sqlobject][-a|--auth]
 
 .. container:: paster-usage
 
@@ -36,8 +36,6 @@ Usage:
       user specific templates
   -s, --sqlalchemy
       use SQLAlchemy as ORM
-  -e, --elixir
-      use Elixir as ORM
   -a, --auth
       provide authentication and authorization support
 """
@@ -81,7 +79,6 @@ or start project with Elixir::
     svn_repository = None
     sqlalchemy = False
     sqlobject = False
-    elixir = False
     auth = False
 
     parser = command.Command.standard_parser(quiet=True)
@@ -91,9 +88,6 @@ or start project with Elixir::
     parser.add_option("-s", "--sqlalchemy",
             help="use SQLAlchemy as ORM",
             action="store_true", dest="sqlalchemy", default = True)
-    parser.add_option("-e", "--elixir",
-            help="use Elixir as ORM.", action="store_true",
-            dest="elixir", default = False)
     parser.add_option("-a", "--auth",
             help="provide authentication and authorization support",
             action="store_true", dest="auth", default = True)
@@ -115,15 +109,8 @@ or start project with Elixir::
         """Quickstarts the new project."""
 
         self.__dict__.update(self.options.__dict__)
-        if not True in [self.elixir, self.sqlalchemy, self.sqlobject]:
+        if not True in [self.sqlalchemy, self.sqlobject]:
             self.sqlalchemy = True
-        if self.elixir:
-            self.sqlalchemy = True
-            try:
-                import elixir
-            except ImportError:
-                print """\nElixir is an optional module for TurboGears2, \
-remember to install Elixir before serving this project.\n"""
 
         if self.args:
             self.name = self.args[0]
@@ -199,7 +186,6 @@ remember to install Elixir before serving this project.\n"""
             cmd_args.append("-q")
         cmd_args.append(self.name)
         cmd_args.append("sqlalchemy=%s" % self.sqlalchemy)
-        cmd_args.append("elixir=%s" % self.elixir)
         cmd_args.append("sqlobject=%s" % self.sqlobject)
         cmd_args.append("auth=%s" % self.auth)
         cmd_args.append("package=%s" % self.package)
@@ -214,9 +200,6 @@ remember to install Elixir before serving this project.\n"""
         if self.sqlalchemy:
             sqlalchemyversion = str(get_requirement('sqlalchemy'))
             cmd_args.append("sqlalchemyversion=%s" % sqlalchemyversion)
-        if self.elixir:
-            elixirversion = str(get_requirement('future', 'elixir'))
-            cmd_args.append("elixirversion=%s" % elixirversion)
         """
         command.run(cmd_args)
 
