@@ -1,6 +1,6 @@
 """Main Controller"""
 from {{package}}.lib.base import BaseController
-from tg import expose, flash, require
+from tg import expose, flash, require, url
 from pylons.i18n import ugettext as _
 #from tg import redirect, validate
 from {{package}}.model import DBSession, metadata
@@ -52,7 +52,7 @@ class RootController(BaseController):
 
     @expose('{{package}}.templates.login')
     def login(self, **kw):
-        came_from = kw.get('came_from', '/')
+        came_from = kw.get('came_from', url('/'))
         return dict(page='login', header=lambda *arg: None,
                     footer=lambda *arg: None, came_from=came_from)
 {{endif}}
