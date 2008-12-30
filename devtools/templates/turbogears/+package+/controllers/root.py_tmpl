@@ -8,7 +8,8 @@ from catwalk.tg2 import Catwalk
 
 {{if auth == "sqlalchemy"}}
 from repoze.what import predicates
-from {{package}}.controllers.secc import Secc
+from {{package}}.controllers.secure import SecureController
+from {{package}}.controllers.error import ErrorController
 
 class SecuredCatwalk(Catwalk):
     allow_only = predicates.has_permission('manage',
@@ -21,9 +22,9 @@ class RootController(BaseController):
     {{endif}}
     {{if auth == "sqlalchemy"}}
     admin = SecuredCatwalk(DBSession, metadata)
-
-    secc = Secc()
+    secc = SecureController()
     {{endif}}
+    error = ErrorController()
 
     @expose('{{package}}.templates.index')
     def index(self):

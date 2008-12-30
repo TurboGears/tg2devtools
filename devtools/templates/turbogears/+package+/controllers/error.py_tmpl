@@ -1,13 +1,13 @@
 import os.path
 
 import paste.fileapp
-from tg import request
+import tg
 from pylons.controllers.util import forward
 from pylons.middleware import error_document_template, media_path
 
 from {{package}}.lib.base import BaseController
 
-class ErrorController(BaseController):
+class ErrorController(object):
     """Generates error documents as and when they are required.
 
     The ErrorDocuments middleware forwards to ErrorController when error
@@ -17,23 +17,27 @@ class ErrorController(BaseController):
     ErrorDocuments middleware in your config/middleware.py file.
     """
 
+    @tg.expose()
     def document(self):
         """Render the error document"""
-        resp = request.environ.get('pylons.original_response')
+        resp = tg.request.environ.get('pylons.original_response')
         page = error_document_template % \
-            dict(prefix=request.environ.get('SCRIPT_NAME', ''),
-                 code=request.params.get('code', resp.status_int),
-                 message=request.params.get('message', resp.body))
+            dict(prefix=tg.request.environ.get('SCRIPT_NAME', ''),
+                 code=tg.request.params.get('code', resp.status_int),
+                 message=tg.request.params.get('message', resp.body))
         return page
 
+    @tg.expose()
     def img(self, id):
         """Serve stock images"""
         return self._serve_file(os.path.join(media_path, 'img', id))
-
+    
+    @tg.expose()
     def style(self, id):
         """Serve stock stylesheets"""
         return self._serve_file(os.path.join(media_path, 'style', id))
-
+        
+    @tg.expose()
     def _serve_file(self, path):
         """Call Paste's FileApp (a WSGI application) to serve the file
         at the specified path
