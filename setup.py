@@ -15,7 +15,7 @@ test_requirements = ['coverage',
 
 setup(
     name='tg.devtools',
-    version="2.0b1",
+    version="2.0b2",
     description="",
     long_description="""""",
     classifiers=[],
