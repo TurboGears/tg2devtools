@@ -37,7 +37,7 @@ beaker.session.secret = somesecret
 # %(here) may include a ':' character on Windows environments; this can
 # invalidate the URI when specifying a SQLite db via path name
 {{if sqlalchemy}}
-# sqlalchemy.url=postgres://username:password:port@hostname/databasename 
+# sqlalchemy.url=postgres://username:password@hostname:port/databasename 
 # sqlalchemy.url=mysql://username:password@hostname:port/databasename
 
 
