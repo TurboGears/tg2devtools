@@ -17,13 +17,13 @@ class SecuredCatwalk(Catwalk):
 {{endif}}
 
 class RootController(BaseController):
-    {{if auth != "sqlalchemy"}}
+{{if auth != "sqlalchemy"}}
     admin = Catwalk(DBSession, metadata)
     {{endif}}
     {{if auth == "sqlalchemy"}}
     admin = SecuredCatwalk(DBSession, metadata)
     secc = SecureController()
-    {{endif}}
+{{endif}}
     error = ErrorController()
 
     @expose('{{package}}.templates.index')
