@@ -1,0 +1,3 @@
+recursive-include {{package}}/public *
+recursive-include {{package}}/i18n *
+recursive-include {{package}}/templates *
