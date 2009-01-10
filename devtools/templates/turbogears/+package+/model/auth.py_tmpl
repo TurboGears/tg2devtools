@@ -65,10 +65,10 @@ class User(DeclarativeBase):
     user_id = Column(Integer, autoincrement=True, primary_key=True)
     user_name = Column(Unicode(16), unique=True)
     email_address = Column(Unicode(255), unique=True,
-                           info={'rum': {'field':'Email'} })
+                           info={'rum': {'field':'Email'{{end_braces}})
     display_name = Column(Unicode(255))
     _password = Column('password', Unicode(40),
-                       info={'rum': {'field':'Password'} })
+                       info={'rum': {'field':'Password'{{end_braces}})
     created = Column(DateTime, default=datetime.now)
 
     def __repr__(self):
