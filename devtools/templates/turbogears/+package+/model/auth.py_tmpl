@@ -67,7 +67,7 @@ class User(DeclarativeBase):
     email_address = Column(Unicode(255), unique=True,
                            info={'rum': {'field':'Email'{{end_braces}})
     display_name = Column(Unicode(255))
-    _password = Column('password', Unicode(40),
+    _password = Column('password', Unicode(80),
                        info={'rum': {'field':'Password'{{end_braces}})
     created = Column(DateTime, default=datetime.now)
 
@@ -171,6 +171,7 @@ class User(DeclarativeBase):
             hashed_pass.update(password + self.password[:40])
             
             return self.password[40:] == hashed_pass.hexdigest()
+
         else:
             return self.password == self.__encrypt_password(algorithm, password)
 
