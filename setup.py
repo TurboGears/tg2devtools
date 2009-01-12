@@ -28,27 +28,29 @@ setup(
     include_package_data=True,
     zip_safe=False,
     install_requires=[
+        'Pylons>=0.9.7beta5',
         'Catwalk',
+        'TurboGears2',
+        
         'sprox',
         'BeautifulSoup',
+        'beaker>=1.1.3',
         'FormEncode>=1.2',
         'Paste>=1.7',
         'PEAK-Rules',
         'repoze.tm2',
         'repoze.what',
         'repoze.who>=1.0.8',
+        'routes>=1.10.2',
         'sqlalchemy-migrate>=0.4.4',
         'SQLAlchemy>=0.5.0beta3',
         'SQLAlchemy>=0.5beta3',
         'ToscaWidgets>=0.9',
-        'TurboGears2',
         'TurboJson',
         'tw.forms>=0.9.2',
         'WebTest',
         'wsgiref==0.1.2',
         'zope.sqlalchemy',
-
-        'Pylons>=0.9.7beta5',
     ],
     entry_points='''
         [paste.global_paster_command]
