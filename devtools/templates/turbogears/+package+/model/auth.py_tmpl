@@ -1,5 +1,9 @@
 {{if auth == "sqlalchemy"}}
-from hashlib import sha1
+import sys
+try:
+    from hashlib import sha1
+except ImportError:
+    sys.exit('ImportError: no module named hashlib\nIf you are on python2.4 this library is not part of python. Please install it. Example: easy_install hashlib')
 import os
 import md5
 import sha
