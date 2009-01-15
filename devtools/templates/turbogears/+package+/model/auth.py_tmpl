@@ -44,7 +44,7 @@ class Group(DeclarativeBase):
     __tablename__ = 'tg_group'
 
     group_id = Column(Integer, autoincrement=True, primary_key=True)
-    group_name = Column(Unicode(16), unique=True)
+    group_name = Column(Unicode(16), unique=True, nullable=False)
     display_name = Column(Unicode(255))
     created = Column(DateTime, default=datetime.now)
     users = relation('User', secondary=user_group_table, backref='groups')
@@ -67,8 +67,8 @@ class User(DeclarativeBase):
     __tablename__ = 'tg_user'
 
     user_id = Column(Integer, autoincrement=True, primary_key=True)
-    user_name = Column(Unicode(16), unique=True)
-    email_address = Column(Unicode(255), unique=True,
+    user_name = Column(Unicode(16), unique=True, nullable=False)
+    email_address = Column(Unicode(255), unique=True, nullable=False,
                            info={'rum': {'field':'Email'{{end_braces}})
     display_name = Column(Unicode(255))
     _password = Column('password', Unicode(80),
@@ -186,7 +186,7 @@ class Permission(DeclarativeBase):
     __tablename__ = 'tg_permission'
 
     permission_id = Column(Integer, autoincrement=True, primary_key=True)
-    permission_name = Column(Unicode(16), unique=True)
+    permission_name = Column(Unicode(16), unique=True, nullable=False)
     description = Column(Unicode(255))
     groups = relation(Group, secondary=group_permission_table,
                       backref='permissions')
