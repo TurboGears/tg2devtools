@@ -79,7 +79,7 @@ or start project with Elixir::
     svn_repository = None
     sqlalchemy = False
     sqlobject = False
-    auth = False
+    auth = None
 
     parser = command.Command.standard_parser(quiet=True)
     parser = optparse.OptionParser(
@@ -87,19 +87,19 @@ or start project with Elixir::
                     version="%prog " + version)
     parser.add_option("-s", "--sqlalchemy",
             help="use SQLAlchemy as ORM",
-            action="store_true", dest="sqlalchemy", default = True)
+            action="store_true", dest="sqlalchemy", default=True)
     parser.add_option("-a", "--auth",
-            help="provide authentication and authorization support",
-            action="store_true", dest="auth", default = True)
+            help='add authentication and authorization support ("yes" or "no")',
+            dest="auth")
     parser.add_option("-p", "--package",
             help="package name for the code",
             dest="package")
     parser.add_option("-t", "--templates",
             help="user specific templates",
-            dest="templates", default = templates)
+            dest="templates", default=templates)
     parser.add_option("-r", "--svn-repository", metavar="REPOS",
             help="create project in given SVN repository",
-            dest="svn_repository", default = svn_repository)
+            dest="svn_repository", default=svn_repository)
     parser.add_option("--dry-run",
             help="dry run (don't actually do anything)",
             action="store_true", dest="dry_run")
@@ -126,19 +126,25 @@ or start project with Elixir::
             if not self.package:
                 self.package = package
 
+        # Finding whether the user wants authentication and authorization
+        # support:
         doauth = None
-        while not doauth:
+        if self.auth is not None:
+            if self.auth.lower().startswith("y"):
+                doauth = True
+            elif self.auth.lower().startswith("n"):
+                doauth = False
+        while doauth is None:
             doauth = raw_input("Do you need authentication and authorization "
                                "in this project? [yes] ")
             doauth = doauth.lower()
             if not doauth or doauth.startswith("y"):
                 doauth = True
-                break
-            if doauth.startswith('n'):
-                self.auth = False
-                break
-            print "Please enter y(es) or n(o)."
-            doauth = None
+            elif doauth.startswith('n'):
+                doauth = False
+            else:
+                print "Please enter y(es) or n(o)."
+                doauth = None
 
         if doauth is True:
             if self.sqlalchemy:
@@ -146,13 +152,15 @@ or start project with Elixir::
             else:
                 print 'You can only use authentication and authorization ' \
                       'in a new project if you use SQLAlchemy. Please check ' \
-                      'the documentation of repoze.what to learn ' \
+                      'the repoze.what documentation to learn ' \
                       'how to implement authentication/authorization with ' \
                       'other sources.'
                 return
                 # TODO: As far as I know, SQLObject has never been supported in
                 # TG2
                 # self.auth = "sqlobject"
+        else:
+            self.auth = False
 
         self.name = pkg_resources.safe_name(self.name)
 
