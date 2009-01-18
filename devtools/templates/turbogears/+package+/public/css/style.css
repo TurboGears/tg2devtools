@@ -270,22 +270,24 @@ span.code {
 background:#EEEEEE none repeat scroll 0% 0%;
 font-weight:bold;
 }
-.flash {
+#flash {
 font-size:120%;
 font-weight:bolder;
 margin:0pt auto 0.5em;
-padding:5px 15px 15px 55px;
 width:680px;
 }
-#status_ok {
+#flash div {
+padding:5px 15px 15px 55px;
+}
+#flash .ok {
 background:#EEEEFF url(../images/ok.png) no-repeat scroll left center;
 border:1px solid #CCCCEE;
 }
-#status_warning {
+#flash .warning {
 background:#FF9999 url(../images/error.png) no-repeat scroll left center;
 border:1px solid #FF3333;
 }
-#status_alert {
+#flash .alert {
 background:#FFFF99 url(../images/info.png) no-repeat scroll left center;
 border:1px solid #FFFF00;
 }

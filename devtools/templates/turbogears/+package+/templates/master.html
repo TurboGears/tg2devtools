@@ -33,9 +33,7 @@
      Now Viewing: <span py:replace="page"/>
      </div>
     </py:if>
-    <div id="${tg.flash_status}" py:if="tg.flash" class="flash"
-     py:content="tg.flash">
-    </div>
+    ${XML(tg.flash_obj.render('flash', use_js=False))}
     <div py:replace="select('*|text()')"/>
     <!-- End of main_content -->
     ${footer()}
