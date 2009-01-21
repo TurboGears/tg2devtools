@@ -10,12 +10,12 @@ test_requirements = ['coverage',
                     'TurboJson',
                     'zope.sqlalchemy',
                     'SQLAlchemy>=0.5beta3',
-                    'repoze.what >= 1.0rc1'
+                    'repoze.what'
                     ]
 
 setup(
     name='tg.devtools',
-    version="2.0b3",
+    version="2.0b4",
     description="",
     long_description="""""",
     classifiers=[],
@@ -39,7 +39,7 @@ setup(
         'Paste>=1.7',
         'PEAK-Rules',
         'repoze.tm2',
-        'repoze.what',
+        'repoze.what >= 1.0.1',
         'repoze.who>=1.0.8',
         'Routes>=1.10.2',
         'sqlalchemy-migrate>=0.4.4',
