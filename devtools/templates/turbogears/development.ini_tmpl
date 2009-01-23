@@ -45,7 +45,8 @@ beaker.session.secret = somesecret
 # in development
 
 sqlalchemy.url = sqlite:///%(here)s/devdata.db
-sqlalchemy.echo = true
+#echo shouldn't be used together with the logging module.
+sqlalchemy.echo = false
 sqlalchemy.echo_pool = false
 sqlalchemy.pool_recycle = 3600
 {{endif}}
