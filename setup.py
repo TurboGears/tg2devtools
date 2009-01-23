@@ -39,7 +39,7 @@ setup(
         'Paste>=1.7',
         'PEAK-Rules',
         'repoze.tm2',
-        'repoze.what >= 1.0.1',
+        'repoze.what >= 1.0.2',
         'repoze.who>=1.0.8',
         'Routes>=1.10.2',
         'sqlalchemy-migrate>=0.4.4',
