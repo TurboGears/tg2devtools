@@ -31,7 +31,7 @@ setup(
         'Pylons>=0.9.7beta5',
         'Catwalk',
         'TurboGears2>=2.0b3',
-        
+
         'sprox',
         'BeautifulSoup',
         'Beaker>=1.1.3',
@@ -39,8 +39,8 @@ setup(
         'Paste>=1.7',
         'PEAK-Rules',
         'repoze.tm2',
-        'repoze.what >= 1.0.2',
-        'repoze.who>=1.0.8',
+        'repoze.what >= 1.0.3',
+        'repoze.who >= 1.0.10',
         'Routes>=1.10.2',
         'sqlalchemy-migrate>=0.4.4',
         'SQLAlchemy>=0.5.0beta3',
