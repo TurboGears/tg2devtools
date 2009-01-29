@@ -51,6 +51,7 @@ def setup():
                 'package': 'TGTest',
                 'project': 'tgtest',
                 'egg': 'tgtest',
+                 'egg_plugins': ['PasteScript', 'Pylons', 'TurboGears2', 'tg.devtools'],
                 'sqlalchemy': True,
                 'sqlobject': False,
                 'elixir': False,
@@ -70,12 +71,13 @@ def test_app_runs_index():
     resp = app.get('/')
     s =  resp.body
     print s
-    assert """<h2>Getting help</h2>
+    assert """<h2>Get Started with TG2</h2>
       <ul class="links">
-        <li><a href="http://docs.turbogears.org/2.0">Documentation</a></li>
-        <li><a href="http://docs.turbogears.org/2.0/API">API Reference</a></li>
-        <li><a href="http://trac.turbogears.org/turbogears/">Bug Tracker</a></li>
-        <li><a href="http://groups.google.com/group/turbogears">Mailing
-        List</a></li>
+        <li>
+          <span><a href="/about">About this page</a> A quick guide to this TG2 site </span>
+        </li>
+        <li><a href="http://www.turbogears.org/2.0/docs/">TG2 Documents</a> - Read everything in the Getting Started section</li>
+        <li><a href="http://docs.turbogears.org/1.0">TG1 docs</a> (still useful, although a lot has changed for TG2) </li>
+        <li><a href="http://groups.google.com/group/turbogears"> Join the TG Mail List</a> for general TG use/topics  </li>
       </ul>""" in s, s
 
