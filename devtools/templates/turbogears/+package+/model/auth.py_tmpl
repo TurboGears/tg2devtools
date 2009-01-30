@@ -9,7 +9,6 @@ import md5
 import sha
 from datetime import datetime
 
-from tg import config
 from sqlalchemy import Table, ForeignKey, Column
 from sqlalchemy.types import String, Unicode, UnicodeText, Integer, DateTime, \
                              Boolean, Float
@@ -149,16 +148,11 @@ class User(DeclarativeBase):
         return hashed_password
 
     def get_encryption_method(self):
-        """returns the encryption method from the config
+        """Return the hashing algorithm for the passwords.
         If None is set, or auth is disabled this will return None
         """
-        auth_system = config.get('sa_auth', None)
-        if auth_system is None:
-            # if auth is not activated in the config we should warn
-            # the admin through the logs... and return None
-            return None
-
-        return auth_system.get('password_encryption_method', None)
+        # The out-of-the-box alternatives are: salted_sha1, sha1 and md5
+        return 'salted_sha1'
 
     def validate_password(self, password):
         """Check the password against existing credentials.
