@@ -10,7 +10,7 @@ test_requirements = ['coverage',
                     'TurboJson',
                     'zope.sqlalchemy',
                     'SQLAlchemy>=0.5beta3',
-                    'repoze.what'
+                    'repoze.what-quickstart'
                     ]
 
 setup(
@@ -39,7 +39,7 @@ setup(
         'Paste>=1.7',
         'PEAK-Rules',
         'repoze.tm2',
-        'repoze.what >= 1.0.3',
+        'repoze.what-quickstart',
         'repoze.who >= 1.0.10',
         'Routes>=1.10.2',
         'sqlalchemy-migrate>=0.4.4',
