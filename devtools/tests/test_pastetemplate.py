@@ -38,6 +38,7 @@ def setup():
     command.args.append("elixir=%s" % False)
     command.args.append("sqlobject=%s" % False)
     command.args.append("auth=%s" % False)
+    command.args.append("geo=%s" % False)
 
     print command
 
@@ -51,11 +52,12 @@ def setup():
                 'package': 'TGTest',
                 'project': 'tgtest',
                 'egg': 'tgtest',
-                 'egg_plugins': ['PasteScript', 'Pylons', 'TurboGears2', 'tg.devtools'],
+                'egg_plugins': ['PasteScript', 'Pylons', 'TurboGears2', 'tg.devtools'],
                 'sqlalchemy': True,
                 'sqlobject': False,
                 'elixir': False,
-                'auth': False
+                'auth': False,
+                'geo': False
             })
 
     command.command()

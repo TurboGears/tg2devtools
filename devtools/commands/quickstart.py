@@ -20,7 +20,7 @@ Usage:
 
     paster quickstart [--version][-h|--help]
             [-p *PACKAGE*][--dry-run][-t|--templates *TEMPLATES*]
-            [-s|--sqlalchemy][-o|--sqlobject][-a|--auth]
+            [-s|--sqlalchemy][-o|--sqlobject][-a|--auth][-g|--geo]
 
 .. container:: paster-usage
 
@@ -38,6 +38,8 @@ Usage:
       use SQLAlchemy as ORM
   -a, --auth
       provide authentication and authorization support
+  -g, --geo
+      add GIS support
 """
 
 import pkg_resources
@@ -80,6 +82,7 @@ or start project with Elixir::
     sqlalchemy = False
     sqlobject = False
     auth = None
+    geo = False
 
     parser = command.Command.standard_parser(quiet=True)
     parser = optparse.OptionParser(
@@ -97,6 +100,9 @@ or start project with Elixir::
     parser.add_option("-t", "--templates",
             help="user specific templates",
             dest="templates", default=templates)
+    parser.add_option("-g", "--geo",
+            help="add GIS support",
+            action="store_true", dest="geo", default=False)
     parser.add_option("-r", "--svn-repository", metavar="REPOS",
             help="create project in given SVN repository",
             dest="svn_repository", default=svn_repository)
@@ -196,6 +202,7 @@ or start project with Elixir::
         cmd_args.append("sqlalchemy=%s" % self.sqlalchemy)
         cmd_args.append("sqlobject=%s" % self.sqlobject)
         cmd_args.append("auth=%s" % self.auth)
+        cmd_args.append("geo=%s" % self.geo)
         cmd_args.append("package=%s" % self.package)
         cmd_args.append("tgversion=%s"%self.version)
         # set the exact ORM-version for the proper requirements

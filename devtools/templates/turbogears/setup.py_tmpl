@@ -18,6 +18,9 @@ setup(
         {{if sqlalchemy}}
         "zope.sqlalchemy",
         {{endif}}
+        {{if geo == "True"}}
+        "tgext.geo",
+        {{endif}}
         ],
     setup_requires=["PasteScript>=1.6.3"],
     paster_plugins={{egg_plugins}},

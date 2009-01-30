@@ -30,3 +30,8 @@ class TurboGearsTemplate(templates.Template):
                                                                  ' ' * 8)
         else:
             vars['babel_templates_extractor'] = ''
+
+        if vars['geo'] == 'True':
+            # Add tgext.geo as paster plugin
+            vars['egg_plugins'].append('tgext.geo')
+
