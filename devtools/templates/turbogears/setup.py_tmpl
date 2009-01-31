@@ -18,6 +18,9 @@ setup(
         {{if sqlalchemy}}
         "zope.sqlalchemy",
         {{endif}}
+        {{if auth == "sqlalchemy"}}
+        "repoze.what-quickstart",
+        {{endif}}
         {{if geo == "True"}}
         "tgext.geo",
         {{endif}}
