@@ -12,6 +12,7 @@ test_requirements = ['coverage',
                     'SQLAlchemy>=0.5beta3',
                     'repoze.what-quickstart'
                     ]
+                    
 install_requirements = ['Pylons>=0.9.7beta5',
                         'Catwalk',
                         'TurboGears2>=2.0b3',
@@ -36,7 +37,7 @@ install_requirements = ['Pylons>=0.9.7beta5',
                         'WebOb',
                         'wsgiref==0.1.2',
                         'zope.sqlalchemy',
-                    ],
+                    ]
 
 if sys.version_info[:2] == (2,4):
    install_requires += ["pysqlite"]
