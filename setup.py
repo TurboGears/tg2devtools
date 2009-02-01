@@ -61,11 +61,9 @@ setup(
         [paste.global_paster_command]
         quickstart = devtools.commands.quickstart:QuickstartCommand
         [paste.paster_command]
-        crud = devtools.commands.crud:CrudCommand
         migrate = devtools.commands.migration:MigrateCommand
         [turbogears2.command]
         quickstart = devtools.commands.quickstart:QuickstartCommand
-        crud = devtools.commands.crud:CrudCommand
         migrate = devtools.commands.migration:MigrateCommand
         [paste.paster_create_template]
         turbogears2=devtools.pastetemplate:TurboGearsTemplate
