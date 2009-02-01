@@ -4,7 +4,10 @@
 # The %(here)s variable will be replaced with the parent directory of this file
 #
 [DEFAULT]
-debug = true
+# WARGING == If debug is not set to false, you'll get the interactive
+# debugger on production, which is a huge security hole. 
+
+debug = false
 email_to = you@yourdomain.com
 smtp_server = localhost
 error_email_from = paste@localhost
@@ -37,21 +40,18 @@ sqlalchemy.url = sqlite:///%(here)s/somedb.db
 sqlalchemy.echo = False
 {{endif}}
 
-{{if sqlobject}}
-# Specify the database for SQLObject to use.
-#sqlobject.dburi = sqlite://%(here)s/somedb.db
-{{endif}}
-
 # WARNING: *THE LINE BELOW MUST BE UNCOMMENTED ON A PRODUCTION ENVIRONMENT*
 # Debug mode will enable the interactive debugging tool, allowing ANYONE to
 # execute malicious code after an exception is raised.
-set debug = false
+#set debug = false
 
 # Logging configuration
+# Add additional loggers, handlers, formatters here
 # Uses python's logging config file format
 # http://docs.python.org/lib/logging-config-fileformat.html
+
 [loggers]
-keys = root
+keys = root, {{package_logger}}{{if sqlalchemy}}, sqlalchemy{{endif}}{{if auth == "sqlalchemy"}}, auth{{endif}}
 
 [handlers]
 keys = console
@@ -59,15 +59,45 @@ keys = console
 [formatters]
 keys = generic
 
+# If you create additional loggers, add them as a key to [loggers]
 [logger_root]
 level = INFO
 handlers = console
 
+[logger_{{package_logger}}]
+level = INFO
+handlers =
+qualname = {{package_logger}}
+
+{{if sqlalchemy}}
+
+[logger_sqlalchemy]
+level = WARN
+handlers =
+qualname = sqlalchemy.engine
+# "level = INFO" logs SQL queries.
+# "level = DEBUG" logs SQL queries and results.
+# "level = WARN" logs neither.  (Recommended for production systems.)
+{{endif}}
+
+{{if auth == "sqlalchemy"}}
+
+# A logger for authentication, identification and authorization -- this is
+# repoze.who and repoze.what:
+[logger_auth]
+level = WARN
+handlers = 
+qualname = auth
+{{endif}}
+
+# If you create additional handlers, add them as a key to [handlers]
 [handler_console]
 class = StreamHandler
 args = (sys.stderr,)
 level = NOTSET
 formatter = generic
 
+# If you create additional formatters, add them as a key to [formatters]
 [formatter_generic]
-format = %(asctime)s %(levelname)-5.5s [%(name)s]  %(message)s
+format = %(asctime)s,%(msecs)03d %(levelname)-5.5s [%(name)s] %(message)s
+datefmt = %H:%M:%S
