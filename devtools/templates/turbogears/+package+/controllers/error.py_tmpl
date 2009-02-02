@@ -17,15 +17,16 @@ class ErrorController(object):
     ErrorDocuments middleware in your config/middleware.py file.
     """
 
-    @tg.expose()
-    def document(self):
+    @tg.expose('{{package}}.templates.error')
+    def document(self, *args, **kwargs):
         """Render the error document"""
         resp = tg.request.environ.get('pylons.original_response')
-        page = error_document_template % \
-            dict(prefix=tg.request.environ.get('SCRIPT_NAME', ''),
+        default_message = "<p>We're sorry but we weren't able to process "
+        " this request.</p>"
+        values = dict(prefix=tg.request.environ.get('SCRIPT_NAME', ''),
                  code=tg.request.params.get('code', resp.status_int),
-                 message=tg.request.params.get('message', resp.body))
-        return page
+                 message=tg.request.params.get('message', ))
+        return values
 
     @tg.expose()
     def img(self, id):
