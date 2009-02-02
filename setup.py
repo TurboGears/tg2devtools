@@ -56,7 +56,7 @@ setup(
     packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
     include_package_data=True,
     zip_safe=False,
-    install_requires = install_requirements
+    install_requires = install_requirements,
     entry_points='''
         [paste.global_paster_command]
         quickstart = devtools.commands.quickstart:QuickstartCommand

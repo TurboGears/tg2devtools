@@ -5,24 +5,20 @@ from pylons.i18n import ugettext as _
 #from tg import redirect, validate
 from {{package}}.model import DBSession, metadata
 from {{package}}.controllers.error import ErrorController
-from catwalk.tg2 import Catwalk
 
 {{if auth == "sqlalchemy"}}
+from {{package}} import model
+from catwalk.tg2 import Catwalk
 from repoze.what import predicates
 from {{package}}.controllers.secure import SecureController
-
-class SecuredCatwalk(Catwalk):
-    allow_only = predicates.has_permission('manage',
-                            msg=_('Only for people with the "manage" permission'))
 {{endif}}
 
 class RootController(BaseController):
 {{if auth != "sqlalchemy"}}
-    admin = Catwalk(DBSession, metadata)
+    secc = SecureController()
 {{endif}}
 {{if auth == "sqlalchemy"}}
-    admin = SecuredCatwalk(DBSession, metadata)
-    secc = SecureController()
+    admin = Catwalk(model, DBSession)
 {{endif}}
     error = ErrorController()
 

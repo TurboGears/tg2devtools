@@ -96,7 +96,7 @@ qualname = sqlalchemy.engine
 # A logger for authentication, identification and authorization -- this is
 # repoze.who and repoze.what:
 [logger_auth]
-level = INFO
+level = WARN
 handlers = 
 qualname = auth
 {{endif}}
