@@ -59,10 +59,11 @@ def setup():
                 'auth': False,
                 'geo': False
             })
-
+    print "FSFSFSDFSDFSDFOSIDUGOSFG"
     command.command()
     
     pkg_resources.working_set.add_entry(proj_dir)
+    print proj_dir
     app = loadapp('config:development.ini', relative_to=proj_dir)
     app = TestApp(app)
 

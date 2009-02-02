@@ -21,11 +21,11 @@ class ErrorController(object):
     def document(self, *args, **kwargs):
         """Render the error document"""
         resp = tg.request.environ.get('pylons.original_response')
-        default_message = "<p>We're sorry but we weren't able to process "
-        " this request.</p>"
+        default_message = ("<p>We're sorry but we weren't able to process "
+        " this request.</p>")
         values = dict(prefix=tg.request.environ.get('SCRIPT_NAME', ''),
                  code=tg.request.params.get('code', resp.status_int),
-                 message=tg.request.params.get('message', ))
+                 message=tg.request.params.get('message', default_message))
         return values
 
     @tg.expose()
