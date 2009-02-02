@@ -27,20 +27,3 @@ class ErrorController(object):
                  code=tg.request.params.get('code', resp.status_int),
                  message=tg.request.params.get('message', default_message))
         return values
-
-    @tg.expose()
-    def img(self, id):
-        """Serve stock images"""
-        return self._serve_file(os.path.join(media_path, 'img', id))
-    
-    @tg.expose()
-    def style(self, id):
-        """Serve stock stylesheets"""
-        return self._serve_file(os.path.join(media_path, 'style', id))
-        
-    @tg.expose()
-    def _serve_file(self, path):
-        """Call Paste's FileApp (a WSGI application) to serve the file
-        at the specified path
-        """
-        return forward(paste.fileapp.FileApp(path))
