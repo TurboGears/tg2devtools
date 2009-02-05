@@ -41,7 +41,7 @@ install_requirements = ['Pylons>=0.9.7beta5',
                     ]
 
 if sys.version_info[:2] == (2,4):
-   install_requires += ["pysqlite"]
+   install_requirements += ["pysqlite"]
 
 setup(
     name='tg.devtools',
