@@ -14,10 +14,8 @@ from {{package}}.controllers.secure import SecureController
 {{endif}}
 
 class RootController(BaseController):
-{{if auth != "sqlalchemy"}}
-    secc = SecureController()
-{{endif}}
 {{if auth == "sqlalchemy"}}
+    secc = SecureController()
     admin = Catwalk(model, DBSession)
 {{endif}}
     error = ErrorController()
