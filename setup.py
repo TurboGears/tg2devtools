@@ -45,7 +45,7 @@ if sys.version_info[:2] == (2,4):
 
 setup(
     name='tg.devtools',
-    version="2.0b5",
+    version="2.0b5.1",
     description="",
     long_description="""""",
     classifiers=[],
