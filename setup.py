@@ -40,9 +40,6 @@ install_requirements = ['Pylons>=0.9.7beta5',
                         'zope.sqlalchemy',
                     ]
 
-if sys.version_info[:2] == (2,4):
-   install_requirements += ["pysqlite"]
-
 setup(
     name='tg.devtools',
     version="2.0b5.1",
