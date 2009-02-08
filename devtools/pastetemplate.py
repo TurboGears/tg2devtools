@@ -10,6 +10,11 @@ class TurboGearsTemplate(templates.Template):
     template_renderer = staticmethod(paste_script_template_renderer)
     summary = 'TurboGears 2.0 Standard Quickstart Template'
     egg_plugins = ['PasteScript', 'Pylons', 'TurboGears2', 'tg.devtools']
+    vars = [
+        templates.var('sqlalchemy', 'use SQLAlchemy as ORM', default=True),
+        templates.var('auth', 'use authentication and authorization support', default="sqlalchemy"),
+        templates.var('geo', 'Include GIS support (True/False)', default='False'),
+    ]
 
     def pre(self, command, output_dir, vars):
         """Called before template is applied."""
