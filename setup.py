@@ -12,7 +12,7 @@ test_requirements = ['coverage',
                     'SQLAlchemy>=0.5beta3',
                     'repoze.what-quickstart'
                     ]
-                    
+
 install_requirements = ['Pylons>=0.9.7beta5',
                         'Catwalk',
                         'TurboGears2>=2.0b3',
@@ -24,7 +24,7 @@ install_requirements = ['Pylons>=0.9.7beta5',
                         'Paste>=1.7',
                         'PEAK-Rules',
                         'repoze.tm2',
-                        'repoze.what-quickstart',
+                        'repoze.what-quickstart >= 1.0rc2',
                         'repoze.who >= 1.0.10',
                         'Routes>=1.10.2',
                         'sqlalchemy-migrate>=0.4.4',
