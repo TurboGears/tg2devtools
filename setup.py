@@ -13,31 +13,11 @@ test_requirements = ['coverage',
                     'repoze.what-quickstart'
                     ]
 
-install_requirements = ['Pylons>=0.9.7beta5',
-                        'Catwalk',
-                        'TurboGears2>=2.0b3',
-
-                        'sprox',
-                        'BeautifulSoup',
-                        'Beaker>=1.1.3',
-                        'FormEncode>=1.2',
-                        'Paste>=1.7',
-                        'PEAK-Rules',
-                        'repoze.tm2',
-                        'repoze.what-quickstart >= 1.0rc2',
-                        'repoze.who >= 1.0.10',
-                        'Routes>=1.10.2',
+install_requirements = [
+                        'TurboGears2>=2.0b5',
                         'sqlalchemy-migrate>=0.4.4',
-                        'SQLAlchemy>=0.5.0beta3',
-                        'SQLAlchemy>=0.5beta3',
-                        'ToscaWidgets>=0.9',
-                        'TurboJson',
-                        'tgext.crud',
-                        'tw.forms>=0.9.2',
-                        'WebTest',
-                        'WebOb',
-                        'wsgiref==0.1.2',
-                        'zope.sqlalchemy',
+                        'SQLAlchemy>=0.5',
+                   	'repoze.what-quickstart >= 1.0rc2'
                     ]
 
 setup(

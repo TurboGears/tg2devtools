@@ -14,7 +14,7 @@ setup(
     #url='',
     install_requires=[
         "TurboGears2",
-        "ToscaWidgets >= 0.9.1",
+	"Catwalk",
         {{if sqlalchemy}}
         "zope.sqlalchemy",
         {{endif}}
