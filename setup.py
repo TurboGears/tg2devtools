@@ -17,8 +17,8 @@ install_requirements = [
                         'TurboGears2>=2.0b5',
                         'sqlalchemy-migrate>=0.4.4',
                         'SQLAlchemy>=0.5',
-                   	'repoze.what-quickstart >= 1.0rc2'
-                    ]
+                   	    'repoze.what-quickstart >= 1.0rc2'
+                        ]
 
 setup(
     name='tg.devtools',
