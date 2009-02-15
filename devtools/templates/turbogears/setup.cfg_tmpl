@@ -18,6 +18,7 @@ statistics = true
 add_comments = TRANSLATORS:
 output_file = {{package}}/i18n/{{package}}.pot
 width = 80
+keywords = l_
 
 [init_catalog]
 domain = {{package}}
