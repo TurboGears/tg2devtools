@@ -51,6 +51,18 @@ sqlalchemy.echo_pool = false
 sqlalchemy.pool_recycle = 3600
 {{endif}}
 
+# if you are using Mako and want to be able to reload
+# the mako template from disk during the development phase
+# you should say 'true' here
+# This option is only used for mako templating engine
+# WARNING: if you want to deploy your application using a zipped egg
+# (ie: if your application's setup.py defines zip-safe=True, then you
+# MUST put "false" for the production environment because there will
+# be no disk and real files to compare time with.
+# On the contrary if your application defines zip-safe=False and is
+# deployed in an unzipped manner, then you can leave this option to true
+templating.mako.reloadfromdisk = true
+
 # WARNING: *THE LINE BELOW MUST BE UNCOMMENTED ON A PRODUCTION ENVIRONMENT*
 # Debug mode will enable the interactive debugging tool, allowing ANYONE to
 # execute malicious code after an exception is raised.
