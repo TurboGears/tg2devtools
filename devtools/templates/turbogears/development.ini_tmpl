@@ -63,6 +63,16 @@ sqlalchemy.pool_recycle = 3600
 # deployed in an unzipped manner, then you can leave this option to true
 templating.mako.reloadfromdisk = true
 
+# the compiled template dir is a directory that must be readable by your
+# webserver. It will be used to store the resulting templates once compiled
+# by the TemplateLookup system.
+# During development you generally don't need this option since paste's HTTP
+# server will have access to you development directories, but in production
+# you'll most certainly want to have apache or nginx to write in a directory
+# that does not contain any source code in any form for obvious security reasons.
+#
+#templating.mako.compiled_templates_dir = /some/dir/where/webserver/has/access
+
 # WARNING: *THE LINE BELOW MUST BE UNCOMMENTED ON A PRODUCTION ENVIRONMENT*
 # Debug mode will enable the interactive debugging tool, allowing ANYONE to
 # execute malicious code after an exception is raised.
