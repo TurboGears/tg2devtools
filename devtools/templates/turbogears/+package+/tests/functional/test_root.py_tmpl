@@ -19,3 +19,9 @@ class TestRootController(TestController):
         # first run $ easy_install BeautifulSoup and then run this test 
         links = response.html.findAll('a')
         assert_true(links, "Mummy, there are no links here!")
+
+{{if auth == 'sqlalchemy'}}
+    def test_secc(self):
+        response = self.app.get('/secc')
+        assert 'login' in response.location
+{{endif}}
