@@ -17,6 +17,7 @@ setup(
         "Catwalk",
         {{if sqlalchemy}}
         "zope.sqlalchemy",
+        "repoze.tm2",
         {{endif}}
         {{if auth == "sqlalchemy"}}
         "repoze.what-quickstart",
