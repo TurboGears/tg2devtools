@@ -8,7 +8,7 @@ def extend_parser(parser):
             default=False,
             help='Install TurboGears in development mode, useful for when you want to contribute back patches (experimental, requires pip)')
     parser.add_option(
-            '--requrements',
+            '--requirements',
             dest='requirement_file',
             metavar='requirements.txt',
             default=None,
@@ -29,9 +29,9 @@ def execute(script,*args):
 def after_install(options, home_dir):
     print options
     if sys.platform == 'win32':
-        bin = 'Scripts'
+        activate = "Scripts\\activate.bat"
     else:
-        bin = 'bin'
+        activate = "source bin/activate"
 
     if options.requirement_file:
         print "Sorry option not supported yet"
@@ -49,6 +49,7 @@ def after_install(options, home_dir):
 
         execute("""
         cd %(home_dir)s
+        %(activate)s
         source %(bin)s/activate
         easy_install pip
         %(install_cmd)s
@@ -56,7 +57,7 @@ def after_install(options, home_dir):
     else:#use easy_install
         execute("""
         cd %(home_dir)s
-        source %(bin)s/activate
+        %(activate)s
         easy_install -i http://www.turbogears.org/2.0/downloads/current/index tg.devtools
         """ % locals())
 
