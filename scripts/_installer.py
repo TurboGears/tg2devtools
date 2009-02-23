@@ -1,4 +1,5 @@
 import os 
+import sys
 
 def extend_parser(parser):
     parser.add_option(
@@ -20,44 +21,34 @@ def extend_parser(parser):
             default=False,
             help='Use pip instead of easy_install (experimental)')
 
-def execute(script,*args):
-    print 'Running script'
-    print script
-    print 20*'-'
-    subprocess.Popen(script % locals(),shell=True)
-
 def after_install(options, home_dir):
-    print options
     if sys.platform == 'win32':
-        activate = "Scripts\\activate.bat"
+        bin = "Scripts"
     else:
-        activate = "source bin/activate"
+        bin = "bin"
+
+    pip = os.path.join(home_dir,bin,'pip')
+    easy_install = os.path.join(home_dir,bin,'easy_install')
 
     if options.requirement_file:
         print "Sorry option not supported yet"
         return
 
-    print 'installing turbogears, this will take a while....'
-    if options.use_pip:
-        if options.trunk:
-            install_cmd = """
-            pip install -e svn+http://svn.turbogears.org/trunk
-            pip install -e svn+http://svn.turbogears.org/projects/tg.devtools/trunk
-            """
-        else:
-            install_cmd = 'pip install -i http://www.turbogears.org/2.0/downloads/current/index tg.devtools'
+    def execute(cmd,params):
+        cmd = cmd + ' ' + params
+        print "Running command...."
+        print cmd
+        subprocess.call(cmd.split())
 
-        execute("""
-        cd %(home_dir)s
-        %(activate)s
-        source %(bin)s/activate
-        easy_install pip
-        %(install_cmd)s
-        """ % locals())
+    print "Installing turbogears...."
+    if options.use_pip:
+        execute(easy_install,'pip')
+        if options.trunk:
+            execute(pip,'install -e svn+http://svn.turbogears.org/trunk')
+            execute(pip,'install -e svn+http://svn.turbogears.org/projects/tg.devtools/trunk')
+        else:
+            execute(pip,'install -i http://www.turbogears.org/2.0/downloads/current/index tg.devtools')
     else:#use easy_install
-        execute("""
-        cd %(home_dir)s
-        %(activate)s
-        easy_install -i http://www.turbogears.org/2.0/downloads/current/index tg.devtools
-        """ % locals())
+        execute(easy_install,'-i http://www.turbogears.org/2.0/downloads/current/index tg.devtools')
+
 
