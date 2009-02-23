@@ -11,17 +11,17 @@ base_config.package = {{package}}
 #Set the default renderer
 {{if template_engine == 'mako'}}
 base_config.default_renderer = 'mako'
-base_config.renderers.append('mako')  
+base_config.renderers.append('mako')
 {{elif template_engine == 'jinja'}}
 base_config.default_renderer = 'jinja'
-base_config.renderers.append('jinja')  
+base_config.renderers.append('jinja')
 {{elif template_engine == 'genshi'}}
 base_config.default_renderer = 'genshi'
-base_config.renderers.append('genshi') 
+base_config.renderers.append('genshi')
 # if you want raw speed and have installed chameleon.genshi
 # you should try to use this renderer instead.
 # warning: for the moment chameleon does not handle i18n translations
-#base_config.renderers.append('chameleon_genshi') 
+#base_config.renderers.append('chameleon_genshi')
 {{endif}}
 
 {{if sqlalchemy}}
@@ -42,7 +42,7 @@ base_config.sa_auth.group_class = model.Group
 # what is the class you want to use to search for permissions in the database
 base_config.sa_auth.permission_class = model.Permission
 
-# override this if you would like to provide a different who plugin for 
+# override this if you would like to provide a different who plugin for
 # managing login and logout of your application
 base_config.sa_auth.form_plugin = None
 
