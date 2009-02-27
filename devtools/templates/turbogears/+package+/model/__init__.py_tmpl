@@ -18,6 +18,10 @@ DBSession = scoped_session(maker)
 
 DeclarativeBase = declarative_base()
 
+# You can have a query property on all your model classes
+# (as it was the case in TurboGears 1) by doing this:
+# DeclarativeBase.query = DBSession.query_property()
+
 # Global metadata.
 # The default metadata is the one from the declarative base.
 metadata = DeclarativeBase.metadata
