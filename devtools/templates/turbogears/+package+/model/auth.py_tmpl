@@ -100,7 +100,6 @@ class User(DeclarativeBase):
         """
         return DBSession.query(cls).filter(cls.user_name==username).first()
 
-
     def _set_password(self, password):
         """Hash password on the fly."""
         hashed_password = password
@@ -109,7 +108,7 @@ class User(DeclarativeBase):
             password_8bit = password.encode('UTF-8')
         else:
             password_8bit = password
-        
+
         salt = sha1()
         salt.update(os.urandom(60))
         hash = sha1()
@@ -140,7 +139,7 @@ class User(DeclarativeBase):
         :type password: unicode object.
         :return: Whether the password is valid.
         :rtype: bool
-        
+
         """
         hashed_pass = sha1()
         hashed_pass.update(password + self.password[:40])
@@ -157,6 +156,9 @@ class Permission(DeclarativeBase):
     description = Column(Unicode(255))
     groups = relation(Group, secondary=group_permission_table,
                       backref='permissions')
+
+    def __repr__(self):
+        return '<Permission: name=%s>' % self.permission_name
 
     def __unicode__(self):
         return self.permission_name
