@@ -35,7 +35,7 @@ setup(
     package_data={'{{package}}': ['i18n/*/LC_MESSAGES/*.mo',
                                  'templates/*/*',
                                  'public/*/*']},
-    message_extractors = {'{{package}}': [
+    message_extractors={'{{package}}': [
             ('**.py', 'python', None),
             ('templates/**.mako', 'mako', None),
             ('templates/**.html', 'genshi', None),

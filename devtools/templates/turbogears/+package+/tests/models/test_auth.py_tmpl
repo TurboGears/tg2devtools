@@ -5,15 +5,20 @@ from nose.tools import eq_
 from {{package}} import model
 from {{package}}.tests import ModelTest
 
+
 {{if auth == "sqlalchemy"}}
 class TestGroup(ModelTest):
+    """Unit test case for the ``Group`` model."""
     klass = model.Group
     attrs = dict(
         group_name = u"test_group",
         display_name = u"Test Group"
         )
 
+
 class TestUser(ModelTest):
+    """Unit test case for the ``User`` model."""
+    
     klass = model.User
     attrs = dict(
         user_name = u"ignucius",
@@ -37,7 +42,10 @@ class TestUser(ModelTest):
         him = model.User.by_email_address(u"ignucius@example.org")
         eq_(him, self.obj)
 
+
 class TestPermission(ModelTest):
+    """Unit test case for the ``Permission`` model."""
+    
     klass = model.Permission
     attrs = dict(
         permission_name = u"test_permission",

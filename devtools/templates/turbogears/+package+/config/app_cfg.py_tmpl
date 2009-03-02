@@ -1,4 +1,13 @@
+# -*- coding: utf-8 -*-
+"""
+Global configuration file for TG2-specific settings in {{project}}.
+
+This file complements development/deployment.ini.
+
+"""
+
 from tg.configuration import AppConfig, Bunch
+
 import {{package}}
 from {{package}} import model
 from {{package}}.lib import app_globals, helpers

@@ -1,32 +1,41 @@
-"""The base Controller API
+# -*- coding: utf-8 -*-
+"""
+The base Controller API.
 
-Provides the BaseController class for subclassing.
 """
 from tg import TGController, tmpl_context
 from tg.render import render
 {{if auth == "sqlalchemy"}}
 from tg import request
 {{endif}}
-{{if sqlalchemy}}
-
-import {{package}}.model as model
-{{endif}}
-
 from pylons.i18n import _, ungettext, N_
 from tw.api import WidgetBunch
 
+{{if sqlalchemy}}
+import {{package}}.model as model
+{{endif}}
+
+__all__ = ['Controller', 'BaseController']
+
+
 class Controller(object):
-    """Base class for a web application's controller.
+    """
+    Base class for a web application's controller.
 
     Currently, this provides positional parameters functionality
     via a standard default method.
+    
     """
+    pass
+
 
 class BaseController(TGController):
-    """Base class for the root of a web application.
+    """
+    Base class for the controllers in the application.
 
     Your web application should have one of these. The root of
     your application is used to compute URLs used by your app.
+    
     """
 
     def __call__(self, environ, start_response):

@@ -1,5 +1,5 @@
-"""Main Controller"""
-# standard library imports
+# -*- coding: utf-8 -*-
+"""Sample controller module"""
 
 # turbogears imports
 from tg import expose
@@ -13,12 +13,13 @@ from tg import expose
 from {{package}}.lib.base import BaseController
 #from {{package}}.model import DBSession, metadata
 
+
 class SampleController(BaseController):
     {{if auth == "sqlalchemy"}}
     #Uncomment this line if your controller requires an authenticated user
     #allow_only = authorize.not_anonymous()
     {{endif}}
-
+    
     @expose('{{package}}.templates.index')
     def index(self):
         return dict(page='index')
