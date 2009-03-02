@@ -63,9 +63,9 @@ Example usage::
 
     $ paster quickstart yourproject
 
-or start project with Elixir::
+or start project with authentication and authorization support::
 
-    $ paster quickstart -e yourproject
+    $ paster quickstart -a yourproject
     """
 
     version = pkg_resources.get_distribution('turbogears2').version
@@ -75,41 +75,44 @@ or start project with Elixir::
     usage = '\n' + __doc__
     group_name = "TurboGears2"
     name = None
+    auth = None
+    geo = False
     package = None
-    dry_run = False
-    templates = "turbogears2"
     svn_repository = None
     sqlalchemy = False
     sqlobject = False
-    auth = None
-    geo = False
+    templates = "turbogears2"
+    dry_run = False
+    no_input = False
 
     parser = command.Command.standard_parser(quiet=True)
     parser = optparse.OptionParser(
                     usage="%prog quickstart [options] [project name]",
                     version="%prog " + version)
-    parser.add_option("-s", "--sqlalchemy",
-            help="use SQLAlchemy as ORM",
-            action="store_true", dest="sqlalchemy", default=True)
     parser.add_option("-a", "--auth",
-            help='add authentication and authorization support ("yes" or "no")',
-            dest="auth")
+            help='add authentication and authorization support',
+            action="store_true", dest="auth")
+    parser.add_option("-g", "--geo",
+            help="add GIS support",
+            action="store_true", dest="geo")
     parser.add_option("-p", "--package",
             help="package name for the code",
             dest="package")
-    parser.add_option("-t", "--templates",
-            help="user specific templates",
-            dest="templates", default=templates)
-    parser.add_option("-g", "--geo",
-            help="add GIS support",
-            action="store_true", dest="geo", default=False)
     parser.add_option("-r", "--svn-repository", metavar="REPOS",
             help="create project in given SVN repository",
             dest="svn_repository", default=svn_repository)
+    parser.add_option("-s", "--sqlalchemy",
+            help="use SQLAlchemy as ORM",
+            action="store_true", dest="sqlalchemy", default=True)
+    parser.add_option("-t", "--templates",
+            help="user specific templates",
+            dest="templates", default=templates)
     parser.add_option("--dry-run",
             help="dry run (don't actually do anything)",
             action="store_true", dest="dry_run")
-
+    parser.add_option("--noinput",
+            help="no input (don't ask any questions)",
+            action="store_true", dest="no_input")
 
     def command(self):
         """Quickstarts the new project."""
@@ -124,49 +127,41 @@ or start project with Elixir::
         while not self.name:
             self.name = raw_input("Enter project name: ")
 
-        while not self.package:
-            package = self.name.lower()
-            package = beginning_letter.sub("", package)
-            package = valid_only.sub("", package)
-            self.package = raw_input("Enter package name [%s]: " % package)
-            if not self.package:
-                self.package = package
+        package = self.name.lower()
+        package = beginning_letter.sub("", package)
+        package = valid_only.sub("", package)
+        if package and self.no_input:
+            self.package = package
+        else:
+            self.package = None
+            while not self.package:
+                self.package = raw_input(
+                    "Enter package name [%s]: " % package).strip() or package
 
-        # Finding whether the user wants authentication and authorization
-        # support:
-        doauth = None
-        if self.auth is not None:
-            if self.auth.lower().startswith("y"):
-                doauth = True
-            elif self.auth.lower().startswith("n"):
-                doauth = False
-        while doauth is None:
-            doauth = raw_input("Do you need authentication and authorization "
-                               "in this project? [yes] ")
-            doauth = doauth.lower()
-            if not doauth or doauth.startswith("y"):
-                doauth = True
-            elif doauth.startswith('n'):
-                doauth = False
-            else:
-                print "Please enter y(es) or n(o)."
-                doauth = None
+        if not self.no_input:
+            while self.auth is None:
+                self.auth = raw_input(
+                    "Do you need authentication and authorization"
+                    " in this project? [yes] ")
+                self.auth = dict(y=True, n=False).get(
+                    self.auth.lstrip()[:1].lower() or 'y')
+                if self.auth is None:
+                    print "Please enter y(es) or n(o)."
 
-        if doauth is True:
+        if self.auth:
             if self.sqlalchemy:
                 self.auth = "sqlalchemy"
             else:
-                print 'You can only use authentication and authorization ' \
-                      'in a new project if you use SQLAlchemy. Please check ' \
-                      'the repoze.what documentation to learn ' \
-                      'how to implement authentication/authorization with ' \
-                      'other sources.'
+                print ('You can only use authentication and authorization'
+                    ' in a new project if you use SQLAlchemy. Please check'
+                    ' the repoze.what documentation to learn how to implement'
+                    ' authentication/authorization with other sources.')
                 return
                 # TODO: As far as I know, SQLObject has never been supported in
                 # TG2
                 # self.auth = "sqlobject"
         else:
-            self.auth = False
+            self.auth = None
 
         self.name = pkg_resources.safe_name(self.name)
 
@@ -191,7 +186,7 @@ or start project with Elixir::
 
         command = create_distro.CreateDistroCommand("create")
         cmd_args = []
-        for template in self.templates.split(" "):
+        for template in self.templates.split():
             cmd_args.append("--template=%s" % template)
         if self.svn_repository:
             cmd_args.append("--svn-repository=%s" % self.svn_repository)
@@ -204,7 +199,7 @@ or start project with Elixir::
         cmd_args.append("auth=%s" % self.auth)
         cmd_args.append("geo=%s" % self.geo)
         cmd_args.append("package=%s" % self.package)
-        cmd_args.append("tgversion=%s"%self.version)
+        cmd_args.append("tgversion=%s" % self.version)
         # set the exact ORM-version for the proper requirements
         # it's extracted from our own requirements, so looking
         # them up must be in sync (there must be the extras_require named
