@@ -19,4 +19,4 @@ class SampleModel(DeclarativeBase):
     
     data = Column(Unicode(255), nullable=False)
     
-    #{{end_braces}}
+    #}

@@ -88,7 +88,7 @@ class Group(DeclarativeBase):
     def __unicode__(self):
         return self.group_name
     
-    #{{end_braces}}
+    #}
 
 
 # The 'info' argument we're passing to the email_address and password columns
@@ -179,7 +179,7 @@ class User(DeclarativeBase):
     password = synonym('_password', descriptor=property(_get_password,
                                                         _set_password))
     
-    #{{end_braces}}
+    #}
     
     def validate_password(self, password):
         """
@@ -229,8 +229,8 @@ class Permission(DeclarativeBase):
     def __unicode__(self):
         return self.permission_name
     
-    #{{end_braces}}
+    #}
 
 
-#{{end_braces}}
+#}
 {{endif}}
