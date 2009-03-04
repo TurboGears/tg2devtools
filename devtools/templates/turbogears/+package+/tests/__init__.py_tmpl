@@ -26,40 +26,6 @@ def tearDown():
     model.metadata.drop_all(engine)
 
 
-class ModelTest(object):
-    """Base unit test case for the models."""
-    
-    klass = None
-    attrs = {}
-
-    def setup(self):
-        try:
-            new_attrs = {}
-            new_attrs.update(self.attrs)
-            new_attrs.update(self.do_get_dependencies())
-            self.obj = self.klass(**new_attrs)
-            model.DBSession.add(self.obj)
-            model.DBSession.flush()
-            return self.obj
-        except:
-            model.DBSession.rollback()
-            raise
-
-    def tearDown(self):
-        model.DBSession.rollback()
-
-    def do_get_dependencies(self):
-        return {}
-
-    def test_create_obj(self):
-        pass
-
-    def test_query_obj(self):
-        obj = model.DBSession.query(self.klass).one()
-        for key, value in self.attrs.iteritems():
-            eq_(getattr(obj, key), value)
-
-
 class TestController(object):
     """Base functional test case for the controllers."""
 

@@ -3,7 +3,7 @@
 from nose.tools import eq_
 
 from {{package}} import model
-from {{package}}.tests import ModelTest
+from {{package}}.tests.models import ModelTest
 
 
 {{if auth == "sqlalchemy"}}
