@@ -21,4 +21,8 @@ sqlalchemy.url = sqlite:///:memory:
 {{endif}}
 use = config:development.ini
 
+[app:main_without_authn]
+use = main
+skip_authentication = True
+
 # Add additional test specific configuration options as necessary.
