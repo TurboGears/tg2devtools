@@ -1,35 +1,35 @@
 # -*- coding: utf-8 -*-
 """Unit and functional test suite for {{project}}."""
 
-import os
+from os import path
 import sys
 
 from tg import config
 from paste.deploy import loadapp
+from paste.script.appinstall import SetupCommand
 from routes import url_for
 from webtest import TestApp
 from nose.tools import eq_
 
-from {{package}} import model
+from {{package}}.model import metadata
 
 __all__ = ['url_for', 'TestController']
-
-
-def setUp():
-    engine = config['pylons.app_globals'].sa_engine 
-    model.init_model(engine)
-    model.metadata.create_all(engine)
-
-
-def tearDown():
-    engine = config['pylons.app_globals'].sa_engine
-    model.metadata.drop_all(engine)
 
 
 class TestController(object):
     """Base functional test case for the controllers."""
 
-    def __init__(self, *args, **kwargs):
+    def setUp(self):
+        # Loading the application:
         conf_dir = config.here
         wsgiapp = loadapp('config:test.ini', relative_to=conf_dir)
         self.app = TestApp(wsgiapp)
+        # Setting it up:
+        test_file = path.join(conf_dir, 'test.ini')
+        cmd = SetupCommand('setup-app')
+        cmd.run([test_file])
+    
+    def tearDown(self):
+        # Cleaning up the database:
+        engine = config['pylons.app_globals'].sa_engine
+        metadata.drop_all(engine)
