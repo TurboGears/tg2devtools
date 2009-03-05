@@ -1,11 +1,20 @@
 # -*- coding: utf-8 -*-
 """Unit test suite for the models of the application."""
+from nose.tools import assert_equals
 
 from {{package}}.model import DBSession
+from {{package}}.tests import setup_db, teardown_db
 
 __all__ = ['ModelTest']
 
-
+#Create an empty database before we start our tests for this module
+def setup():
+    setup_db()
+    
+#Teardown that database 
+def teardown():
+    teardown_db()
+    
 class ModelTest(object):
     """Base unit test case for the models."""
     
@@ -37,4 +46,4 @@ class ModelTest(object):
     def test_query_obj(self):
         obj = DBSession.query(self.klass).one()
         for key, value in self.attrs.iteritems():
-            eq_(getattr(obj, key), value)
+            assert_equals(getattr(obj, key), value)

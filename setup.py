@@ -18,11 +18,12 @@ install_requirements = [
                         'sqlalchemy-migrate>=0.4.4',
                         'SQLAlchemy>=0.5',
                         'repoze.what-quickstart >= 1.0rc3',
+                        'repoze.who'
                         ]
 
 setup(
     name='tg.devtools',
-    version="2.0b6",
+    version="2.0b7",
     description="",
     long_description="""""",
     classifiers=[],
