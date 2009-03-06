@@ -10,15 +10,15 @@ test_requirements = ['coverage',
                     'TurboJson',
                     'zope.sqlalchemy',
                     'SQLAlchemy>=0.5beta3',
-                    'repoze.what-quickstart'
+                    'repoze.what-quickstart >= 1.0'
                     ]
 
 install_requirements = [
                         'TurboGears2>=2.0b5',
                         'sqlalchemy-migrate>=0.4.4',
                         'SQLAlchemy>=0.5',
-                        'repoze.what-quickstart >= 1.0rc3',
-                        'repoze.who'
+                        'repoze.what-quickstart >= 1.0',
+                        'repoze.who >= 1.0.10'
                         ]
 
 setup(
