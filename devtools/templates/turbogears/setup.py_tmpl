@@ -14,20 +14,20 @@ setup(
     author_email='',
     #url='',
     install_requires=[
-        "TurboGears2",
-        "Catwalk",
+        "TurboGears2 >= 2.0b7",
+        "Catwalk >= 2.0.2",
         {{if sqlalchemy}}
-        "zope.sqlalchemy",
-        "repoze.tm2",
+        "zope.sqlalchemy >= 0.4 ",
+        "repoze.tm2 >= 1.0a4",
         {{endif}}
         {{if auth == "sqlalchemy"}}
-        "repoze.what-quickstart",
+        "repoze.what-quickstart >= 1.0",
         {{endif}}
         {{if geo == "True"}}
         "tgext.geo",
         {{endif}}
         ],
-    setup_requires=["PasteScript>=1.6.3"],
+    setup_requires=["PasteScript >= 1.7"],
     paster_plugins={{egg_plugins}},
     packages=find_packages(exclude=['ez_setup']),
     include_package_data=True,
