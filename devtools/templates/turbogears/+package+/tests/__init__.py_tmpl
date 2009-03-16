@@ -24,8 +24,6 @@ def teardown_db():
     engine = config['pylons.app_globals'].sa_engine
     model.metadata.drop_all(engine)
 
-__all__ = ['url_for', 'TestController', 'setup_db', 'teardown_db']
-
 
 class TestController(object):
     """

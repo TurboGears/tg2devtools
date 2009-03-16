@@ -6,7 +6,6 @@ import os.path
 from tg import request, response, expose
 from pylons.controllers.util import forward
 from pylons.middleware import error_document_template, media_path
-import paste.fileapp
 
 from {{package}}.lib.base import BaseController
 
