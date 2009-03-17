@@ -97,7 +97,7 @@ ul#mainmenu li.loginlogout a:hover
 	background: #fff url('../images/contentbg.png') left bottom no-repeat;
 	margin : 0 10px 10px 10px;
 	padding: 0 10px;
-	overflow: auto;
+	overflow: hidden;
 }
 
 #content .currentpage {
@@ -269,33 +269,30 @@ span.code {
 background:#EEEEEE none repeat scroll 0% 0%;
 font-weight:bold;
 }
-#flash {
+#flash, .notice {
 font-size:120%;
 font-weight:bolder;
 margin:0pt auto 0.5em;
 width:680px;
 }
-#flash div {
-padding:5px 15px 15px 55px;
+#flash div, .notice {
+padding:20px 15px 20px 65px;
 }
 #flash .ok {
-background:#EEEEFF url(../images/ok.png) no-repeat scroll left center;
-border:1px solid #CCCCEE;
+background:#d8ecd8 url(../images/ok.png) no-repeat scroll 10px center;
 }
 #flash .warning {
-background:#FF9999 url(../images/error.png) no-repeat scroll left center;
-border:1px solid #FF3333;
+background:#fff483 url(../images/warning.png) no-repeat scroll 10px center;
 }
-#flash .alert {
-background:#FFFF99 url(../images/info.png) no-repeat scroll left center;
-border:1px solid #FFFF00;
+#flash .error {
+background:#f9c5c1 url(../images/error.png) no-repeat scroll 10px center;
+}
+#flash .alert,
+#flash .info {
+background:#EEEEFF url(../images/info.png) no-repeat scroll 10px center;
 }
 .notice {
-background:#EEEEFF url(../images/info.png) no-repeat scroll left center;
-border:1px solid #CCCCEE;
-margin:0.5em auto;
-padding:15px 10px 15px 55px;
-width:680px;
+background:#EEEEFF url(../images/info.png) no-repeat scroll 10px center;
 }
 .fielderror {
 color:red;
