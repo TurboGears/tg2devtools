@@ -97,6 +97,7 @@ ul#mainmenu li.loginlogout a:hover
 	background: #fff url('../images/contentbg.png') left bottom no-repeat;
 	margin : 0 10px 10px 10px;
 	padding: 0 10px;
+	overflow: auto;
 }
 
 #content .currentpage {
