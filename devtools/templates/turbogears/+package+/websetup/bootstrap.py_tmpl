@@ -51,6 +51,7 @@ def bootstrap(command, conf, vars):
         print 'Warning, there was a problem adding your auth data, it may have already been added:'
         import traceback
         print traceback.format_exc()
+        transaction.abort()
         print 'Continuing with bootstrapping...'
         
     {{endif}}
