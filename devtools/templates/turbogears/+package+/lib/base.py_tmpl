@@ -17,17 +17,6 @@ import {{package}}.model as model
 __all__ = ['Controller', 'BaseController']
 
 
-class Controller(object):
-    """
-    Base class for a web application's controller.
-
-    Currently, this provides positional parameters functionality
-    via a standard default method.
-
-    """
-    pass
-
-
 class BaseController(TGController):
     """
     Base class for the controllers in the application.

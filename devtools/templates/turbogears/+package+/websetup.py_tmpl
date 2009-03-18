@@ -23,36 +23,36 @@ def setup_app(command, conf, vars):
     model.metadata.create_all(bind=config['pylons.app_globals'].sa_engine)
 
     {{if auth == "sqlalchemy"}}
-    u = model.User()
-    u.user_name = u'manager'
-    u.display_name = u'Example manager'
-    u.email_address = u'manager@somedomain.com'
-    u.password = u'managepass'
+    manager = model.User()
+    manager.user_name = u'manager'
+    manager.display_name = u'Example manager'
+    manager.email_address = u'manager@somedomain.com'
+    manager.password = u'managepass'
 
-    model.DBSession.add(u)
+    model.DBSession.add(manager)
 
-    g = model.Group()
-    g.group_name = u'managers'
-    g.display_name = u'Managers Group'
+    group = model.Group()
+    group.group_name = u'managers'
+    group.display_name = u'Managers Group'
 
-    g.users.append(u)
+    group.users.append(manager)
 
-    model.DBSession.add(g)
+    model.DBSession.add(group)
 
-    p = model.Permission()
-    p.permission_name = u'manage'
-    p.description = u'This permission give an administrative right to the bearer'
-    p.groups.append(g)
+    permission = model.Permission()
+    permission.permission_name = u'manage'
+    permission.description = u'This permission give an administrative right to the bearer'
+    permission.groups.append(group)
 
-    model.DBSession.add(p)
+    model.DBSession.add(permission)
 
-    u1 = model.User()
-    u1.user_name = u'editor'
-    u1.display_name = u'Example editor'
-    u1.email_address = u'editor@somedomain.com'
-    u1.password = u'editpass'
+    editor = model.User()
+    editor.user_name = u'editor'
+    editor.display_name = u'Example editor'
+    editor.email_address = u'editor@somedomain.com'
+    editor.password = u'editpass'
 
-    model.DBSession.add(u1)
+    model.DBSession.add(editor)
     model.DBSession.flush()
     {{endif}}
 

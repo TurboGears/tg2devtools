@@ -16,11 +16,13 @@ from {{package}} import model
 __all__ = ['setup_db', 'teardown_db', 'TestController', 'url_for']
 
 def setup_db():
+    """Method used to build a database"""
     engine = config['pylons.app_globals'].sa_engine 
     model.init_model(engine)
     model.metadata.create_all(engine)
 
 def teardown_db():
+    """Method used to destroy a database"""
     engine = config['pylons.app_globals'].sa_engine
     model.metadata.drop_all(engine)
 
@@ -45,6 +47,7 @@ class TestController(object):
     application_under_test = 'main_without_authn'
     
     def setUp(self):
+        """Method called by nose before running each test"""
         # Loading the application:
         conf_dir = config.here
         wsgiapp = loadapp('config:test.ini#%s' % self.application_under_test,
@@ -56,5 +59,6 @@ class TestController(object):
         cmd.run([test_file])
     
     def tearDown(self):
+        """Method called by nose after running each test"""
         # Cleaning up the database:
         teardown_db()

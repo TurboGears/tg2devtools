@@ -1,13 +1,7 @@
 # -*- coding: utf-8 -*-
 """Error controller"""
 
-import os.path
-
-from tg import request, response, expose
-from pylons.controllers.util import forward
-from pylons.middleware import error_document_template, media_path
-
-from {{package}}.lib.base import BaseController
+from tg import request, expose
 
 __all__ = ['ErrorController']
 

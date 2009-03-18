@@ -9,10 +9,12 @@ __all__ = ['ModelTest']
 
 #Create an empty database before we start our tests for this module
 def setup():
+    """Function called by nose on module load"""
     setup_db()
     
 #Teardown that database 
 def teardown():
+    """Function called by nose after all tests in this module ran"""
     teardown_db()
     
 class ModelTest(object):
@@ -38,6 +40,7 @@ class ModelTest(object):
         DBSession.rollback()
 
     def do_get_dependencies(self):
+        """Use this method to pull in other objects that need to be created for this object to be build properly"""
         return {}
 
     def test_create_obj(self):

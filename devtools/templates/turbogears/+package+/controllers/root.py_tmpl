@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Main Controller"""
 
-from tg import expose, flash, require, url, request, redirect, validate
+from tg import expose, flash, require, url, request, redirect
 from pylons.i18n import ugettext as _, lazy_ugettext as l_
 {{if auth == "sqlalchemy"}}
 from catwalk.tg2 import Catwalk

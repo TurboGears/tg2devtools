@@ -30,14 +30,7 @@ def make_app(global_conf, full_stack=True, **app_conf):
     ``app_conf`` contains all the application-specific settings (those defined
     under ``[app:main]``.
     
-    Please note that **all the argument values are strings**. If you want to
-    convert them into boolean, for example, you should use the
-    :func:`paste.deploy.converters.asbool` function, as in::
-    
-        from paste.deploy.converters import asbool
-        
-        setting = asbool(global_conf.get('the_setting'))
-    
+   
     """
     app = make_base_app(global_conf, full_stack=True, **app_conf)
     

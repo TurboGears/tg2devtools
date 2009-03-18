@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Fallback controller."""
 
-from {{package}}.lib.base import *
+from {{package}}.lib.base import BaseController
 
 __all__ = ['TemplateController']
 
