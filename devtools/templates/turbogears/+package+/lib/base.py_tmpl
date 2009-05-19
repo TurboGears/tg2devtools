@@ -14,7 +14,7 @@ from tw.api import WidgetBunch
 import {{package}}.model as model
 {{endif}}
 
-__all__ = ['Controller', 'BaseController']
+__all__ = ['BaseController']
 
 
 class BaseController(TGController):
