@@ -51,6 +51,13 @@ class RootController(BaseController):
         """Handle the 'about' page."""
         return dict(page='about')
 
+    @expose('{{package}}.templates.environ')
+    @expose('json')
+    def environ(self):
+        """This method showcases how you can use the same controller for a data page and a display page"""
+        return dict(environment=request.environ)
+        
+
     {{if auth == "sqlalchemy"}}
     @expose('{{package}}.templates.authentication')
     def auth(self):

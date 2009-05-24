@@ -30,6 +30,15 @@ class TestRootController(TestController):
         #links = response.html.findAll('a')
         #print links
         #assert_true(links, "Mummy, there are no links here!")
+        
+    def test_data_html(self):
+        response = self.app.get('/environ.html')
+        assert_true('The keys in the environment are: ' in response)
+
+    def test_data_json(self):
+        response = self.app.get('/environ.json')
+        
+
 
 {{if auth == 'sqlalchemy'}}
     def test_secc_with_manager(self):

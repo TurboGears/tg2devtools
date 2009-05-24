@@ -24,6 +24,8 @@ base_config.renderers = []
 
 base_config.package = {{package}}
 
+#Enable json in expose
+base_config.renderers.append('json')
 #Set the default renderer
 {{if template_engine == 'mako'}}
 base_config.default_renderer = 'mako'
