@@ -1,0 +1,26 @@
+
+syntax: glob
+*~
+*.egg-info
+*.mak.py
+*.pyc
+*.pyo
+*.swp
+.coverage
+
+syntax: regexp
+^build
+^chameleon
+^coverage
+^dist
+^Genshi
+^Jinja
+^kid
+^lib
+^lxml
+^pytz
+^repoze
+^source
+^SQL
+^Turbo
+^zope
