@@ -1,0 +1,35 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" 
+                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+
+  <xi:include href="master.html" />
+
+<head>
+  <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
+  <title>Learning TurboGears 2.0: Quick guide to the Quickstart pages.</title>
+</head>
+
+<body>
+    <h2>Content Type Dispatch</h2>
+    <p> This page exists to showcase two features of TG</p>
+    <ul>
+        <li>The WSGI nature of the framework</li>
+        <li>How you can you serve different content types with the same controller</li>
+    </ul>
+    <p>In this page you can see all the WSGI variables your request object has, the ones in capital letters are required by the spec, then a sorted by component list of variables provided by the Components, and at last the "wsgi." namespace with very useful information about your WSGI Server</p>
+    <p>Click here for the <a href="${tg.url('/environ.json')}">JSON Version of this page</a> Note how this version is unsorted as that is provided by this template</p>
+    <p>The keys in the environment are: 
+    <table>
+        <py:for each="key in sorted(environment)">
+        <tr>
+            <td>${key}</td>
+            <td>${environment[key]}</td>
+        </tr>
+        </py:for>
+    </table>
+
+    </p>
+</body>
+</html>
