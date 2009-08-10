@@ -14,7 +14,7 @@ test_requirements = ['coverage',
                     ]
 
 install_requirements = [
-                        'TurboGears2 >= 2.0.1',
+                        'TurboGears2 >= 2.0.2',
                         'sqlalchemy-migrate >= 0.5.1',
                         'SQLAlchemy >= 0.5',
                         'repoze.what-quickstart >= 1.0',
@@ -23,7 +23,7 @@ install_requirements = [
 
 setup(
     name='tg.devtools',
-    version="2.0.1",
+    version="2.0.2",
     description="",
     long_description="""""",
     classifiers=[],
