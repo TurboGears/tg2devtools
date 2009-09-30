@@ -17,10 +17,10 @@
 <body py:match="body" py:attrs="select('@*')">
   ${header()}
   <ul id="mainmenu">
-    <li class="first"><a href="${tg.url('/')}" class="${('', 'active')[defined('page') and page==page=='index']}">Welcome</a></li>
-        <li><a href="${tg.url('/about')}" class="${('', 'active')[defined('page') and page==page=='about']}">About</a></li>
-        <li py:if="tg.auth_stack_enabled"><a href="${tg.url('/auth')}" class="${('', 'active')[defined('page') and page==page=='auth']}">Authentication</a></li>
-        <li><a href="${tg.url('/environ')}" class="${('', 'active')[defined('page') and page==page=='environ']}">WSGI Environment</a></li>
+    <li class="first"><a href="${tg.url('/')}" class="${('', 'active')[defined('page') and page=='index']}">Welcome</a></li>
+        <li><a href="${tg.url('/about')}" class="${('', 'active')[defined('page') and page=='about']}">About</a></li>
+        <li py:if="tg.auth_stack_enabled"><a href="${tg.url('/auth')}" class="${('', 'active')[defined('page') and page=='auth']}">Authentication</a></li>
+        <li><a href="${tg.url('/environ')}" class="${('', 'active')[defined('page') and page=='environ']}">WSGI Environment</a></li>
         <li><a href="http://groups.google.com/group/turbogears">Contact</a></li>
     <span py:if="tg.auth_stack_enabled" py:strip="True">
         <li py:if="not request.identity" id="login" class="loginlogout"><a href="${tg.url('/login')}">Login</a></li>

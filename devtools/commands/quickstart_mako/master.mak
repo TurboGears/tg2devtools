@@ -3,7 +3,7 @@
 <html>
 <head>
     ${self.meta()}
-    ${self.title()}
+    <title>${self.title()}</title>
     <link rel="stylesheet" type="text/css" media="screen" href="${tg.url('/css/style.css')}" />
 </head>
 <body class="${self.body_class()}">
@@ -21,13 +21,13 @@
        Now Viewing: <span>${page}</page>
       </div>
     % endif
-      <?
+      <%
       flash=tg.flash_obj.render('flash', use_js=False)
-      ?>
+      %>
       % if flash:
         ${flash | n}
       % endif
-      ${self.content()}
+      ${self.body()}
     </div>
 </%def>
 
@@ -96,6 +96,9 @@
   <ul id="mainmenu">
     <li class="first"><a href="${tg.url('/')}" class="${('', 'active')[page=='index']}">Welcome</a></li>
         <li><a href="${tg.url('/about')}" class="${('', 'active')[page=='about']}">About</a></li>
+        <li><a href="${tg.url('/environ')}" class="${('', 'active')[page=='environ']}">WSGI Environment</a></li>
+        <li><a href="${tg.url('/data')}" class="${('', 'active')[page=='data']}">Content-Types</a></li>
+
     % if tg.auth_stack_enabled:
         <li><a href="${tg.url('/auth')}" class="${('', 'active')[page=='auth']}">Authentication</a></li>
     % endif
@@ -112,5 +115,4 @@
     % endif
   </ul>
 </%def>
-
 </html>

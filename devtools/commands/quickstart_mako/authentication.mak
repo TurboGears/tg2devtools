@@ -1,10 +1,8 @@
 <%inherit file="local:templates.master"/>
 <%def name="title()">Learning TurboGears 2.0: Quick guide to authentication.</%def>
 
-
-<%def name="content()">
-  ${parent.sidebar_top()}
-  ${parent.sidebar_bottom()}
+${parent.sidebar_top()}
+${parent.sidebar_bottom()}
   <div id="getting_started">
     <h2>Authentication &amp; Authorization in a TG2 site.</h2>
     <p>If you have access to this page, this means you have enabled authentication and authorization
@@ -54,4 +52,3 @@
     require the same level of access. You need to be manager to access <a href="${tg.url('/secc')}">secc</a> or <a href="${tg.url('/secc/some_where')}">secc/some_where</a>.
     </p>
   </div>
-</%def>

@@ -1,6 +1,5 @@
 <%inherit file="local:templates.master"/>
 <%def name="title()"><title>Login Form</title></%def>
-<%def name="content()">
 <div id="loginform">
 <form action="${tg.url('/login_handler', came_from = came_from.encode('utf-8'), __logins = login_counter.encode('utf-8'))}" method="POST" class="loginfields">
     <h2><span>Login</span></h2>
@@ -9,4 +8,3 @@
     <input type="submit" id="submit" value="Login" />
 </form>
 </div>
-</%def>
