@@ -38,7 +38,6 @@
 </%def>
 
 <%def name="title()">  </%def>
-<%def name="content()"></%def>
 <%def name="sidebar_top()">
   <div id="sb_top" class="sidebar">
       <h2>Get Started with TG2</h2>
@@ -87,7 +86,7 @@
   </div>
   <div class="foottext">
     <p>TurboGears is a open source front-to-back web development
-      framework written in Python. Copyright (c) 2005-2008 </p>
+      framework written in Python. Copyright (c) 2005-2009 </p>
   </div>
   <div class="clearingdiv"></div>
 </div>
