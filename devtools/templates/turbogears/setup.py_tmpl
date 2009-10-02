@@ -22,6 +22,7 @@ setup(
         {{endif}}
         {{if auth == "sqlalchemy"}}
         "repoze.what-quickstart >= 1.0",
+        "tgext.admin>=0.3.3",
         {{endif}}
         {{if geo == "True"}}
         "tgext.geo",
