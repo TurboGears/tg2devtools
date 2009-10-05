@@ -1,2 +1,2 @@
-recursive-include devtools/commands/quickstart_mako/ *
-recursive-include devtools/templates/ *
+recursive-include devtools/commands/quickstart_mako *
+recursive-include devtools/templates *
