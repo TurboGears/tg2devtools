@@ -25,7 +25,7 @@ full_stack = true
 #lang = ru
 cache_dir = %(here)s/data
 beaker.session.key = {{package}}
-beaker.session.secret = somesecret
+beaker.session.secret = {{cookiesecret}}
 
 # If you'd like to fine-tune the individual locations of the cache data dirs
 # for the Cache data, or the Session saves, un-comment the desired settings

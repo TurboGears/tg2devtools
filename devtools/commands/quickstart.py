@@ -192,6 +192,15 @@ or start project with authentication and authorization support::
             print 'A directory called "%s" already exists. Exiting.' % self.name
             return
 
+        self.cookiesecret = None
+        try:
+            import uuid
+            self.cookiesecret = str(uuid.uuid4())
+        except ImportError:
+            import random
+            import base64
+            self.cookiesecret = base64.b64encode(base64(random.randrange(2**32))).strip()
+    
         command = create_distro.CreateDistroCommand("create")
         cmd_args = []
         for template in self.templates.split():
@@ -209,6 +218,7 @@ or start project with authentication and authorization support::
         cmd_args.append("package=%s" % self.package)
         cmd_args.append("tgversion=%s" % self.version)
         cmd_args.append("mako=%s"%self.mako)
+        cmd_args.append("cookiesecret=%s"%self.cookiesecret)
         # set the exact ORM-version for the proper requirements
         # it's extracted from our own requirements, so looking
         # them up must be in sync (there must be the extras_require named
