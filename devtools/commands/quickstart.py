@@ -48,6 +48,7 @@ import optparse
 from paste.script import command
 from paste.script import create_distro
 import os
+import shutil
 import stat
 import sys
 
@@ -92,6 +93,9 @@ or start project with authentication and authorization support::
     parser.add_option("-a", "--auth",
             help='add authentication and authorization support',
             action="store_true", dest="auth")
+    parser.add_option("-m", "--mako",
+            help="default templates mako",
+            action="store_true", dest="mako", default=None)
     parser.add_option("-g", "--geo",
             help="add GIS support",
             action="store_true", dest="geo")
@@ -138,6 +142,10 @@ or start project with authentication and authorization support::
                 self.package = raw_input(
                     "Enter package name [%s]: " % package).strip() or package
 
+        if self.mako == None:
+            mako = raw_input("Would you prefer mako templates? (yes/[no]): ")
+            self.mako = dict(y=True, n=False).get(mako.lstrip()[:1].lower(), False)
+        
         if not self.no_input:
             while self.auth is None:
                 self.auth = raw_input(
@@ -200,6 +208,7 @@ or start project with authentication and authorization support::
         cmd_args.append("geo=%s" % self.geo)
         cmd_args.append("package=%s" % self.package)
         cmd_args.append("tgversion=%s" % self.version)
+        cmd_args.append("mako=%s"%self.mako)
         # set the exact ORM-version for the proper requirements
         # it's extracted from our own requirements, so looking
         # them up must be in sync (there must be the extras_require named
@@ -244,3 +253,15 @@ or start project with authentication and authorization support::
                 for file in files:
                     if file == "empty":
                         os.remove(os.path.join(base, file))
+            
+            if self.mako:
+                print 'Writing mako template files to ./'+os.path.join(self.name, 'templates')
+                
+                #remove existing template files
+                package_template_dir = os.path.abspath(os.path.join(self.name, 'templates'))
+                shutil.rmtree(package_template_dir, ignore_errors=True)
+#                os.mkdir(package_template_dir)
+                
+                #replace template files with mako ones
+                mako_template_dir = os.path.abspath(os.path.dirname(__file__))+'/quickstart_mako'
+                shutil.copytree(mako_template_dir, package_template_dir)
