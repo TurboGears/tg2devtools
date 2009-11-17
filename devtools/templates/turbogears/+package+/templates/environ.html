@@ -22,7 +22,7 @@
         <py:for each="key in sorted(environment)">
         <tr>
             <td>${key}</td>
-            <td>${environment[key]}</td>
+            <td>${str(environment[key])}</td>
         </tr>
         </py:for>
     </table>
