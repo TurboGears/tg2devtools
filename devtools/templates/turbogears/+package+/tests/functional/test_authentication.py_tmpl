@@ -82,7 +82,8 @@ class TestAuthentication(TestController):
         assert resp.location.startswith('http://localhost/post_logout')
         # Finally, redirected to the home page:
         home_page = resp.follow(status=302)
-        assert home_page.request.cookies.get('authtkt') == 'INVALID' \
+        authtkt = home_page.request.cookies.get('authtkt')
+        assert not authtkt or authtkt == 'INVALID', \
                'Session cookie was not deleted: %s' % home_page.request.cookies
         assert home_page.location == 'http://localhost/', home_page.location
 

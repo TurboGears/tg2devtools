@@ -95,7 +95,7 @@ or start project with authentication and authorization support::
             action="store_true", dest="auth")
     parser.add_option("-m", "--mako",
             help="default templates mako",
-            action="store_true", dest="mako", default=None)
+            action="store_true", dest="mako")
     parser.add_option("-g", "--geo",
             help="add GIS support",
             action="store_true", dest="geo")
@@ -142,7 +142,12 @@ or start project with authentication and authorization support::
                 self.package = raw_input(
                     "Enter package name [%s]: " % package).strip() or package
 
-        if not self.no_input:
+        if self.no_input:
+
+            self.mako = False
+            self.auth = True
+
+        else:
 
             while self.mako is None:
                 self.mako = raw_input(
