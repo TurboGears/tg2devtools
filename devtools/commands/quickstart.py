@@ -122,7 +122,7 @@ or start project with authentication and authorization support::
         """Quickstarts the new project."""
 
         self.__dict__.update(self.options.__dict__)
-        if not True in [self.sqlalchemy, self.sqlobject]:
+        if not self.sqlalchemy and not self.sqlobject:
             self.sqlalchemy = True
 
         if self.args:
@@ -142,15 +142,20 @@ or start project with authentication and authorization support::
                 self.package = raw_input(
                     "Enter package name [%s]: " % package).strip() or package
 
-        if self.mako == None:
-            mako = raw_input("Would you prefer mako templates? (yes/[no]): ")
-            self.mako = dict(y=True, n=False).get(mako.lstrip()[:1].lower(), False)
-        
         if not self.no_input:
+
+            while self.mako is None:
+                self.mako = raw_input(
+                    "Would you prefer mako templates? (yes/[no]): ")
+                self.mako = dict(y=True, n=False).get(
+                    self.mako.lstrip()[:1].lower() or 'n')
+                if self.mako is None:
+                    print "Please enter y(es) or n(o)."
+
             while self.auth is None:
                 self.auth = raw_input(
                     "Do you need authentication and authorization"
-                    " in this project? [yes] ")
+                    " in this project? ([yes]/no): ")
                 self.auth = dict(y=True, n=False).get(
                     self.auth.lstrip()[:1].lower() or 'y')
                 if self.auth is None:
@@ -200,7 +205,7 @@ or start project with authentication and authorization support::
             import random
             import base64
             self.cookiesecret = base64.b64encode(base64(random.randrange(2**32))).strip()
-    
+
         command = create_distro.CreateDistroCommand("create")
         cmd_args = []
         for template in self.templates.split():
@@ -263,15 +268,15 @@ or start project with authentication and authorization support::
                 for file in files:
                     if file == "empty":
                         os.remove(os.path.join(base, file))
-            
+
             if self.mako:
                 print 'Writing mako template files to ./'+os.path.join(self.name, 'templates')
-                
+
                 #remove existing template files
                 package_template_dir = os.path.abspath(os.path.join(self.name, 'templates'))
                 shutil.rmtree(package_template_dir, ignore_errors=True)
 #                os.mkdir(package_template_dir)
-                
+
                 #replace template files with mako ones
                 mako_template_dir = os.path.abspath(os.path.dirname(__file__))+'/quickstart_mako'
                 shutil.copytree(mako_template_dir, package_template_dir)
