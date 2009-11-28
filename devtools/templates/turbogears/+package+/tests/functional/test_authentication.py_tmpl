@@ -12,8 +12,7 @@ from {{package}}.tests import TestController
 
 
 class TestAuthentication(TestController):
-    """
-    Tests for the default authentication setup.
+    """Tests for the default authentication setup.
 
     By default in TurboGears 2, :mod:`repoze.who` is configured with the same
     plugins specified by repoze.what-quickstart (which are listed in
@@ -27,12 +26,11 @@ class TestAuthentication(TestController):
     application_under_test = 'main'
 
     def test_forced_login(self):
-        """
-        Anonymous users must be redirected to the login form when authorization
-        is denied.
+        """Anonymous users are forced to login
 
-        Next, upon successful login they should be redirected to the initially
-        requested page.
+        Test that anonymous users are automatically redirected to the login
+        form when authorization is denied. Next, upon successful login they
+        should be redirected to the initially requested page.
 
         """
         # Requesting a protected area
