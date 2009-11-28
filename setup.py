@@ -18,7 +18,7 @@ install_requirements = [
                         'sqlalchemy-migrate >= 0.5.1',
                         'SQLAlchemy >= 0.5',
                         'repoze.what-quickstart >= 1.0',
-                        'repoze.who >= 1.0.10'
+                        'repoze.who >= 1.0.18'
                         ]
 
 setup(
