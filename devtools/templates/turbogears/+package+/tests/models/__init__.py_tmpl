@@ -24,7 +24,7 @@ class ModelTest(object):
     klass = None
     attrs = {}
 
-    def setup(self):
+    def setUp(self):
         """Prepare model test fixture."""
         try:
             new_attrs = {}
@@ -38,7 +38,7 @@ class ModelTest(object):
             DBSession.rollback()
             raise
 
-    def teardown(self):
+    def tearDown(self):
         """Finish model test fixture."""
         DBSession.rollback()
 
