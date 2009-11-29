@@ -23,7 +23,7 @@ install_requirements = [
 
 setup(
     name='tg.devtools',
-    version="2.1a1",
+    version="2.1a3",
     description="",
     long_description="""""",
     classifiers=[],

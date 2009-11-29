@@ -51,6 +51,10 @@ base_config.DBSession = {{package}}.model.DBSession
 
 {{if auth == "sqlalchemy"}}
 # Configure the authentication backend
+
+# YOU MUST CHANGE THIS VALUE IN PRODUCTION TO SECURE YOUR APP 
+base_config.sa_auth.cookie_secret = "ChangeME" 
+
 base_config.auth_backend = 'sqlalchemy'
 base_config.sa_auth.dbsession = model.DBSession
 # what is the class you want to use to search for users in the database
