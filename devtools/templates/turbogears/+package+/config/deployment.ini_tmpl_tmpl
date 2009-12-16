@@ -17,6 +17,9 @@ use = egg:Paste#http
 host = 0.0.0.0
 port = 8080
 
+[sa_auth]
+cookie_secret = ${app_instance_secret}
+
 [app:main]
 use = egg:{{project}}
 full_stack = true
