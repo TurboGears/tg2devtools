@@ -40,3 +40,33 @@ class TurboGearsTemplate(templates.Template):
             # Add tgext.geo as paster plugin
             vars['egg_plugins'].append('tgext.geo')
 
+
+class TurboGearsExtTemplate(templates.Template):
+    """
+		TurboGears 2 extension paster template class
+    """
+
+    summary = 'TurboGears 2 extension template'
+
+    _template_dir = 'templates/tgext'
+    template_renderer = staticmethod(paste_script_template_renderer)
+    egg_plugins = ['TurboGears2', 'Pylons', 'PasteScript', 'tg.devtools']
+    required_templates = []
+    vars = [
+		    templates.var('description', 'Short description of the extension')
+    ]
+
+    def pre(self, command, output_dir, vars):
+    	# FIXME: for the moment we have to do a copy/paste from the Turbogears 
+    	# template so that we have defined the variables from setup.py_tmpl 
+    	# which is very similar to the one found in the Turbogears quickstart 
+    	# template.
+        template_engine = vars.setdefault('template_engine', 'genshi')
+        vars['sqlalchemy'] = True
+        if template_engine == 'mako':
+            # Support a Babel extractor default for Mako
+            vars['babel_templates_extractor'] = \
+                "('templates/**.mako', 'mako', None),\n%s#%s" % (' ' * 4,
+                                                                 ' ' * 8)
+        else:
+        	vars['babel_templates_extractor'] = ''
