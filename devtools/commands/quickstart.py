@@ -275,10 +275,10 @@ or start project with authentication and authorization support::
                         os.remove(os.path.join(base, file))
 
             if self.mako:
-                print 'Writing mako template files to ./'+os.path.join(self.name, 'templates')
+                print 'Writing mako template files to ./'+os.path.join(self.package, 'templates')
 
                 #remove existing template files
-                package_template_dir = os.path.abspath(os.path.join(self.name, 'templates'))
+                package_template_dir = os.path.abspath(os.path.join(self.package, 'templates'))
                 shutil.rmtree(package_template_dir, ignore_errors=True)
 #                os.mkdir(package_template_dir)
 
