@@ -211,7 +211,7 @@ class Permission(DeclarativeBase):
 
     permission_id = Column(Integer, autoincrement=True, primary_key=True)
 
-    permission_name = Column(Unicode(16), unique=True, nullable=False)
+    permission_name = Column(Unicode(63), unique=True, nullable=False)
 
     description = Column(Unicode(255))
 
