@@ -68,6 +68,9 @@ base_config.sa_auth.permission_class = model.Permission
 # managing login and logout of your application
 base_config.sa_auth.form_plugin = None
 
+# override this if you are using a different charset for the login form
+base_config.sa_auth.charset = 'utf-8'
+
 # You may optionally define a page where you want users to be redirected to
 # on login:
 base_config.sa_auth.post_login_url = '/post_login'
