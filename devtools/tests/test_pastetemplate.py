@@ -32,7 +32,9 @@ class TestQuickStart(object):
                     'sqlobject': False,
                     'elixir': False,
                     'auth': True,
-                    'geo': False
+                    'geo': False,
+                    'mako': False,
+                    'cookiesecret': 'ChangeME',
         }
 
     def setUp(self):
@@ -41,7 +43,7 @@ class TestQuickStart(object):
         command.simulate = False
         command.options = MochOptions()
         command.interactive=False
-        command.args=['TGTest',]
+        command.args=['TGTest', 'cookiesecret=ChangeME']
 
         proj_dir = os.path.join(testDataPath, 'TGTest')
         command.create_template(

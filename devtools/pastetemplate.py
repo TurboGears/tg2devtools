@@ -14,6 +14,7 @@ class TurboGearsTemplate(templates.Template):
         templates.var('sqlalchemy', 'use SQLAlchemy as ORM', default=True),
         templates.var('auth', 'use authentication and authorization support', default="sqlalchemy"),
         templates.var('geo', 'Include GIS support (True/False)', default='False'),
+        templates.var('mako', 'Include Mako support (True/False)', default='False'),
     ]
 
     def pre(self, command, output_dir, vars):
