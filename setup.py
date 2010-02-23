@@ -10,7 +10,9 @@ test_requirements = ['coverage',
                     'TurboJson >= 1.2.1',
                     'zope.sqlalchemy >= 0.4',
                     'SQLAlchemy >= 0.5',
-                    'repoze.what-quickstart >= 1.0'
+                    'repoze.what-quickstart >= 1.0',
+                    'Babel >=0.9.4',
+                    'tgext.admin>=0.3.3',
                     ]
 
 install_requirements = [
