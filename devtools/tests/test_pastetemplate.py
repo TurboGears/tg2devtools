@@ -67,11 +67,9 @@ class TestQuickStart(object):
         resp = self.app.get('/login')
         assert '<div id="loginform">' in resp
 
-    def test_admin(self):
-        resp = self.app.get('/admin/')
-        print resp
-        assert 'This is a fully-configurable administrative tool to help you administer your website.' in resp
-        assert '<li><a href="group/">Groups</a></li><li><a href="user/">Users</a></li><li><a href="permission/">Permissions</a></li>' in resp
+    def test_unauthenticated_admin(self):
+        assert '<div id="loginform">' in self.app.get('/admin/', status=302).follow()
+
 
 #now we run the quickstarted project nosetests
 #FIXME, we need a better implementation
