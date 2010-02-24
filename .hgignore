@@ -7,8 +7,11 @@ syntax: glob
 *.pyo
 *.swp
 .coverage
+devtools/tests/data/
+dist/
+build/
 
-syntax: regexp
+regexp
 ^build
 ^chameleon
 ^coverage
