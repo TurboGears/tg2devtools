@@ -209,7 +209,8 @@ or start project with authentication and authorization support::
         except ImportError:
             import random
             import base64
-            self.cookiesecret = base64.b64encode(base64(random.randrange(2**32))).strip()
+            import struct
+            self.cookiesecret = base64.b64encode("".join([struct.pack('i', random.randrange(2**31)) for x in [1,2,3,4,5,6]])).strip()
 
         command = create_distro.CreateDistroCommand("create")
         cmd_args = []
