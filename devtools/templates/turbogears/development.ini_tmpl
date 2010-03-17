@@ -73,8 +73,7 @@ templating.mako.reloadfromdisk = true
 # server will have access to you development directories, but in production
 # you'll most certainly want to have apache or nginx to write in a directory
 # that does not contain any source code in any form for obvious security reasons.
-#
-#templating.mako.compiled_templates_dir = /some/dir/where/webserver/has/access
+templating.mako.compiled_templates_dir = %(here)s/data/templates
 
 # WARNING: *THE LINE BELOW MUST BE UNCOMMENTED ON A PRODUCTION ENVIRONMENT*
 # Debug mode will enable the interactive debugging tool, allowing ANYONE to
