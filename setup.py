@@ -5,22 +5,22 @@ import sys, os
 
 test_requirements = ['coverage',
                     'nose',
-                    'repoze.tm2 >= 1.0a4',
+                    'repoze.tm2 >= 1.0a5',
                     'TurboKid >= 1.0.4',
                     'TurboJson >= 1.2.1',
                     'zope.sqlalchemy >= 0.4',
                     'SQLAlchemy >= 0.5',
-                    'repoze.what-quickstart >= 1.0',
+                    'repoze.what-quickstart >= 1.0.3',
                     'Babel >=0.9.4',
-                    'tgext.admin>=0.3.3',
+                    'tgext.admin>=0.3.9',
                     ]
 
 install_requirements = [
-                        'TurboGears2 >= 2.1a1',
-                        'sqlalchemy-migrate >= 0.5.1',
+                        'TurboGears2 >= 2.1b2',
+                        #'sqlalchemy-migrate >= 0.5.1',
                         'SQLAlchemy >= 0.5',
-                        'repoze.what-quickstart >= 1.0',
-                        'repoze.who >= 1.0.18'
+                        'repoze.what-quickstart >= 1.0.6',
+                        'repoze.who==1.0.18'
                         ]
 
 setup(
