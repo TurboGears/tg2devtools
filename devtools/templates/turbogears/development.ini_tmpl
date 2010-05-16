@@ -4,8 +4,8 @@
 # The %(here)s variable will be replaced with the parent directory of this file
 #
 # This file is for deployment specific config options -- other configuration
-# that is always required for the app is done in the config directory, 
-# and generally should not be modified by end users. 
+# that is always required for the app is done in the config directory,
+# and generally should not be modified by end users.
 
 [DEFAULT]
 debug = true
@@ -16,7 +16,7 @@ error_email_from = paste@localhost
 
 [server:main]
 use = egg:Paste#http
-host = 127.0.0.1 
+host = 127.0.0.1
 port = 8080
 
 [sa_auth]
@@ -40,7 +40,7 @@ beaker.session.secret = {{cookiesecret}}
 # %(here) may include a ':' character on Windows environments; this can
 # invalidate the URI when specifying a SQLite db via path name
 {{if sqlalchemy}}
-# sqlalchemy.url=postgres://username:password@hostname:port/databasename 
+# sqlalchemy.url=postgres://username:password@hostname:port/databasename
 # sqlalchemy.url=mysql://username:password@hostname:port/databasename
 
 
@@ -85,6 +85,10 @@ templating.mako.compiled_templates_dir = %(here)s/data/templates
 # Uses python's logging config file format
 # http://docs.python.org/lib/logging-config-fileformat.html
 
+#turn this setting to "min" if you would like tw to produce minified
+#javascript files (if your library supports that)
+toscawidgets.framework.resource_variant=debug
+
 [loggers]
 keys = root, {{package_logger}}{{if sqlalchemy}}, sqlalchemy{{endif}}{{if auth == "sqlalchemy"}}, auth{{endif}}
 
@@ -121,7 +125,7 @@ qualname = sqlalchemy.engine
 # repoze.who and repoze.what:
 [logger_auth]
 level = WARN
-handlers = 
+handlers =
 qualname = auth
 {{endif}}
 
