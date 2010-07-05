@@ -5,7 +5,7 @@
 #
 [DEFAULT]
 # WARGING == If debug is not set to false, you'll get the interactive
-# debugger on production, which is a huge security hole. 
+# debugger on production, which is a huge security hole.
 
 debug = false
 email_to = you@yourdomain.com
@@ -89,7 +89,7 @@ qualname = sqlalchemy.engine
 # repoze.who and repoze.what:
 [logger_auth]
 level = WARN
-handlers = 
+handlers =
 qualname = auth
 {{endif}}
 
@@ -103,4 +103,4 @@ formatter = generic
 # If you create additional formatters, add them as a key to [formatters]
 [formatter_generic]
 format = %(asctime)s,%(msecs)03d %(levelname)-5.5s [%(name)s] %(message)s
-datefmt = %H:%M:%S
+datefmt = %Y-%m-%d %H:%M:%S
