@@ -1,4 +1,4 @@
-import os 
+import os
 import sys
 
 def extend_parser(parser):
@@ -47,8 +47,8 @@ def after_install(options, home_dir):
             execute(pip,'install -e svn+http://svn.turbogears.org/trunk')
             execute(pip,'install -e svn+http://svn.turbogears.org/projects/tg.devtools/trunk')
         else:
-            execute(pip,'install -i http://www.turbogears.org/2.0/downloads/current/index tg.devtools')
+            execute(pip,'install -i http://www.turbogears.org/2.1/downloads/current/index tg.devtools')
     else:#use easy_install
-        execute(easy_install,'-i http://www.turbogears.org/2.0/downloads/current/index tg.devtools')
+        execute(easy_install,'-i http://www.turbogears.org/2.1/downloads/current/index tg.devtools')
 
 

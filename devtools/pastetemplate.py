@@ -8,7 +8,7 @@ class TurboGearsTemplate(templates.Template):
     """
     _template_dir = 'templates/turbogears'
     template_renderer = staticmethod(paste_script_template_renderer)
-    summary = 'TurboGears 2.0 Standard Quickstart Template'
+    summary = 'TurboGears 2.1 Standard Quickstart Template'
     egg_plugins = ['PasteScript', 'Pylons', 'TurboGears2', 'tg.devtools']
     vars = [
         templates.var('sqlalchemy', 'use SQLAlchemy as ORM', default=True),
@@ -58,9 +58,9 @@ class TurboGearsExtTemplate(templates.Template):
     ]
 
     def pre(self, command, output_dir, vars):
-    	# FIXME: for the moment we have to do a copy/paste from the Turbogears 
-    	# template so that we have defined the variables from setup.py_tmpl 
-    	# which is very similar to the one found in the Turbogears quickstart 
+    	# FIXME: for the moment we have to do a copy/paste from the Turbogears
+    	# template so that we have defined the variables from setup.py_tmpl
+    	# which is very similar to the one found in the Turbogears quickstart
     	# template.
         template_engine = vars.setdefault('template_engine', 'genshi')
         vars['sqlalchemy'] = True
