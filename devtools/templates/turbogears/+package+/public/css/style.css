@@ -179,6 +179,22 @@ form.loginfields input.text
     color: #fff;
 }
 
+form.loginfields #loginremember
+{
+    float:right;
+    vertical-align: middle;
+    height: 26px;
+}
+
+form.loginfields #labelremember 
+{
+    float: right;
+    width: auto;
+    margin:0;
+    margin-right: 15px;
+    vertical-align: middle;
+}
+
 form.loginfields input#submit
 {
     background: url('../images/loginbottombg.png') bottom left no-repeat;
