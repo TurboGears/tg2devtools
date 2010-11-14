@@ -8,8 +8,8 @@ class TurboGearsTemplate(templates.Template):
     """
     _template_dir = 'templates/turbogears'
     template_renderer = staticmethod(paste_script_template_renderer)
-    summary = 'TurboGears 2.1 Standard Quickstart Template'
-    egg_plugins = ['PasteScript', 'Pylons', 'TurboGears2', 'tg.devtools']
+    summary = 'TurboGears 2. Standard Quickstart Template'
+    egg_plugins = ['PasteScript', 'Pylons', 'TurboGears2']
     vars = [
         templates.var('sqlalchemy', 'use SQLAlchemy as ORM', default=True),
         templates.var('auth', 'use authentication and authorization support', default="sqlalchemy"),
@@ -26,8 +26,8 @@ class TurboGearsTemplate(templates.Template):
         vars['package_logger'] = package_logger
 
         template_engine = \
-            vars.setdefault('template_engine',
-                'genshi')
+                        vars.setdefault('template_engine',
+                                        'genshi')
 
         if template_engine == 'mako':
             # Support a Babel extractor default for Mako
@@ -42,26 +42,34 @@ class TurboGearsTemplate(templates.Template):
             vars['egg_plugins'].append('tgext.geo')
 
 
+class MongoTemplate(templates.Template):
+    """
+    TurboGears 2 default paste template class
+    """
+    _template_dir = 'templates/mongo'
+    summary = 'Standard Mongo Template for TurboGears2.'
+
+
 class TurboGearsExtTemplate(templates.Template):
     """
-		TurboGears 2 extension paster template class
+    TurboGears 2 extension paster template class
     """
 
     summary = 'TurboGears 2 extension template'
 
     _template_dir = 'templates/tgext'
     template_renderer = staticmethod(paste_script_template_renderer)
-    egg_plugins = ['TurboGears2', 'Pylons', 'PasteScript', 'tg.devtools']
+    egg_plugins = ['TurboGears2', 'Pylons', 'PasteScript']
     required_templates = []
     vars = [
-		    templates.var('description', 'Short description of the extension')
+        templates.var('description', 'Short description of the extension')
     ]
 
     def pre(self, command, output_dir, vars):
-    	# FIXME: for the moment we have to do a copy/paste from the Turbogears
-    	# template so that we have defined the variables from setup.py_tmpl
-    	# which is very similar to the one found in the Turbogears quickstart
-    	# template.
+        # FIXME: for the moment we have to do a copy/paste from the Turbogears
+        # template so that we have defined the variables from setup.py_tmpl
+        # which is very similar to the one found in the Turbogears quickstart
+        # template.
         template_engine = vars.setdefault('template_engine', 'genshi')
         vars['sqlalchemy'] = True
         if template_engine == 'mako':
@@ -70,4 +78,4 @@ class TurboGearsExtTemplate(templates.Template):
                 "('templates/**.mako', 'mako', None),\n%s#%s" % (' ' * 4,
                                                                  ' ' * 8)
         else:
-        	vars['babel_templates_extractor'] = ''
+            vars['babel_templates_extractor'] = ''

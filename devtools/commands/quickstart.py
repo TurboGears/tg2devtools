@@ -19,8 +19,7 @@ Usage:
 .. parsed-literal::
 
     paster quickstart [--version][-h|--help]
-            [-p *PACKAGE*][--dry-run][-t|--templates *TEMPLATES*]
-            [-s|--sqlalchemy][-o|--sqlobject][-a|--auth][-g|--geo]
+            [-p *PACKAGE*][--dry-run][-s|--sqlalchemy][-x|--nosa][-a|--auth][-n|--noauth][-g|--geo]
 
 .. container:: paster-usage
 
@@ -32,12 +31,14 @@ Usage:
       package name for the code
   --dry-run
       dry run (don't actually do anything)
-  -t TEMPLATES, --templates=TEMPLATES
-      user specific templates
   -s, --sqlalchemy
       use SQLAlchemy as ORM
+  -x, --nosa
+      Do not use SQLAlchemy
   -a, --auth
       provide authentication and authorization support
+  -n, --noauth
+      provide no authentication or authorization support
   -g, --geo
       add GIS support
 """
@@ -221,8 +222,6 @@ or start project with authentication and authorization support::
         cmd_args = []
         for template in self.templates.split():
             cmd_args.append("--template=%s" % template)
-        if self.svn_repository:
-            cmd_args.append("--svn-repository=%s" % self.svn_repository)
         if self.dry_run:
             cmd_args.append("--simulate")
             cmd_args.append("-q")

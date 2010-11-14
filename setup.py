@@ -48,6 +48,7 @@ setup(
         [paste.paster_create_template]
         turbogears2=devtools.pastetemplate:TurboGearsTemplate
         tgext=devtools.pastetemplate:TurboGearsExtTemplate
+        mongo=devtools.pastetemplate:MongoTemplate
         [turbogears2.template]
         turbogears2=devtools.pastetemplate:TurboGearsTemplate
     ''',
