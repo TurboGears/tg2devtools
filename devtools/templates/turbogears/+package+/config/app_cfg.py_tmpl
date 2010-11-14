@@ -47,6 +47,11 @@ base_config.renderers.append('genshi')
 base_config.use_sqlalchemy = True
 base_config.model = {{package}}.model
 base_config.DBSession = {{package}}.model.DBSession
+{{else}}
+base_config.use_sqlalchemy=False
+base_config.use_transaction_manager=False
+base_config.auth_backend=None
+base_config.use_toscawidgets=False
 {{endif}}
 
 {{if auth == "sqlalchemy"}}

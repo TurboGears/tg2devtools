@@ -3,6 +3,7 @@
 
 from tg import expose, flash, require, url, request, redirect
 from pylons.i18n import ugettext as _, lazy_ugettext as l_
+
 {{if auth == "sqlalchemy"}}
 from tgext.admin.tgadminconfig import TGAdminConfig
 from tgext.admin.controller import AdminController
@@ -10,12 +11,16 @@ from repoze.what import predicates
 {{endif}}
 
 from {{package}}.lib.base import BaseController
+
+{{if sqlalchemy=="True"}}
 from {{package}}.model import DBSession, metadata
-from {{package}}.controllers.error import ErrorController
-{{if auth == "sqlalchemy"}}
 from {{package}} import model
+{{endif}}
+{{if auth == "sqlalchemy"}}
 from {{package}}.controllers.secure import SecureController
 {{endif}}
+
+from {{package}}.controllers.error import ErrorController
 
 __all__ = ['RootController']
 
