@@ -42,7 +42,7 @@ base_config.renderers.append('genshi')
 #base_config.renderers.append('chameleon_genshi')
 {{endif}}
 
-{{if sqlalchemy}}
+{{if sqlalchemy == True}}
 #Configure the base SQLALchemy Setup
 base_config.use_sqlalchemy = True
 base_config.model = {{package}}.model

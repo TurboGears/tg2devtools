@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-{{if sqlalchemy}}
+{{if sqlalchemy == True}}
 """The application's model objects"""
 
 from zope.sqlalchemy import ZopeTransactionExtension
@@ -38,11 +38,14 @@ metadata = DeclarativeBase.metadata
 # and import them at the bottom of this file.
 #
 ######
+{{endif}}
 
 def init_model(engine):
     """Call me before using any of the tables or classes in the model."""
 
+{{if sqlalchemy == True}}
     DBSession.configure(bind=engine)
+{{endif}}
     # If you are using reflection to introspect your database and create
     # table objects for you, your tables must be defined and mapped inside
     # the init_model function, so that the engine is available if you
@@ -59,10 +62,10 @@ def init_model(engine):
 
     #mapper(Reflected, t_reflected)
 
-{{endif}}
 
 # Import your model modules here.
 
 {{if auth == "sqlalchemy"}}
 from {{package}}.model.auth import User, Group, Permission
 {{endif}}
+

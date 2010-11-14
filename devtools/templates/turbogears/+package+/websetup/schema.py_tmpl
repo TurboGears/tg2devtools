@@ -7,7 +7,7 @@ from tg import config
 
 def setup_schema(command, conf, vars):
     """Place any commands to setup {{package}} here"""
-    {{if sqlalchemy}}
+    {{if sqlalchemy == True}}
     # Load the models
 
     # <websetup.websetup.schema.before.model.import>

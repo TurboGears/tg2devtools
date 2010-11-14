@@ -14,18 +14,21 @@ setup(
     author_email='',
     #url='',
     install_requires=[
-        "TurboGears2 >= 2.1a1",
-        "Babel >=0.9.4",
-        {{if sqlalchemy}}
-        "zope.sqlalchemy >= 0.4 ",
-        "repoze.tm2 >= 1.0a4",
+        "TurboGears2 >= 2.2a0",
+        {{if sqlalchemy == True}}
+        "zope.sqlalchemy >= 0.4",
+        "repoze.tm2 >= 1.0a5",
         {{endif}}
         {{if auth == "sqlalchemy"}}
-        "repoze.what-quickstart >= 1.0",
-        "tgext.admin>=0.3.3",
-        {{endif}}
-        {{if geo == "True"}}
-        "tgext.geo",
+        "repoze.what-quickstart",
+        "repoze.what >= 1.0.8",
+        "repoze.what-quickstart",
+        "repoze.who-friendlyform >=1.0.4",
+        "repoze.what-pylons >= 1.0rc3",
+        "repoze.what.plugins.sql",
+        "repoze.who ==1.0.18",
+        "tgext.admin>=0.3.9",
+        "tw.forms",
         {{endif}}
         ],
     setup_requires=["PasteScript >= 1.7"],
@@ -33,7 +36,12 @@ setup(
     packages=find_packages(exclude=['ez_setup']),
     include_package_data=True,
     test_suite='nose.collector',
-    tests_require=['WebTest', 'BeautifulSoup'],
+    tests_require=['WebTest',
+                   'nosetests',
+                   'coverage',
+                   'wsgiref'
+                   'repoze.who-testutil >= 1.0',
+                   ],
     package_data={'{{package}}': ['i18n/*/LC_MESSAGES/*.mo',
                                  'templates/*/*',
                                  'public/*/*']},

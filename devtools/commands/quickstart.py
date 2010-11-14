@@ -81,7 +81,6 @@ or start project with authentication and authorization support::
     package = None
     svn_repository = None
     sqlalchemy = False
-    sqlobject = False
     templates = "turbogears2"
     dry_run = False
     no_input = False
@@ -93,6 +92,11 @@ or start project with authentication and authorization support::
     parser.add_option("-a", "--auth",
             help='add authentication and authorization support',
             action="store_true", dest="auth")
+
+    parser.add_option("-n", "--noauth",
+            help='No authorization support',
+            action="store_true", dest="no_auth")
+    
     parser.add_option("-m", "--mako",
             help="default templates mako",
             action="store_true", dest="mako")
@@ -107,7 +111,7 @@ or start project with authentication and authorization support::
             dest="svn_repository", default=svn_repository)
     parser.add_option("-s", "--sqlalchemy",
             help="use SQLAlchemy as ORM",
-            action="store_true", dest="sqlalchemy", default=True)
+            action="store_true", dest="sqlalchemy", default=False)
     parser.add_option("-t", "--templates",
             help="user specific templates",
             dest="templates", default=templates)
@@ -122,49 +126,52 @@ or start project with authentication and authorization support::
         """Quickstarts the new project."""
 
         self.__dict__.update(self.options.__dict__)
-        if not self.sqlalchemy and not self.sqlobject:
-            self.sqlalchemy = True
-
+        
+        
+        if self.no_auth:
+            self.auth=False
+            
         if self.args:
             self.name = self.args[0]
 
         while not self.name:
             self.name = raw_input("Enter project name: ")
 
-        package = self.name.lower()
-        package = beginning_letter.sub("", package)
-        package = valid_only.sub("", package)
-        if package and self.no_input:
-            self.package = package
-        else:
-            self.package = None
-            while not self.package:
-                self.package = raw_input(
-                    "Enter package name [%s]: " % package).strip() or package
+            
+        if not self.package:
+            package = self.name.lower()
+            package = beginning_letter.sub("", package)
+            package = valid_only.sub("", package)
+            if package and self.no_input:
+                self.package = package
+            else:
+                self.package = None
+                while not self.package:
+                    self.package = raw_input(
+                        "Enter package name [%s]: " % package).strip() or package
 
         if self.no_input:
 
+            #defaults
             self.mako = False
             self.auth = True
 
-        else:
+        while self.mako is None:
+            self.mako = raw_input(
+                "Would you prefer mako templates? (yes/[no]): ")
+            self.mako = dict(y=True, n=False).get(
+                self.mako.lstrip()[:1].lower() or 'n')
+            if self.mako is None:
+                print "Please enter y(es) or n(o)."
 
-            while self.mako is None:
-                self.mako = raw_input(
-                    "Would you prefer mako templates? (yes/[no]): ")
-                self.mako = dict(y=True, n=False).get(
-                    self.mako.lstrip()[:1].lower() or 'n')
-                if self.mako is None:
-                    print "Please enter y(es) or n(o)."
-
-            while self.auth is None:
-                self.auth = raw_input(
-                    "Do you need authentication and authorization"
-                    " in this project? ([yes]/no): ")
-                self.auth = dict(y=True, n=False).get(
-                    self.auth.lstrip()[:1].lower() or 'y')
-                if self.auth is None:
-                    print "Please enter y(es) or n(o)."
+        while self.auth is None:
+            self.auth = raw_input(
+                "Do you need authentication and authorization"
+                " in this project? ([yes]/no): ")
+            self.auth = dict(y=True, n=False).get(
+                self.auth.lstrip()[:1].lower() or 'y')
+            if self.auth is None:
+                print "Please enter y(es) or n(o)."
 
         if self.auth:
             if self.sqlalchemy:
@@ -175,9 +182,6 @@ or start project with authentication and authorization support::
                     ' the repoze.what documentation to learn how to implement'
                     ' authentication/authorization with other sources.')
                 return
-                # TODO: As far as I know, SQLObject has never been supported in
-                # TG2
-                # self.auth = "sqlobject"
         else:
             self.auth = None
 
@@ -223,7 +227,6 @@ or start project with authentication and authorization support::
             cmd_args.append("-q")
         cmd_args.append(self.name)
         cmd_args.append("sqlalchemy=%s" % self.sqlalchemy)
-        cmd_args.append("sqlobject=%s" % self.sqlobject)
         cmd_args.append("auth=%s" % self.auth)
         cmd_args.append("geo=%s" % self.geo)
         cmd_args.append("package=%s" % self.package)
@@ -233,56 +236,33 @@ or start project with authentication and authorization support::
         # set the exact ORM-version for the proper requirements
         # it's extracted from our own requirements, so looking
         # them up must be in sync (there must be the extras_require named
-        # sqlobject/sqlalchemy)
-        """if self.sqlobject:
-            sqlobjectversion = str(get_requirement('sqlobject'))
-            cmd_args.append("sqlobjectversion=%s" % sqlobjectversion)
-        if self.sqlalchemy:
-            sqlalchemyversion = str(get_requirement('sqlalchemy'))
-            cmd_args.append("sqlalchemyversion=%s" % sqlalchemyversion)
-        """
+        # sqlalchemy)
+        
         command.run(cmd_args)
 
-        if not self.dry_run:
-            os.chdir(self.name)
-            if self.sqlobject:
-                # Create the SQLObject history directory only when needed.
-                # With paste.script it's only possible to skip files, but
-                # not directories. So we are handling this manually.
-                sodir = '%s/sqlobject-history' % self.package
-                if not os.path.exists(sodir):
-                    os.mkdir(sodir)
-                try:
-                    if not os.path.exists(os.path.join(os.path.dirname(
-                            os.path.abspath(sodir)), '.svn')):
-                        raise OSError
-                    command.run_command('svn', 'add', sodir)
-                except OSError:
-                    pass
+        if self.dry_run:
+            return 
+            
+        os.chdir(self.name)
+       
+        sys.argv = ["setup.py", "egg_info"]
+        import imp
+        imp.load_module("setup", *imp.find_module("setup", ["."]))
 
-            startscript = "start-%s.py" % self.package
-            if os.path.exists(startscript):
-                oldmode = os.stat(startscript).st_mode
-                os.chmod(startscript,
-                        oldmode | stat.S_IXUSR)
-            sys.argv = ["setup.py", "egg_info"]
-            import imp
-            imp.load_module("setup", *imp.find_module("setup", ["."]))
+        # dirty hack to allow "empty" dirs
+        for base, path, files in os.walk("./"):
+            for file in files:
+                if file == "empty":
+                    os.remove(os.path.join(base, file))
 
-            # dirty hack to allow "empty" dirs
-            for base, path, files in os.walk("./"):
-                for file in files:
-                    if file == "empty":
-                        os.remove(os.path.join(base, file))
+        #copy over the mako templates if appropriate
+        if self.mako:
+            print 'Writing mako template files to ./'+os.path.join(self.package, 'templates')
 
-            if self.mako:
-                print 'Writing mako template files to ./'+os.path.join(self.package, 'templates')
+            #remove existing template files
+            package_template_dir = os.path.abspath(os.path.join(self.package, 'templates'))
+            shutil.rmtree(package_template_dir, ignore_errors=True)
 
-                #remove existing template files
-                package_template_dir = os.path.abspath(os.path.join(self.package, 'templates'))
-                shutil.rmtree(package_template_dir, ignore_errors=True)
-#                os.mkdir(package_template_dir)
-
-                #replace template files with mako ones
-                mako_template_dir = os.path.abspath(os.path.dirname(__file__))+'/quickstart_mako'
-                shutil.copytree(mako_template_dir, package_template_dir)
+            #replace template files with mako ones
+            mako_template_dir = os.path.abspath(os.path.dirname(__file__))+'/quickstart_mako'
+            shutil.copytree(mako_template_dir, package_template_dir)
