@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-{{if sqlalchemy = True}}
+{{if sqlalchemy = 'True'}}
 """The application's model objects"""
 
 from zope.sqlalchemy import ZopeTransactionExtension

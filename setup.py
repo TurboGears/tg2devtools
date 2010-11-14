@@ -13,14 +13,13 @@ test_requirements = ['coverage',
                     'repoze.what-quickstart >= 1.0.3',
                     'Babel >=0.9.4',
                     'tgext.admin>=0.3.9',
+                    'SQLAlchemy >= 0.5',
+                    'repoze.what-quickstart >= 1.0.6',
+                    'repoze.who==1.0.18'
                     ]
 
 install_requirements = [
-                        'TurboGears2 >= 2.1b2',
-                        #'sqlalchemy-migrate >= 0.5.1',
-                        'SQLAlchemy >= 0.5',
-                        'repoze.what-quickstart >= 1.0.6',
-                        'repoze.who==1.0.18'
+                        'TurboGears2 >= 2.2a0',
                         ]
 
 setup(
