@@ -8,7 +8,6 @@ from tg.render import render
 from tg import request
 {{endif}}
 from pylons.i18n import _, ungettext, N_
-from tw.api import WidgetBunch
 
 {{if sqlalchemy == 'True'}}
 import {{package}}.model as model
