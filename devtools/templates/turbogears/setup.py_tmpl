@@ -1,4 +1,12 @@
 # -*- coding: utf-8 -*-
+#quckstarted Options:
+#
+# sqlalchemy: {{sqlalchemy}}
+# auth:       {{auth}}
+# mako:       {{mako}}
+#
+#
+
 try:
     from setuptools import setup, find_packages
 except ImportError:
@@ -15,7 +23,7 @@ setup(
     #url='',
     install_requires=[
         "TurboGears2 >= 2.2a0",
-        {{if sqlalchemy == True}}
+        {{if sqlalchemy == 'True'}}
         "zope.sqlalchemy >= 0.4",
         "repoze.tm2 >= 1.0a5",
         {{endif}}

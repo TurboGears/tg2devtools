@@ -89,6 +89,7 @@ or start project with authentication and authorization support::
     parser = optparse.OptionParser(
                     usage="%prog quickstart [options] [project name]",
                     version="%prog " + version)
+
     parser.add_option("-a", "--auth",
             help='add authentication and authorization support',
             action="store_true", dest="auth")
@@ -100,24 +101,27 @@ or start project with authentication and authorization support::
     parser.add_option("-m", "--mako",
             help="default templates mako",
             action="store_true", dest="mako")
+
     parser.add_option("-g", "--geo",
             help="add GIS support",
             action="store_true", dest="geo")
+
     parser.add_option("-p", "--package",
             help="package name for the code",
             dest="package")
-    parser.add_option("-r", "--svn-repository", metavar="REPOS",
-            help="create project in given SVN repository",
-            dest="svn_repository", default=svn_repository)
+
     parser.add_option("-s", "--sqlalchemy",
             help="use SQLAlchemy as ORM",
             action="store_true", dest="sqlalchemy", default=False)
-    parser.add_option("-t", "--templates",
-            help="user specific templates",
-            dest="templates", default=templates)
+
+    parser.add_option("-x", "--nosa",
+            help="No SQLAlchemy",
+            action="store_true", dest="no_sqlalchemy", default=False)
+
     parser.add_option("--dry-run",
             help="dry run (don't actually do anything)",
             action="store_true", dest="dry_run")
+
     parser.add_option("--noinput",
             help="no input (don't ask any questions)",
             action="store_true", dest="no_input")
@@ -127,6 +131,9 @@ or start project with authentication and authorization support::
 
         self.__dict__.update(self.options.__dict__)
         
+        
+        if self.no_sqlalchemy:
+            self.sqlalchemy = False
         
         if self.no_auth:
             self.auth=False
@@ -174,14 +181,8 @@ or start project with authentication and authorization support::
                 print "Please enter y(es) or n(o)."
 
         if self.auth:
-            if self.sqlalchemy:
-                self.auth = "sqlalchemy"
-            else:
-                print ('You can only use authentication and authorization'
-                    ' in a new project if you use SQLAlchemy. Please check'
-                    ' the repoze.what documentation to learn how to implement'
-                    ' authentication/authorization with other sources.')
-                return
+            self.auth = "sqlalchemy"
+            self.sqlalchemy = True
         else:
             self.auth = None
 
