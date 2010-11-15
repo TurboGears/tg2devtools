@@ -24,7 +24,7 @@ install_requirements = [
 
 setup(
     name='tg.devtools',
-    version="2.1rc1",
+    version="2.2a0",
     description="",
     long_description="""""",
     classifiers=[],
@@ -40,11 +40,8 @@ setup(
     entry_points='''
         [paste.global_paster_command]
         quickstart = devtools.commands.quickstart:QuickstartCommand
-        [paste.paster_command]
-        migrate = devtools.commands.migration:MigrateCommand
         [turbogears2.command]
         quickstart = devtools.commands.quickstart:QuickstartCommand
-        migrate = devtools.commands.migration:MigrateCommand
         [paste.paster_create_template]
         turbogears2=devtools.pastetemplate:TurboGearsTemplate
         tgext=devtools.pastetemplate:TurboGearsExtTemplate
