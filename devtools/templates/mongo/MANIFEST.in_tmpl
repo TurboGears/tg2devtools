@@ -1,4 +1,0 @@
-recursive-include {{package}}/public *
-include {{package}}/public/favicon.ico
-recursive-include {{package}}/i18n *
-recursive-include {{package}}/templates *

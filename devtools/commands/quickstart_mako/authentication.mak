@@ -1,5 +1,5 @@
 <%inherit file="local:templates.master"/>
-<%def name="title()">Learning TurboGears 2.0: Quick guide to authentication.</%def>
+<%def name="title()">Learning TurboGears 2.1: Quick guide to authentication.</%def>
 
 ${parent.sidebar_top()}
 ${parent.sidebar_bottom()}

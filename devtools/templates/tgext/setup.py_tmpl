@@ -14,9 +14,7 @@ setup(
     author_email='',
     #url='',
     install_requires=[
-        "TurboGears2 >= 2.0b7",
-        "zope.sqlalchemy >= 0.4 ",
-        "repoze.tm2 >= 1.0a4",
+        "TurboGears2 >= 2.1rc1",
         ],
     setup_requires=["PasteScript >= 1.7"],
     paster_plugins={{egg_plugins}},

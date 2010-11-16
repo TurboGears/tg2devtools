@@ -13,18 +13,15 @@ test_requirements = ['coverage',
                     'repoze.what-quickstart >= 1.0.3',
                     'Babel >=0.9.4',
                     'tgext.admin>=0.3.9',
-                    'SQLAlchemy >= 0.5',
-                    'repoze.what-quickstart >= 1.0.6',
-                    'repoze.who==1.0.18'
                     ]
 
 install_requirements = [
-                        'TurboGears2 >= 2.2a0',
+                        'TurboGears2 >= 2.1rc1',
                         ]
 
 setup(
     name='tg.devtools',
-    version="2.2a0",
+    version="2.1rc1",
     description="",
     long_description="""""",
     classifiers=[],
@@ -40,12 +37,14 @@ setup(
     entry_points='''
         [paste.global_paster_command]
         quickstart = devtools.commands.quickstart:QuickstartCommand
+        [paste.paster_command]
+        migrate = devtools.commands.migration:MigrateCommand
         [turbogears2.command]
         quickstart = devtools.commands.quickstart:QuickstartCommand
+        migrate = devtools.commands.migration:MigrateCommand
         [paste.paster_create_template]
         turbogears2=devtools.pastetemplate:TurboGearsTemplate
         tgext=devtools.pastetemplate:TurboGearsExtTemplate
-        mongo=devtools.pastetemplate:MongoTemplate
         [turbogears2.template]
         turbogears2=devtools.pastetemplate:TurboGearsTemplate
     ''',

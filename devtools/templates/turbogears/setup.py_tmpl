@@ -22,7 +22,7 @@ setup(
     author_email='',
     #url='',
     install_requires=[
-        "TurboGears2 >= 2.2a0",
+        "TurboGears2 >= 2.1",
         {{if sqlalchemy == 'True'}}
         "zope.sqlalchemy >= 0.4",
         "repoze.tm2 >= 1.0a5",

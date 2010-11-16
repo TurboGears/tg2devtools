@@ -1,7 +1,7 @@
 <%inherit file="local:templates.master"/>
 
 <%def name="title()">
-Learning TurboGears 2.0: Quick guide to the Quickstart pages.
+Learning TurboGears 2.1: Quick guide to the Quickstart pages.
 </%def>
 
 ${parent.sidebar_top()}
