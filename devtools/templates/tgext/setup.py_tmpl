@@ -22,13 +22,13 @@ setup(
     namespace_packages=['tgext'],
     include_package_data=True,
     test_suite='nose.collector',
-    tests_require=['WebTest', 'BeautifulSoup'],
+    tests_require=['WebTest >= 1.2.3', 'BeautifulSoup'],
     message_extractors={'{{package}}': [
             ('**.py', 'python', None),
             ('templates/**.mako', 'mako', None),
             ('templates/**.html', 'genshi', None),
             {{babel_templates_extractor}}('public/**', 'ignore', None)]},
     entry_points="""
-    
+
     """,
 )
