@@ -23,6 +23,11 @@ setup(
     #url='',
     install_requires=[
         "TurboGears2 >= 2.1",
+        {{if mako == 'True'}}
+        "Mako",
+        {{else}}
+        "Genshi",
+        {{endif}}
         {{if sqlalchemy == 'True'}}
         "zope.sqlalchemy >= 0.4",
         "repoze.tm2 >= 1.0a5",
@@ -55,8 +60,11 @@ setup(
                                  'public/*/*']},
     message_extractors={'{{package}}': [
             ('**.py', 'python', None),
+            {{if mako == 'True'}}
             ('templates/**.mako', 'mako', None),
+            {{else}}
             ('templates/**.html', 'genshi', None),
+            {{endif}}
             {{babel_templates_extractor}}('public/**', 'ignore', None)]},
 
     entry_points="""
