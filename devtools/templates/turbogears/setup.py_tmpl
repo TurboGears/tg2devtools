@@ -37,7 +37,7 @@ setup(
         "repoze.what >= 1.0.8",
         "repoze.what-quickstart",
         "repoze.who-friendlyform >=1.0.4",
-        "repoze.what-pylons >= 1.0rc3",
+        "repoze.what-pylons >= 1.0",
         "repoze.what.plugins.sql",
         "repoze.who ==1.0.18",
         "tgext.admin>=0.3.9",
@@ -53,7 +53,7 @@ setup(
                    'nosetests',
                    'coverage',
                    'wsgiref'
-                   'repoze.who-testutil >= 1.0',
+                   'repoze.who-testutil >= 1.0.1',
                    ],
     package_data={'{{package}}': ['i18n/*/LC_MESSAGES/*.mo',
                                  'templates/*/*',
