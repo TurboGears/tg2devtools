@@ -74,4 +74,7 @@ setup(
     [paste.app_install]
     main = pylons.util:PylonsInstaller
     """,
+    dependency_links=[
+        "http://www.turbogears.org/2.1/downloads/current"
+        ]
 )
