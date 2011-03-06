@@ -13,6 +13,7 @@ debug = true
 #email_to = you@yourdomain.com
 smtp_server = localhost
 error_email_from = paste@localhost
+templating.genshi.method = XHTML
 
 [server:main]
 use = egg:Paste#http
