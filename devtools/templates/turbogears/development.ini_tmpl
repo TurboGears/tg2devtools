@@ -13,7 +13,6 @@ debug = true
 #email_to = you@yourdomain.com
 smtp_server = localhost
 error_email_from = paste@localhost
-templating.genshi.method = XHTML
 
 [server:main]
 use = egg:Paste#http
@@ -54,6 +53,10 @@ sqlalchemy.echo = false
 sqlalchemy.echo_pool = false
 sqlalchemy.pool_recycle = 3600
 {{endif}}
+
+# This line ensures that Genshi will render xhtml when sending the
+output. Change to html or xml, as desired.
+templating.genshi.method = xhtml
 
 # if you are using Mako and want to be able to reload
 # the mako template from disk during the development phase
