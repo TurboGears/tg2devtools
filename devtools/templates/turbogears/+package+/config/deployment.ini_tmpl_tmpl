@@ -43,6 +43,10 @@ sqlalchemy.url = sqlite:///%(here)s/somedb.db
 sqlalchemy.echo = False
 {{endif}}
 
+# This line ensures that Genshi will render xhtml when sending the
+# output. Change to html or xml, as desired.
+templating.genshi.method = xhtml
+
 # WARNING: *THE LINE BELOW MUST BE UNCOMMENTED ON A PRODUCTION ENVIRONMENT*
 # Debug mode will enable the interactive debugging tool, allowing ANYONE to
 # execute malicious code after an exception is raised.
