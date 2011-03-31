@@ -27,3 +27,11 @@ domain = {{package}}
 input_file = {{package}}/i18n/{{package}}.pot
 output_dir = {{package}}/i18n
 previous = true
+
+# Static files extraction for TW
+[archive_tw_resources]
+output = {{package}}/public/toscawidgets/
+distributions = {{package}}
+#yuicompressor = /home/someuser/bin/yuicompressor.jar
+#compresslevel = 2
+onepass = true
