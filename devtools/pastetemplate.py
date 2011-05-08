@@ -15,6 +15,7 @@ class TurboGearsTemplate(templates.Template):
         templates.var('auth', 'use authentication and authorization support', default="sqlalchemy"),
         templates.var('geo', 'Include GIS support (True/False)', default='False'),
         templates.var('mako', 'Include Mako support (True/False)', default='False'),
+        templates.var('migrations', 'Enable model migrations for SQLAlchemy (True/False)', default='True'),
     ]
 
     def pre(self, command, output_dir, vars):
@@ -40,6 +41,9 @@ class TurboGearsTemplate(templates.Template):
         if vars['geo'] == 'True':
             # Add tgext.geo as paster plugin
             vars['egg_plugins'].append('tgext.geo')
+
+        if vars['migrations'] == 'True':
+            vars['egg_plugins'].append('tg.devtools')
 
 
 class MongoTemplate(templates.Template):

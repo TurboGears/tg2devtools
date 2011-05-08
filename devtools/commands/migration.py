@@ -38,15 +38,33 @@ check http://code.google.com/p/sqlalchemy-migrate/wiki/MigrateVersioning for det
 
 """
 
+import pkg_resources
 from paste.script import command
-import os
+import os, sys
 import ConfigParser
 from migrate.versioning.shell import main
 
+
 class MigrateCommand(command.Command):
-    """Sqlalchemy migration"""
+    """Create and apply SQLAlchemy migrations
+Migrations will be managed inside the 'migration/versions' directory
+
+Usage: paster migrate COMMAND ...
+Use 'paster migrate help' to get list of commands and their usage
+
+Create a new migration::
+
+    $ paster migrate script 'Add New Things'
+
+Apply migrations::
+
+    $ paster migrate upgrade
+"""
+
+    version = pkg_resources.get_distribution('turbogears2').version
     max_args = 3
     min_args = 1
+    min_args_error = __doc__
     summary = __doc__.splitlines()[0]
     usage = '\n' + __doc__
     group_name = "TurboGears2"
@@ -69,5 +87,8 @@ class MigrateCommand(command.Command):
         except:
             print "you shold set sqlalchemy.url in development.ini first"
 
-        print "The repository is '%s'\nThe url is '%s'"%(self.name, self.dburi)
-        main(argv=self.args, url=self.dburi,repository=self.name, name=self.name)
+        print "The repository is '%s'\nThe url is '%s'\n"%(self.name, self.dburi)
+        if not self.args:
+            self.args = ['help']
+        sys.argv[0] = sys.argv[0] + ' migrate'
+        main(argv=self.args, url=self.dburi, repository=self.name, name=self.name)
