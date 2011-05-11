@@ -272,3 +272,9 @@ or start project with authentication and authorization support::
             #replace template files with mako ones
             mako_template_dir = os.path.abspath(os.path.dirname(__file__))+'/quickstart_mako'
             shutil.copytree(mako_template_dir, package_template_dir)
+
+        if self.migrations:
+            from migration import MigrateCommand
+            command = MigrateCommand('migrate')
+            cmd_args = ['create']
+            command.run(cmd_args)
