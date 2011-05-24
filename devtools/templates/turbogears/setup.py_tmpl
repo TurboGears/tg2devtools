@@ -31,6 +31,7 @@ setup(
         {{if sqlalchemy == 'True'}}
         "zope.sqlalchemy >= 0.4",
         "repoze.tm2 >= 1.0a5",
+	"sqlalchemy < 0.7",
         {{endif}}
         {{if auth == "sqlalchemy"}}
         "repoze.what-quickstart",
@@ -50,9 +51,9 @@ setup(
     include_package_data=True,
     test_suite='nose.collector',
     tests_require=['WebTest >= 1.2.3',
-                   'nosetests',
+                   'nose',
                    'coverage',
-                   'wsgiref'
+                   'wsgiref',
                    'repoze.who-testutil >= 1.0.1',
                    ],
     package_data={'{{package}}': ['i18n/*/LC_MESSAGES/*.mo',
