@@ -119,6 +119,10 @@ or start project with authentication and authorization support::
             help="No SQLAlchemy",
             action="store_true", dest="no_sqlalchemy", default=False)
 
+    parser.add_option("--disable-migrations",
+            help="disable sqlalchemy-migrate model migrations",
+            action="store_false", dest="migrations", default=True)
+
     parser.add_option("--dry-run",
             help="dry run (don't actually do anything)",
             action="store_true", dest="dry_run")
@@ -163,6 +167,7 @@ or start project with authentication and authorization support::
             #defaults
             self.mako = False
             self.auth = True
+            self.migrations = True
 
         while self.mako is None:
             self.mako = raw_input(
@@ -232,6 +237,7 @@ or start project with authentication and authorization support::
         cmd_args.append("package=%s" % self.package)
         cmd_args.append("tgversion=%s" % self.version)
         cmd_args.append("mako=%s"%self.mako)
+        cmd_args.append("migrations=%s"%self.migrations)
         cmd_args.append("cookiesecret=%s"%self.cookiesecret)
         # set the exact ORM-version for the proper requirements
         # it's extracted from our own requirements, so looking
@@ -266,3 +272,9 @@ or start project with authentication and authorization support::
             #replace template files with mako ones
             mako_template_dir = os.path.abspath(os.path.dirname(__file__))+'/quickstart_mako'
             shutil.copytree(mako_template_dir, package_template_dir)
+
+        if self.migrations:
+            from migration import MigrateCommand
+            command = MigrateCommand('migrate')
+            cmd_args = ['create']
+            command.run(cmd_args)
