@@ -23,12 +23,12 @@ install_requirements = [
 
 setup(
     name='tg.devtools',
-    version="2.0.2",
+    version="2.0.4",
     description="",
     long_description="""""",
     classifiers=[],
     keywords='turbogears',
-    author="TurboGears Team 2008",
+    author="TurboGears Team 2011",
     author_email="turbogears@groups.google.com",
     url="www.turbogears.org",
     license="MIT",
