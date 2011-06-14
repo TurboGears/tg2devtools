@@ -123,6 +123,10 @@ or start project with authentication and authorization support::
             help="disable sqlalchemy-migrate model migrations",
             action="store_false", dest="migrations", default=True)
 
+    parser.add_option("--minimal",
+            help="use the minimal template to quickstart your application",
+            action="store_true", dest="minimal", default=False)
+
     parser.add_option("--dry-run",
             help="dry run (don't actually do anything)",
             action="store_true", dest="dry_run")
@@ -167,7 +171,6 @@ or start project with authentication and authorization support::
             #defaults
             self.mako = False
             self.auth = True
-            self.migrations = True
 
         while self.mako is None:
             self.mako = raw_input(
@@ -225,7 +228,10 @@ or start project with authentication and authorization support::
 
         command = create_distro.CreateDistroCommand("create")
         cmd_args = []
-        for template in self.templates.split():
+        templates = self.templates.split()
+        if self.minimal:
+            templates = ['turbogears2-minimal']
+        for template in templates:
             cmd_args.append("--template=%s" % template)
         if self.dry_run:
             cmd_args.append("--simulate")

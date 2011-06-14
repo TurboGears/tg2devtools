@@ -44,6 +44,7 @@ setup(
         migrate = devtools.commands.migration:MigrateCommand
         [paste.paster_create_template]
         turbogears2=devtools.pastetemplate:TurboGearsTemplate
+        turbogears2-minimal=devtools.pastetemplate:TurboGearsMinimalTemplate
         tgext=devtools.pastetemplate:TurboGearsExtTemplate
         [turbogears2.template]
         turbogears2=devtools.pastetemplate:TurboGearsTemplate
