@@ -51,6 +51,6 @@ setup(
     test_suite='nose.collector',
     tests_require = test_requirements,
     dependency_links=[
-        "http://www.turbogears.org/2.1/downloads/current"
+        "http://www.turbogears.org/2.1/downloads/next"
         ]
 )
