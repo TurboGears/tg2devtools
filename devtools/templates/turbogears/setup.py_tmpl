@@ -79,7 +79,7 @@ setup(
     main = pylons.util:PylonsInstaller
     """,
     dependency_links=[
-        "http://www.turbogears.org/2.1/downloads/current"
+        "http://www.turbogears.org/2.1/downloads/next"
         ],
     zip_safe=False
 )
