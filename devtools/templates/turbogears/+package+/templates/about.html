@@ -44,22 +44,29 @@
             Take 'about' page for example, each reusable templates generating
             a part of the page. We'll cover them in the order of where they are
             found, listed near the top of the about.html template</p>
-        <p> <strong><span class="code">header.html</span></strong> - The
-            "header.html" template contains the HTML code to display the
-            'header': The blue gradient, TG2 logo, and some site text at the
-            top of every page it is included on. When the "about.html" template
-            is called, it includes this "header.html" template (and the others)
-            with a <span class="code">&lt;xi:include /&gt;</span> tag, part of
-            the Genshi templating system. The "header.html" template is not a
-            completely static HTML -- it also dynamically displays the current
-            page name with a Genshi template method called "replace" with the
-            code: <span class="code">&lt;span py:replace="page"/&gt;</span>.
-            It means replace this <span class="code">&lt;span /&gt;</span>
-            region with the contents found in the variable 'page' that has
-            been sent in the dictionary to this "about.html" template, and is
-            available through that namespace for use by this "header.html"
-            template.  That's how it changes in the header depending on what
-            page you are visiting.
+        <p> <strong><span class="code">header.html</span></strong> -
+            The "header.html" template contains the HTML code to
+            display the 'header': The div, the h1 tag, and the
+            subtitle are there, and the the blue gradient, TG2 logo,
+            are placed by way of the .css file (from style.css) are
+            all at the top of every page it is included on. When the
+            "about.html" template is called, it includes this
+            "header.html" template (and the others) with
+            a <span class="code">&lt;xi:include /&gt;</span> tag, part
+            of the Genshi templating system. The "header.html"
+            template is not a completely static HTML -- it also
+            includes
+            (via <span class="code">&lt;xi:include/&gt;</span> tag)
+            "master.html", which dynamically displays the current page
+            name with a Genshi template method called "replace" with
+            the code: <span class="code">&lt;span
+            py:replace="page"/&gt;</span>.  It means replace
+            this <span class="code">&lt;span /&gt;</span> region with
+            the contents found in the variable 'page' that has been
+            sent in the dictionary to this "about.html" template, and
+            is available through that namespace for use by this
+            "header.html" template.  That's how it changes in the
+            header depending on what page you are visiting.
         </p>
         <p> <strong><span class="code">sidebars.html</span></strong> - The
              sidebars (navigation areas on the right side of the page) are
