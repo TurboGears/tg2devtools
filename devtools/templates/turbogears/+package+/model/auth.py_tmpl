@@ -148,8 +148,8 @@ class User(DeclarativeBase):
         """Return the user object whose user name is ``username``."""
         return DBSession.query(cls).filter_by(user_name=username).first()
 
-    def _set_password(self, password):
-        """Hash ``password`` on the fly and store its hashed version."""
+    @classmethod
+    def _hash_password(cls, password):
         # Make sure password is a str because we cannot hash unicode objects
         if isinstance(password, unicode):
             password = password.encode('utf-8')
@@ -162,7 +162,11 @@ class User(DeclarativeBase):
         # process because SQLAlchemy _wants_ unicode objects for Unicode cols
         if not isinstance(password, unicode):
             password = password.decode('utf-8')
-        self._password = password
+        return password
+
+    def _set_password(self, password):
+        """Hash ``password`` on the fly and store its hashed version."""
+        self._password = self._hash_password(password)
 
     def _get_password(self):
         """Return the hashed version of the password."""
