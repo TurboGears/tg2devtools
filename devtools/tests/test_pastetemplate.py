@@ -35,6 +35,7 @@ class TestQuickStart(object):
                     'geo': False,
                     'mako': False,
                     'cookiesecret': 'ChangeME',
+                    'migrations': True
         }
 
     def setUp(self):

@@ -14,6 +14,10 @@ except ImportError:
     use_setuptools()
     from setuptools import setup, find_packages
 
+import sys
+if sys.version_info[:2] == (2,4):
+    testpkgs.extend(['hashlib', 'pysqlite'])
+
 setup(
     name='{{project}}',
     version='0.1',
