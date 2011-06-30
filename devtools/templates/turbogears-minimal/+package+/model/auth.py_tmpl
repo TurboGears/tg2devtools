@@ -122,7 +122,7 @@ class User(DeclarativeBase):
     #{ Special methods
 
     def __repr__(self):
-        return ('<User: name=%r, email=%r, display=%r>' % (
+        return ('<User: name=%s, email=%s, display=%s>' % (
                 self.user_name, self.email_address, self.display_name)).encode('utf-8')
 
     def __unicode__(self):
@@ -222,7 +222,7 @@ class Permission(DeclarativeBase):
     #{ Special methods
 
     def __repr__(self):
-        return ('<Permission: name=%r>' % self.permission_name).encode('utf-8')
+        return ('<Permission: name=%s>' % self.permission_name).encode('utf-8')
 
     def __unicode__(self):
         return self.permission_name
