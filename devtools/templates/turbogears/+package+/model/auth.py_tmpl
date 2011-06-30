@@ -15,7 +15,7 @@ import os
 from datetime import datetime
 import sys
 try:
-    from hashlib import sha1
+    from hashlib import sha256
 except ImportError:
     sys.exit('ImportError: No module named hashlib\n'
              'If you are on python2.4 this library is not part of python. '
@@ -114,7 +114,7 @@ class User(DeclarativeBase):
 
     display_name = Column(Unicode(255))
 
-    _password = Column('password', Unicode(80),
+    _password = Column('password', Unicode(128),
                        info={'rum': {'field':'Password'{{end_braces}})
 
     created = Column(DateTime, default=datetime.now)
@@ -153,9 +153,9 @@ class User(DeclarativeBase):
         # Make sure password is a str because we cannot hash unicode objects
         if isinstance(password, unicode):
             password = password.encode('utf-8')
-        salt = sha1()
+        salt = sha256()
         salt.update(os.urandom(60))
-        hash = sha1()
+        hash = sha256()
         hash.update(password + salt.hexdigest())
         password = salt.hexdigest() + hash.hexdigest()
         # Make sure the hashed password is a unicode object at the end of the
@@ -189,11 +189,11 @@ class User(DeclarativeBase):
         :rtype: bool
 
         """
-        hash = sha1()
+        hash = sha256()
         if isinstance(password, unicode):
             password = password.encode('utf-8')
-        hash.update(password + str(self.password[:40]))
-        return self.password[40:] == hash.hexdigest()
+        hash.update(password + str(self.password[:64]))
+        return self.password[64:] == hash.hexdigest()
 
 
 class Permission(DeclarativeBase):
