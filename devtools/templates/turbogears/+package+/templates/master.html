@@ -8,7 +8,7 @@
     <xi:include href="sidebars.html" />
     <xi:include href="footer.html" />
 <head py:match="head" py:attrs="select('@*')">
-    <meta content="text/html; charset=UTF-8" http-equiv="content-type" py:replace="''"/>
+    <meta content="${response.content_type}; charset=${response.charset}" http-equiv="content-type"/>
     <title py:replace="''">Your title goes here</title>
     <meta py:replace="select('*')"/>
     <link rel="stylesheet" type="text/css" media="screen" href="${tg.url('/css/style.css')}" />
