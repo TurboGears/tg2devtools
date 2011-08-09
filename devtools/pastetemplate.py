@@ -12,6 +12,7 @@ class TurboGearsTemplate(templates.Template):
     egg_plugins = ['PasteScript', 'Pylons', 'TurboGears2']
     vars = [
         templates.var('sqlalchemy', 'use SQLAlchemy as ORM', default=True),
+        templates.var('ming', 'use Ming as ORM', default=False),        
         templates.var('auth', 'use authentication and authorization support', default="sqlalchemy"),
         templates.var('geo', 'Include GIS support (True/False)', default='False'),
         templates.var('mako', 'Include Mako support (True/False)', default='False'),
@@ -51,14 +52,6 @@ class TurboGearsMinimalTemplate(TurboGearsTemplate):
     """
     _template_dir = 'templates/turbogears-minimal'
     summary = 'TurboGears 2. Minimal Quickstart Template'
-
-class MongoTemplate(templates.Template):
-    """
-    TurboGears 2 default paste template class
-    """
-    _template_dir = 'templates/mongo'
-    summary = 'Standard Mongo Template for TurboGears2.'
-
 
 class TurboGearsExtTemplate(templates.Template):
     """

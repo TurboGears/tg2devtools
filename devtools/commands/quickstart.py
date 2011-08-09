@@ -82,6 +82,7 @@ or start project with authentication and authorization support::
     package = None
     svn_repository = None
     sqlalchemy = False
+    ming = False
     templates = "turbogears2"
     dry_run = False
     no_input = False
@@ -115,6 +116,10 @@ or start project with authentication and authorization support::
             help="use SQLAlchemy as ORM",
             action="store_true", dest="sqlalchemy", default=False)
 
+    parser.add_option("-i", "--ming",
+            help="use Ming as ORM",
+            action="store_true", dest="ming", default=False)
+
     parser.add_option("-x", "--nosa",
             help="No SQLAlchemy",
             action="store_true", dest="no_sqlalchemy", default=False)
@@ -143,6 +148,10 @@ or start project with authentication and authorization support::
         
         if self.no_sqlalchemy:
             self.sqlalchemy = False
+
+        if self.ming:
+            self.sqlalchemy = False
+            self.migrations = False
         
         if self.no_auth:
             self.auth=False
@@ -190,8 +199,12 @@ or start project with authentication and authorization support::
                 print "Please enter y(es) or n(o)."
 
         if self.auth:
-            self.auth = "sqlalchemy"
-            self.sqlalchemy = True
+            if self.ming:
+                self.auth = "ming"
+                self.ming = True
+            else:
+                self.auth = "sqlalchemy"
+                self.sqlalchemy = True
         else:
             self.auth = None
 
@@ -238,6 +251,7 @@ or start project with authentication and authorization support::
             cmd_args.append("-q")
         cmd_args.append(self.name)
         cmd_args.append("sqlalchemy=%s" % self.sqlalchemy)
+        cmd_args.append("ming=%s" % self.ming)
         cmd_args.append("auth=%s" % self.auth)
         cmd_args.append("geo=%s" % self.geo)
         cmd_args.append("package=%s" % self.package)
@@ -278,6 +292,12 @@ or start project with authentication and authorization support::
             #replace template files with mako ones
             mako_template_dir = os.path.abspath(os.path.dirname(__file__))+'/quickstart_mako'
             shutil.copytree(mako_template_dir, package_template_dir)
+
+        if self.ming:
+            print 'Writing Ming model files to ./'+os.path.join(self.package, 'model')
+            package_model_dir = os.path.abspath(os.path.join(self.package, 'model'))
+            ming_model_dir = os.path.abspath(os.path.dirname(__file__))+'/model_ming'
+            shutil.copy(os.path.join(ming_model_dir, 'session.py'), package_model_dir)
 
         if not self.migrations:
             print 'Disabling migrations support'

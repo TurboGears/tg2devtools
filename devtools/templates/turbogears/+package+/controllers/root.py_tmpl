@@ -7,15 +7,19 @@ from tg.i18n import ugettext as _, lazy_ugettext as l_
 {{if auth == "sqlalchemy"}}
 from tgext.admin.tgadminconfig import TGAdminConfig
 from tgext.admin.controller import AdminController
+{{endif}}
+
+{{if sqlalchemy=="True"}}
 from repoze.what import predicates
+from {{package}}.model import DBSession, metadata
+from {{package}} import model
+{{elif ming=="True"}}
+from repoze.what import predicates
+from {{package}} import model
 {{endif}}
 
 from {{package}}.lib.base import BaseController
 
-{{if sqlalchemy=="True"}}
-from {{package}}.model import DBSession, metadata
-from {{package}} import model
-{{endif}}
 {{if auth == "sqlalchemy"}}
 from {{package}}.controllers.secure import SecureController
 {{endif}}
@@ -87,7 +91,9 @@ class RootController(BaseController):
     def editor_user_only(self, **kw):
         """Illustrate how a page exclusive for the editor works."""
         return dict(page='editor stuff')
+{{endif}}
 
+{{if auth == "sqlalchemy" or auth == "ming"}}
     @expose('{{package}}.templates.login')
     def login(self, came_from=url('/')):
         """Start the user login."""

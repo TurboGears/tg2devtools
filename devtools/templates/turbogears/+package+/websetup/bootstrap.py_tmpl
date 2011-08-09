@@ -7,7 +7,6 @@ from {{package}} import model
 
 import transaction
 
-
 def bootstrap(command, conf, vars):
     """Place any commands to setup {{package}} here"""
 
@@ -53,7 +52,22 @@ def bootstrap(command, conf, vars):
         print traceback.format_exc()
         transaction.abort()
         print 'Continuing with bootstrapping...'
-        
+    {{elif auth == "ming"}}
+    u = model.User()
+    u.user_name = u'manager'
+    u.display_name = u'Example manager'
+    u.email_address = u'manager@somedomain.com'
+    u.groups = ['managers']
+    u.password = u'managepass'
+
+    u1 = model.User()
+    u1.user_name = u'editor'
+    u1.display_name = u'Example editor'
+    u1.email_address = u'editor@somedomain.com'
+    u1.password = u'editpass'
+
+    model.DBSession.flush()
+    model.DBSession.clear()
     {{endif}}
 
     # <websetup.bootstrap.after.auth>
