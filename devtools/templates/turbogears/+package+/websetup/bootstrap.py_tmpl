@@ -53,6 +53,11 @@ def bootstrap(command, conf, vars):
         transaction.abort()
         print 'Continuing with bootstrapping...'
     {{elif auth == "ming"}}
+    p = model.Permission()
+    p.permission_name = u'manage'
+    p.description = u'This permission give an administrative right to the bearer'
+    p.groups = ['managers']
+
     u = model.User()
     u.user_name = u'manager'
     u.display_name = u'Example manager'

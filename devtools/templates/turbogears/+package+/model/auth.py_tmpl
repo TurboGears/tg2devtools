@@ -234,7 +234,7 @@ class Permission(DeclarativeBase):
 
 #}
 {{elif auth == 'ming'}}
-__all__ = ['User']
+__all__ = ['User', 'Permission']
 
 from ming import schema as s
 from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
@@ -242,6 +242,20 @@ from ming.orm import Mapper
 from ming.orm.declarative import MappedClass
 import os
 from session import DBSession
+
+class Permission(MappedClass):
+    """
+    Permission definition for :mod:`repoze.what`.
+    """
+    class __mongometa__:
+        session = DBSession
+        name = 'tg_permission'
+        unique_indexes = [('permission_name',),]
+
+    _id = FieldProperty(s.ObjectId)
+    permission_name = FieldProperty(s.String)
+    description = FieldProperty(s.String)
+    groups = FieldProperty(s.Array(str))
 
 class User(MappedClass):
     """
@@ -253,7 +267,7 @@ class User(MappedClass):
     """
     class __mongometa__:
         session = DBSession
-        name = 'user'
+        name = 'tg_user'
         unique_indexes = [('user_name',),]
 
     _id = FieldProperty(s.ObjectId)
@@ -265,6 +279,10 @@ class User(MappedClass):
 
     _password = FieldProperty(s.String)
     created = FieldProperty(s.DateTime, if_missing=datetime.now)
+
+    @property
+    def permissions(self):
+        return Permission.query.find(dict(groups={'$in':self.groups})).all()
 
     @classmethod
     def _hash_password(cls, password):
