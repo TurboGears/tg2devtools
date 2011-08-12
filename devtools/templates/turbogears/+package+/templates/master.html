@@ -8,8 +8,9 @@
     <xi:include href="sidebars.html" />
     <xi:include href="footer.html" />
 <head py:match="head" py:attrs="select('@*')">
-    <meta content="${response.content_type}; charset=${response.charset}" http-equiv="content-type"/>
-    <title py:replace="''">Your title goes here</title>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type"
+          py:attrs="dict(content='%s; charset=%s' % (response.content_type, response.charset))" />
+    <title py:if="False">Your title goes here</title>
     <meta py:replace="select('*')"/>
     <link rel="stylesheet" type="text/css" media="screen" href="${tg.url('/css/style.css')}" />
     <link rel="stylesheet" type="text/css" media="screen" href="${tg.url('/css/admin.css')}" />
@@ -23,11 +24,11 @@
         <li py:if="tg.auth_stack_enabled"><a href="${tg.url('/auth')}" class="${('', 'active')[defined('page') and page=='auth']}">Authentication</a></li>
         <li><a href="${tg.url('/environ')}" class="${('', 'active')[defined('page') and page=='environ']}">WSGI Environment</a></li>
         <li><a href="http://groups.google.com/group/turbogears">Contact</a></li>
-    <span py:if="tg.auth_stack_enabled" py:strip="True">
+    <py:if test="tg.auth_stack_enabled">
         <li py:if="not request.identity" id="login" class="loginlogout"><a href="${tg.url('/login')}">Login</a></li>
         <li py:if="request.identity" id="login" class="loginlogout"><a href="${tg.url('/logout_handler')}">Logout</a></li>
         <li py:if="request.identity" id="admin" class="loginlogout"><a href="${tg.url('/admin')}">Admin</a></li>
-    </span>
+    </py:if>
   </ul>
   <div id="content">
     <py:if test="defined('page')">
