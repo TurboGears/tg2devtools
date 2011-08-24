@@ -33,7 +33,7 @@ setup(
     author_email='',
     #url='',
     install_requires=[
-        "TurboGears2 >= 2.1.1",
+        "TurboGears2 >= 2.1.2",
         {{if mako == 'True'}}
         "Mako",
         {{else}}
@@ -85,7 +85,7 @@ setup(
     main = pylons.util:PylonsInstaller
     """,
     dependency_links=[
-        "http://www.turbogears.org/2.1/downloads/next/"
+        "http://www.turbogears.org/2.1/downloads/current/"
         ],
     zip_safe=False
 )
