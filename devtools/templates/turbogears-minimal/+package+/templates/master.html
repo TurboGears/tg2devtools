@@ -33,7 +33,7 @@
      </div>
     </py:if>
     <py:with vars="flash=tg.flash_obj.render('flash', use_js=False)">
-        <div py:if="flash" py:content="XML(flash)" />
+        <div py:if="flash" py:replace="Markup(flash)" />
     </py:with>
     <div py:replace="select('*|text()')"/>
     <!-- End of main_content -->
