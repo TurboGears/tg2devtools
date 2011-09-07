@@ -4,22 +4,22 @@
 from tg import expose, flash, require, url, request, redirect
 from tg.i18n import ugettext as _, lazy_ugettext as l_
 
-{{if auth == "sqlalchemy"}}
-from tgext.admin.tgadminconfig import TGAdminConfig
-from tgext.admin.controller import AdminController
-from repoze.what import predicates
-{{endif}}
-
-from {{package}}.lib.base import BaseController
-
-{{if sqlalchemy=="True"}}
-from {{package}}.model import DBSession, metadata
+{{if auth == "sqlalchemy" or auth == "ming"}}
 from {{package}} import model
-{{endif}}
-{{if auth == "sqlalchemy"}}
+from repoze.what import predicates
 from {{package}}.controllers.secure import SecureController
 {{endif}}
 
+{{if sqlalchemy=="True"}}
+from {{package}}.model import DBSession, metadata
+{{endif}}
+
+{{if auth == "sqlalchemy"}}
+from tgext.admin.tgadminconfig import TGAdminConfig
+from tgext.admin.controller import AdminController
+{{endif}}
+
+from {{package}}.lib.base import BaseController
 from {{package}}.controllers.error import ErrorController
 
 __all__ = ['RootController']
@@ -39,9 +39,11 @@ class RootController(BaseController):
     must be wrapped around with :class:`tg.controllers.WSGIAppController`.
 
     """
-{{if auth == "sqlalchemy"}}
+{{if auth == "sqlalchemy" or auth == "ming"}}
     secc = SecureController()
+{{endif}}
 
+{{if auth == "sqlalchemy"}}
     admin = AdminController(model, DBSession, config_type=TGAdminConfig)
 {{endif}}
 
@@ -68,14 +70,12 @@ class RootController(BaseController):
         """This method showcases how you can use the same controller for a data page and a display page"""
         return dict(params=kw)
 
-    {{if auth == "sqlalchemy"}}
+{{if auth == "sqlalchemy" or auth == "ming"}}
     @expose('{{package}}.templates.authentication')
     def auth(self):
         """Display some information about auth* on this application."""
         return dict(page='auth')
-    {{endif}}
 
-{{if auth == "sqlalchemy"}}
     @expose('{{package}}.templates.index')
     @require(predicates.has_permission('manage', msg=l_('Only for managers')))
     def manage_permission_only(self, **kw):

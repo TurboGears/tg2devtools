@@ -1,18 +1,14 @@
 # -*- coding: utf-8 -*-
 """Sample controller with all its actions protected."""
 
-{{if auth == "sqlalchemy"}}
+{{if auth == "sqlalchemy" or auth == "ming"}}
 from tg import expose, flash
 from tg.i18n import ugettext as _, lazy_ugettext as l_
 from repoze.what.predicates import has_permission
-#from dbsprockets.dbmechanic.frameworks.tg2 import DBMechanic
-#from dbsprockets.saprovider import SAProvider
 
 from {{package}}.lib.base import BaseController
-#from {{package}}.model import DBSession, metadata
 
 __all__ = ['SecureController']
-
 
 class SecureController(BaseController):
     """Sample controller-wide authorization"""

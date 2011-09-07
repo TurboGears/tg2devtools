@@ -38,6 +38,11 @@ metadata = DeclarativeBase.metadata
 # and import them at the bottom of this file.
 #
 ######
+{{elif ming == 'True'}}
+"""The application's model objects"""
+
+import ming.orm
+from session import mainsession, DBSession
 {{endif}}
 
 def init_model(engine):
@@ -45,7 +50,7 @@ def init_model(engine):
 
 {{if sqlalchemy == 'True'}}
     DBSession.configure(bind=engine)
-{{endif}}
+
     # If you are using reflection to introspect your database and create
     # table objects for you, your tables must be defined and mapped inside
     # the init_model function, so that the engine is available if you
@@ -61,11 +66,19 @@ def init_model(engine):
     #    autoload=True, autoload_with=engine)
 
     #mapper(Reflected, t_reflected)
+{{elif ming == 'True'}}
+    mainsession.bind = engine
+    ming.orm.Mapper.compile_all()
 
+    for mapper in ming.orm.Mapper.all_mappers():
+        mainsession.ensure_indexes(mapper.collection)
+{{endif}}
 
 # Import your model modules here.
 
 {{if auth == "sqlalchemy"}}
 from {{package}}.model.auth import User, Group, Permission
+{{elif auth == "ming"}}
+from {{package}}.model.auth import User, Permission
 {{endif}}
 

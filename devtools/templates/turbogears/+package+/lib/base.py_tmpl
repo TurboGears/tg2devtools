@@ -4,7 +4,7 @@
 
 from tg import TGController, tmpl_context
 from tg.render import render
-{{if auth == "sqlalchemy"}}
+{{if auth == "sqlalchemy" or auth == "ming"}}
 from tg import request
 {{endif}}
 from tg.i18n import ugettext as _, ungettext
@@ -31,7 +31,7 @@ class BaseController(TGController):
         # the request is routed to. This routing information is
         # available in environ['pylons.routes_dict']
 
-        {{if auth == "sqlalchemy"}}
+        {{if auth == "sqlalchemy" or auth == "ming"}}
         request.identity = request.environ.get('repoze.who.identity')
         tmpl_context.identity = request.identity
         {{endif}}
