@@ -5,7 +5,9 @@ import logging
 from tg import config
 from {{package}} import model
 
+{{if sqlalchemy == 'True'}}
 import transaction
+{{endif}}
 
 def bootstrap(command, conf, vars):
     """Place any commands to setup {{package}} here"""

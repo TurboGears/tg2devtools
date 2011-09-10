@@ -2,8 +2,11 @@
 """Setup the {{project}} application"""
 
 import logging
-import transaction
 from tg import config
+
+{{if sqlalchemy == 'True'}}
+import transaction
+{{endif}}
 
 def setup_schema(command, conf, vars):
     """Place any commands to setup {{package}} here"""
