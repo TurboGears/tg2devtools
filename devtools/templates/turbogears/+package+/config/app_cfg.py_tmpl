@@ -51,6 +51,7 @@ base_config.DBSession = {{package}}.model.DBSession
 #Configure the base Ming Setup
 base_config.use_ming = True
 base_config.use_sqlalchemy=False
+base_config.use_transaction_manager=False
 {{else}}
 base_config.use_sqlalchemy=False
 base_config.use_ming=False
