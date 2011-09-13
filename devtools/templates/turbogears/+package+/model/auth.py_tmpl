@@ -240,8 +240,22 @@ from ming import schema as s
 from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
 from ming.orm import Mapper
 from ming.orm.declarative import MappedClass
+from tg.ming_tools import SynonymProperty
 import os
 from session import DBSession
+
+class Group(MappedClass):
+    """
+    Group definition for :mod:`repoze.what`.
+    """
+    class __mongometa__:
+        session = DBSession
+        name = 'tg_group'
+        unique_indexes = [('group_name',),]
+
+    _id = FieldProperty(s.ObjectId)
+    group_name = FieldProperty(s.String)
+    display_name = FieldProperty(s.String)
 
 class Permission(MappedClass):
     """
@@ -255,7 +269,14 @@ class Permission(MappedClass):
     _id = FieldProperty(s.ObjectId)
     permission_name = FieldProperty(s.String)
     description = FieldProperty(s.String)
-    groups = FieldProperty(s.Array(str))
+    
+    _groups = FieldProperty(s.Array(str))
+
+    def _get_groups(self):
+        return Group.query.find(dict(group_name={'$in':self._groups})).all()
+    def _set_groups(self, groups):
+        self._groups = [group.group_name for group in groups]
+    groups = SynonymProperty(_get_groups, _set_groups)
 
 class User(MappedClass):
     """
@@ -275,14 +296,20 @@ class User(MappedClass):
     email_address = FieldProperty(s.String)
     display_name = FieldProperty(s.String)
 
-    groups = FieldProperty(s.Array(str))
+    _groups = FieldProperty(s.Array(str))
 
     _password = FieldProperty(s.String)
     created = FieldProperty(s.DateTime, if_missing=datetime.now)
 
+    def _get_groups(self):
+        return Group.query.find(dict(group_name={'$in':self._groups})).all()
+    def _set_groups(self, groups):
+        self._groups = [group.group_name for group in groups]
+    groups = SynonymProperty(_get_groups, _set_groups)
+    
     @property
     def permissions(self):
-        return Permission.query.find(dict(groups={'$in':self.groups})).all()
+        return Permission.query.find(dict(_groups={'$in':self._groups})).all()
 
     @classmethod
     def _hash_password(cls, password):
@@ -309,7 +336,7 @@ class User(MappedClass):
         """Return the hashed version of the password."""
         return self._password
 
-    password = property(_get_password, _set_password)
+    password = SynonymProperty(_get_password, _set_password)
 
     def validate_password(self, password):
         """

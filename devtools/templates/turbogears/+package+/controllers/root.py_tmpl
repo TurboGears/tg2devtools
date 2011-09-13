@@ -17,6 +17,11 @@ from {{package}}.model import DBSession, metadata
 {{if auth == "sqlalchemy"}}
 from tgext.admin.tgadminconfig import TGAdminConfig
 from tgext.admin.controller import AdminController
+{{elif auth == "ming"}}
+
+#supported only with sprox 0.7
+#from tgext.admin.mongo import TGMongoAdminConfig
+#from tgext.admin.controller import AdminController
 {{endif}}
 
 from {{package}}.lib.base import BaseController
@@ -45,6 +50,10 @@ class RootController(BaseController):
 
 {{if auth == "sqlalchemy"}}
     admin = AdminController(model, DBSession, config_type=TGAdminConfig)
+{{elif auth == "ming"}}
+
+    #supported only with sprox 0.7
+    #admin = AdminController(model, None, config_type=TGMongoAdminConfig)
 {{endif}}
 
     error = ErrorController()

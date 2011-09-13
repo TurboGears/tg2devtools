@@ -75,10 +75,6 @@ def init_model(engine):
 {{endif}}
 
 # Import your model modules here.
-
-{{if auth == "sqlalchemy"}}
+{{if sqlalchemy == 'True' or ming == 'True'}}
 from {{package}}.model.auth import User, Group, Permission
-{{elif auth == "ming"}}
-from {{package}}.model.auth import User, Permission
 {{endif}}
-
