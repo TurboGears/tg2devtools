@@ -234,13 +234,13 @@ class Permission(DeclarativeBase):
 
 #}
 {{elif auth == 'ming'}}
-__all__ = ['User', 'Permission']
+__all__ = ['User', 'Group', 'Permission']
 
 from ming import schema as s
 from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
 from ming.orm import Mapper
 from ming.orm.declarative import MappedClass
-from tg.ming_tools import SynonymProperty, ProgrammaticRelationProperty
+from tgming import SynonymProperty, ProgrammaticRelationProperty
 import os
 from session import DBSession
 

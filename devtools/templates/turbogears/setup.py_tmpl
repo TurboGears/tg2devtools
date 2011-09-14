@@ -47,17 +47,23 @@ setup(
         {{if sqlalchemy == 'True' and migrations == 'True'}}
         "sqlalchemy-migrate",
         {{endif}}
+        {{if ming == 'True'}}
+        "tgming",
+        {{endif}}
         {{if auth == "sqlalchemy" or auth == "ming"}}
         "repoze.what >= 1.0.8",
         "repoze.who-friendlyform >= 1.0.4",
         "repoze.what-pylons >= 1.0",
         "repoze.who==1.0.19",
+        "tgext.admin >= 0.3.11",
         {{endif}}
         {{if auth == "sqlalchemy"}}
         "repoze.what-quickstart",
         "repoze.what.plugins.sql",
-        "tgext.admin >= 0.3.9",
         "tw.forms",
+        {{endif}}
+        {{if auth == "ming"}}
+        "sprox >= 0.7dev",
         {{endif}}
         ],
     setup_requires=["PasteScript >= 1.7"],
