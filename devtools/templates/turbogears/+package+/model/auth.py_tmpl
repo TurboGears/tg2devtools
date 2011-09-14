@@ -240,7 +240,7 @@ from ming import schema as s
 from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
 from ming.orm import Mapper
 from ming.orm.declarative import MappedClass
-from tg.ming_tools import SynonymProperty
+from tg.ming_tools import SynonymProperty, ProgrammaticRelationProperty
 import os
 from session import DBSession
 
@@ -256,6 +256,20 @@ class Group(MappedClass):
     _id = FieldProperty(s.ObjectId)
     group_name = FieldProperty(s.String)
     display_name = FieldProperty(s.String)
+
+    def _get_permissions(self):
+        return Permission.query.find(dict(_groups=self.group_name)).all()
+    def _set_permissions(self, value):
+        current_permissions = self.permissions
+        #erase removed permissions
+        for perm in current_permissions:
+            if perm not in value:
+                perm._groups = set(perm._groups) - set([self.group_name])
+        #set added permissions
+        for perm in value:
+            if perm not in current_permissions:
+                perm._groups = set([self.group_name]) | set(perm._groups)
+    permissions = ProgrammaticRelationProperty('Permission', _get_permissions, _set_permissions)
 
 class Permission(MappedClass):
     """
@@ -276,7 +290,7 @@ class Permission(MappedClass):
         return Group.query.find(dict(group_name={'$in':self._groups})).all()
     def _set_groups(self, groups):
         self._groups = [group.group_name for group in groups]
-    groups = SynonymProperty(_get_groups, _set_groups)
+    groups = ProgrammaticRelationProperty(Group, _get_groups, _set_groups)
 
 class User(MappedClass):
     """
@@ -305,7 +319,7 @@ class User(MappedClass):
         return Group.query.find(dict(group_name={'$in':self._groups})).all()
     def _set_groups(self, groups):
         self._groups = [group.group_name for group in groups]
-    groups = SynonymProperty(_get_groups, _set_groups)
+    groups = ProgrammaticRelationProperty(Group, _get_groups, _set_groups)
     
     @property
     def permissions(self):
