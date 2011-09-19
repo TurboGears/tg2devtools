@@ -326,6 +326,11 @@ class User(MappedClass):
         return Permission.query.find(dict(_groups={'$in':self._groups})).all()
 
     @classmethod
+    def by_email_address(cls, email):
+        """Return the user object whose email address is ``email``."""
+        return cls.query.get(email_address=email)
+
+    @classmethod
     def _hash_password(cls, password):
         # Make sure password is a str because we cannot hash unicode objects
         if isinstance(password, unicode):

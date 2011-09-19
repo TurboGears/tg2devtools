@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-{{if auth == "sqlalchemy"}}
+{{if auth == "sqlalchemy" or auth == "ming"}}
 """
 Integration tests for the :mod:`repoze.who`-powered authentication sub-system.
 

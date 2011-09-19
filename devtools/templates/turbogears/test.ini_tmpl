@@ -18,6 +18,9 @@ port = 5000
 [app:main]
 {{if auth == "sqlalchemy"}}
 sqlalchemy.url = sqlite:///:memory:
+{{elif auth == "ming"}}
+ming.url = mim:///
+ming.db = test
 {{endif}}
 use = config:development.ini
 

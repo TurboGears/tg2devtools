@@ -6,7 +6,7 @@ from {{package}} import model
 from {{package}}.tests.models import ModelTest
 
 
-{{if auth == "sqlalchemy"}}
+{{if auth == "sqlalchemy" or auth == "ming"}}
 class TestGroup(ModelTest):
     """Unit test case for the ``Group`` model."""
     klass = model.Group
@@ -40,7 +40,11 @@ class TestUser(ModelTest):
     def test_getting_by_email(self):
         """Users should be fetcheable by their email addresses"""
         him = model.User.by_email_address(u"ignucius@example.org")
+        {{if auth == "ming"}}
+        eq_(him._id, self.obj._id)
+        {{elif auth == "sqlalchemy"}}
         eq_(him, self.obj)
+        {{endif}}
 
 
 class TestPermission(ModelTest):

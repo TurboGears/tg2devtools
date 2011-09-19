@@ -62,7 +62,7 @@ class TestRootController(TestController):
         assert '"a": "1", "b": "2"' in resp, resp
 
 
-{{if auth == 'sqlalchemy'}}
+{{if auth == 'sqlalchemy' or auth == 'ming'}}
     def test_secc_with_manager(self):
         """The manager can access the secure controller"""
         # Note how authentication is forged:
