@@ -16,12 +16,12 @@ test_requirements = ['coverage',
                     ]
 
 install_requirements = [
-                        'TurboGears2 >= 2.1.2',
+                        'TurboGears2 >= 2.1.3',
                         ]
 
 setup(
     name='tg.devtools',
-    version="2.1.2",
+    version="2.1.3",
     description="",
     long_description="""""",
     classifiers=[],
