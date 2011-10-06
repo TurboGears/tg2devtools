@@ -81,7 +81,7 @@ or start project with authentication and authorization support::
     geo = False
     package = None
     svn_repository = None
-    sqlalchemy = False
+    sqlalchemy = True
     ming = False
     templates = "turbogears2"
     dry_run = False
@@ -114,7 +114,7 @@ or start project with authentication and authorization support::
 
     parser.add_option("-s", "--sqlalchemy",
             help="use SQLAlchemy as ORM",
-            action="store_true", dest="sqlalchemy", default=False)
+            action="store_true", dest="sqlalchemy", default=True)
 
     parser.add_option("-i", "--ming",
             help="use Ming as ORM",
