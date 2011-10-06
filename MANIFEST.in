@@ -1,2 +1,3 @@
 recursive-include devtools/commands/quickstart_mako *
+recursive-include devtools/commands/model_ming *
 recursive-include devtools/templates *
