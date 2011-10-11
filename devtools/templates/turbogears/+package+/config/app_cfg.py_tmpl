@@ -24,9 +24,6 @@ base_config.renderers = []
 
 base_config.package = {{package}}
 
-#Enable to speed up templates rendering
-#base_config.auto_reload_templates = False
-
 #Enable json in expose
 base_config.renderers.append('json')
 #Set the default renderer

@@ -30,6 +30,9 @@ cache_dir = %(here)s/data
 beaker.session.key = {{package}}
 beaker.session.secret = {{cookiesecret}}
 
+# Disable template autoreload to boost performances in production
+#auto_reload_templates = false
+
 # If you'd like to fine-tune the individual locations of the cache data dirs
 # for the Cache data, or the Session saves, un-comment the desired settings
 # here:
