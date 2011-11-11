@@ -49,7 +49,7 @@ install_requires=[
     {{endif}}
     {{if auth == "sqlalchemy"}}
     "repoze.what-quickstart",
-    "repoze.what.plugins.sql",
+    "repoze.what.plugins.sql>=1.0.1",
     "tw.forms",
     {{endif}}
     {{if auth == "ming"}}
