@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Main Controller"""
 
-from tg import expose, flash, require, url, request, redirect
+from tg import expose, flash, require, url, lurl, request, redirect
 from tg.i18n import ugettext as _, lazy_ugettext as l_
 
 {{if auth == "sqlalchemy" or auth == "ming"}}
@@ -94,7 +94,7 @@ class RootController(BaseController):
         return dict(page='editor stuff')
 
     @expose('{{package}}.templates.login')
-    def login(self, came_from=url('/')):
+    def login(self, came_from=lurl('/')):
         """Start the user login."""
         login_counter = request.environ['repoze.who.logins']
         if login_counter > 0:
@@ -103,7 +103,7 @@ class RootController(BaseController):
                     came_from=came_from)
 
     @expose()
-    def post_login(self, came_from='/'):
+    def post_login(self, came_from=lurl('/')):
         """
         Redirect the user to the initially requested page on successful
         authentication or redirect her back to the login page if login failed.
@@ -118,7 +118,7 @@ class RootController(BaseController):
         redirect(came_from)
 
     @expose()
-    def post_logout(self, came_from=url('/')):
+    def post_logout(self, came_from=lurl('/')):
         """
         Redirect the user to the initially requested page on logout and say
         goodbye as well.
