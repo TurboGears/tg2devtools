@@ -16,12 +16,12 @@ test_requirements = ['coverage',
                     ]
 
 install_requirements = [
-                        'TurboGears2 >= 2.1.3',
+                        'TurboGears2 >= 2.1.4',
                         ]
 
 setup(
     name='tg.devtools',
-    version="2.1.3a",
+    version="2.1.4",
     description="",
     long_description="""""",
     classifiers=[],
@@ -52,6 +52,6 @@ setup(
     test_suite='nose.collector',
     tests_require = test_requirements,
     dependency_links=[
-        "http://www.turbogears.org/2.1/downloads/next/"
+        "http://www.turbogears.org/2.1/downloads/current/"
         ]
 )

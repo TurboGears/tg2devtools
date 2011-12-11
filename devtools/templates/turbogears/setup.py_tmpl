@@ -23,7 +23,7 @@ testpkgs=['WebTest >= 1.2.3',
                'repoze.who-testutil >= 1.0.1',
                ]
 install_requires=[
-    "TurboGears2 >= 2.1.2",
+    "TurboGears2 >= 2.1.4",
     {{if mako == 'True'}}
     "Mako",
     {{else}}
