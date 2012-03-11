@@ -79,6 +79,7 @@ or start project with authentication and authorization support::
     name = None
     auth = None
     geo = False
+    tw1 = False
     package = None
     svn_repository = None
     sqlalchemy = True
@@ -127,6 +128,10 @@ or start project with authentication and authorization support::
     parser.add_option("--disable-migrations",
             help="disable sqlalchemy-migrate model migrations",
             action="store_false", dest="migrations", default=True)
+
+    parser.add_option("--enable-tw1",
+        help="disable sqlalchemy-migrate model migrations",
+        action="store_true", dest="tw1", default=False)
 
     parser.add_option("--minimal",
             help="use the minimal template to quickstart your application",
@@ -254,6 +259,7 @@ or start project with authentication and authorization support::
         cmd_args.append("ming=%s" % self.ming)
         cmd_args.append("auth=%s" % self.auth)
         cmd_args.append("geo=%s" % self.geo)
+        cmd_args.append("tw1=%s" % self.tw1)
         cmd_args.append("package=%s" % self.package)
         cmd_args.append("tgversion=%s" % self.version)
         cmd_args.append("mako=%s"%self.mako)

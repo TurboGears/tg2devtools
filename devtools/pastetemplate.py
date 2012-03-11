@@ -15,6 +15,7 @@ class TurboGearsTemplate(templates.Template):
         templates.var('ming', 'use Ming as ORM', default=False),        
         templates.var('auth', 'use authentication and authorization support', default="sqlalchemy"),
         templates.var('geo', 'Include GIS support (True/False)', default='False'),
+        templates.var('tw1', 'Uses ToscaWidgets1 instead of ToscaWidgets2 (True/False)', default='False'),
         templates.var('mako', 'Include Mako support (True/False)', default='False'),
         templates.var('migrations', 'Enable model migrations for SQLAlchemy (True/False)', default='True'),
     ]

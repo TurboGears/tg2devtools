@@ -44,12 +44,16 @@ install_requires=[
     "repoze.what >= 1.0.8",
     "repoze.who-friendlyform >= 1.0.4",
     "repoze.who==1.0.19",
-    "tgext.admin >= 0.3.11",
     {{endif}}
     {{if auth == "sqlalchemy"}}
     "repoze.who.plugins.sa",
     "repoze.what.plugins.sql>=1.0.1",
+    {{endif}}
+    {{if tw1 == 'True'}}
+    "tgext.admin >= 0.3.11",
     "tw.forms",
+    {{else}}
+     "tw2.forms"
     {{endif}}
     {{if auth == "ming"}}
     "sprox >= 0.7dev",
