@@ -53,7 +53,7 @@ install_requires=[
     "tgext.admin >= 0.3.11",
     "tw.forms",
     {{else}}
-     "tw2.forms"
+    "tw2.forms",
     {{endif}}
     {{if auth == "ming"}}
     "sprox >= 0.7dev",
