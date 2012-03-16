@@ -26,6 +26,8 @@ install_requires=[
     "TurboGears2 >= 2.1.4",
     {{if mako == 'True'}}
     "Mako",
+    {{elif jinja == 'True'}}
+    "Jinja2",
     {{else}}
     "Genshi",
     {{endif}}
