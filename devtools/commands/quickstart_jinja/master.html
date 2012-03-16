@@ -1,0 +1,55 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+    {% from "header.html" import header with context %}
+    {% from "sidebars.html" import sidebar_bottom, sidebar_top with context %}
+    {% from "footer.html" import footer with context %}
+<head>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type"
+          content="{{ response.content_type }}; charset={{ response.charset }}"/>
+    {% block master_head %}
+    {% endblock %}
+    <title>{% block master_title %}{% endblock %}</title>
+    <link rel="stylesheet" type="text/css" media="screen" href="{{ tg.url('/css/style.css') }}" />
+    <link rel="stylesheet" type="text/css" media="screen" href="{{ tg.url('/css/admin.css') }}" />
+</head>
+
+<body>
+  {{ header() }}
+  <ul id="mainmenu">
+    <li class="first"><a href="{{ tg.url('/') }}" class="{% if page == 'index' %}active{% endif %}">Welcome</a></li>
+        <li><a href="{{ tg.url('/about') }}" class="{% if page == 'about' %}active{% endif %}">About</a></li>
+        {% if tg.auth_stack_enabled %}
+            <li><a href="{{ tg.url('/auth') }}" class="{% if page=='auth' %}active{% endif %}">Authentication</a></li>
+        {% endif %}
+
+        <li><a href="{{ tg.url('/environ') }}" class="{% if page == 'environ' %}active{% endif %}">WSGI Environment</a></li>
+        <li><a href="http://groups.google.com/group/turbogears">Contact</a></li>
+      {% if tg.auth_stack_enabled %}
+          {% if request.identity %}
+              <li id="login" class="loginlogout"><a href="{{ tg.url('/logout_handler') }}">Logout</a></li>
+              <li id="admin" class="loginlogout"><a href="{{ tg.url('/admin') }}">Admin</a></li>
+          {% else %}
+              <li id="login" class="loginlogout"><a href="{{ tg.url('/login') }}">Login</a></li>
+          {% endif %}
+    {% endif %}
+  </ul>
+  <div id="content">
+    {% if page %}
+        <div class="currentpage">
+            Now Viewing: {{ page }}
+        </div>
+    {% endif %}
+
+    {% with flash=tg.flash_obj.render('flash', use_js=False) %}
+        {{ flash|safe }}
+    {% endwith %}
+
+    {% block contents %}
+    {% endblock %}
+
+    <!-- End of main_content -->
+    {{ footer() }}
+  </div>
+</body>
+</html>
