@@ -186,13 +186,14 @@ or start project with authentication and authorization support::
             self.jinja = False
             self.auth = True
 
-        while self.mako is None:
-            self.mako = raw_input(
-                "Would you prefer mako templates? (yes/[no]): ")
-            self.mako = dict(y=True, n=False).get(
-                self.mako.lstrip()[:1].lower() or 'n')
-            if self.mako is None:
-                print "Please enter y(es) or n(o)."
+        if not self.jinja:
+            while self.mako is None:
+                self.mako = raw_input(
+                    "Would you prefer mako templates? (yes/[no]): ")
+                self.mako = dict(y=True, n=False).get(
+                    self.mako.lstrip()[:1].lower() or 'n')
+                if self.mako is None:
+                    print "Please enter y(es) or n(o)."
 
         if not self.mako:
             while self.jinja is None:
