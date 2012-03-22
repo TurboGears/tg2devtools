@@ -50,11 +50,11 @@ install_requires=[
     {{if auth == "sqlalchemy"}}
     "repoze.what-quickstart",
     "repoze.what.plugins.sql>=1.0.1",
-    "tw.forms",
     {{endif}}
     {{if auth == "ming"}}
     "sprox >= 0.7dev",
     {{endif}}
+    "tw.forms",
     ]
 
 if sys.version_info[:2] == (2,4):
