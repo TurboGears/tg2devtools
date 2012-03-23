@@ -32,6 +32,13 @@ a.edit_link{
     font-weight: normal;
     text-transform: capitalize;
 }
+.crud_table .grid th a {
+    color: #fff;
+    text-decoration: none;
+}
+.crud_table .grid th a:hover {
+    text-decoration: underline;
+}
 .crud_table .grid td a{
     color: #286571;
 }
