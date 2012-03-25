@@ -14,14 +14,12 @@ from {{package}}.controllers.secure import SecureController
 from {{package}}.model import DBSession, metadata
 {{endif}}
 
-{{if tw1 == 'True'}}
-    {{if auth == "sqlalchemy"}}
+{{if auth == "sqlalchemy"}}
 from tgext.admin.tgadminconfig import TGAdminConfig
 from tgext.admin.controller import AdminController
-    {{elif auth == "ming"}}
+{{elif auth == "ming"}}
 from tgext.admin.mongo import TGMongoAdminConfig
 from tgext.admin.controller import AdminController
-    {{endif}}
 {{endif}}
 
 from {{package}}.lib.base import BaseController
@@ -48,12 +46,10 @@ class RootController(BaseController):
     secc = SecureController()
 {{endif}}
 
-{{if tw1 == 'True'}}
-    {{if auth == "sqlalchemy"}}
+{{if auth == "sqlalchemy"}}
     admin = AdminController(model, DBSession, config_type=TGAdminConfig)
-    {{elif auth == "ming"}}
+{{elif auth == "ming"}}
     admin = AdminController(model, None, config_type=TGMongoAdminConfig)
-    {{endif}}
 {{endif}}
 
     error = ErrorController()
