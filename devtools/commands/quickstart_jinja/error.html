@@ -1,0 +1,18 @@
+{% extends "master.html" %}
+
+{% block master_title %}
+  A {{ code }} Error has Occurred
+{% endblock %}
+
+{% block contents %}
+<h1>Error {{ code }}</h1>
+
+<?python
+import re
+mf = re.compile(r'(</?)script', re.IGNORECASE)
+def fixmessage(message):
+    return mf.sub(r'\1noscript', message)
+?>
+<div>{{ message|safe }}</div>
+
+{% endblock %}

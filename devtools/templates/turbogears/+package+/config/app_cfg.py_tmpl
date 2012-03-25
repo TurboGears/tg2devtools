@@ -34,9 +34,10 @@ base_config.renderers.append('json')
 {{if mako == 'True' or template_engine == 'mako'}}
 base_config.default_renderer = 'mako'
 base_config.renderers.append('mako')
-{{elif template_engine == 'jinja'}}
+{{elif jinja == 'True' or template_engine == 'jinja'}}
 base_config.default_renderer = 'jinja'
 base_config.renderers.append('jinja')
+base_config.jinja_extensions = ['jinja2.ext.with_']
 {{elif template_engine == 'genshi'}}
 base_config.default_renderer = 'genshi'
 base_config.renderers.append('genshi')

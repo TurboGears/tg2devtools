@@ -105,6 +105,10 @@ or start project with authentication and authorization support::
             help="default templates mako",
             action="store_true", dest="mako")
 
+    parser.add_option("-j", "--jinja",
+        help="default templates jinja",
+        action="store_true", dest="jinja")
+
     parser.add_option("-g", "--geo",
             help="add GIS support",
             action="store_true", dest="geo")
@@ -184,16 +188,23 @@ or start project with authentication and authorization support::
 
             #defaults
             self.mako = False
+            self.jinja = False
             self.auth = True
 
-        while self.mako is None:
-            self.mako = raw_input(
-                "Would you prefer mako templates? (yes/[no]): ")
-            self.mako = dict(y=True, n=False).get(
-                self.mako.lstrip()[:1].lower() or 'n')
-            if self.mako is None:
-                print "Please enter y(es) or n(o)."
-
+        if self.jinja is None and self.mako is None:
+            template = None
+            while template is None:
+                template = raw_input(
+                    "Would you prefer to use an alternative template system? (m=mako, j=jinja, n=no [default]): ")
+		template = dict(m="mako", j="jinja", n="none").get(
+                    template.lstrip()[:1].lower() or 'n')
+                if template == "mako":
+                    self.mako = True
+                elif template == "jinja":
+                    self.jinja = True
+                elif template is None:
+                    print "Please enter an option or n(o)."
+                
         while self.auth is None:
             self.auth = raw_input(
                 "Do you need authentication and authorization"
@@ -263,6 +274,7 @@ or start project with authentication and authorization support::
         cmd_args.append("package=%s" % self.package)
         cmd_args.append("tgversion=%s" % self.version)
         cmd_args.append("mako=%s"%self.mako)
+        cmd_args.append("jinja=%s"%self.jinja)
         cmd_args.append("migrations=%s"%self.migrations)
         cmd_args.append("cookiesecret=%s"%self.cookiesecret)
         # set the exact ORM-version for the proper requirements
@@ -298,6 +310,16 @@ or start project with authentication and authorization support::
             #replace template files with mako ones
             mako_template_dir = os.path.abspath(os.path.dirname(__file__))+'/quickstart_mako'
             shutil.copytree(mako_template_dir, package_template_dir)
+        elif self.jinja:
+            print 'Writing jinja template files to ./'+os.path.join(self.package, 'templates')
+
+            #remove existing template files
+            package_template_dir = os.path.abspath(os.path.join(self.package, 'templates'))
+            shutil.rmtree(package_template_dir, ignore_errors=True)
+
+            #replace template files with mako ones
+            jinja_template_dir = os.path.abspath(os.path.dirname(__file__))+'/quickstart_jinja'
+            shutil.copytree(jinja_template_dir, package_template_dir)
 
         if self.ming:
             print 'Writing Ming model files to ./'+os.path.join(self.package, 'model')
