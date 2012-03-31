@@ -134,7 +134,7 @@ or start project with authentication and authorization support::
             action="store_false", dest="migrations", default=True)
 
     parser.add_option("--enable-tw1",
-        help="disable sqlalchemy-migrate model migrations",
+        help="use toscawidgets 1.x in place of 2.x version",
         action="store_true", dest="tw1", default=False)
 
     parser.add_option("--minimal",

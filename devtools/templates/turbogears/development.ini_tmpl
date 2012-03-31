@@ -62,7 +62,7 @@ ming.db = {{package}}
 
 # This line ensures that Genshi will render xhtml when sending the
 # output. Change to html or xml, as desired.
-templating.genshi.method = xhtml
+templating.genshi.method = html5
 
 # if you are using Mako and want to be able to reload
 # the mako template from disk during the development phase
