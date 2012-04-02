@@ -43,16 +43,14 @@ class TestRootController(TestController):
         """The data display demo works with HTML"""
         response = self.app.get('/data.html?a=1&b=2')
         expected = """\
-<table>
-        <tr>
-            <td>a</td>
-            <td>1</td>
-        </tr>
-        <tr>
-            <td>b</td>
-            <td>2</td>
-        </tr>
-    </table>
+            <tr>
+                <td>a</td>
+                <td>1</td>
+            </tr>
+            <tr>
+                <td>b</td>
+                <td>2</td>
+            </tr>
 """
         assert expected in response, response
 
