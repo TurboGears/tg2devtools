@@ -1,53 +1,51 @@
-<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:py="http://genshi.edgewall.org/"
       xmlns:xi="http://www.w3.org/2001/XInclude"
       py:strip="">
   <xi:include href="footer.html" />
-  <head py:match="head" py:attrs="select('@*')">
-    <meta charset="${response.charset}" />
-    <title py:if="False">Your generic title goes here</title>
-    <meta py:replace="select('*')"/>
-    <link rel="stylesheet" type="text/css" media="screen" href="${tg.url('/css/bootstrap.min.css')}" />
-    <link rel="stylesheet" type="text/css" media="screen" href="${tg.url('/css/bootstrap-responsive.min.css')}" />
-  </head>
+<head py:match="head" py:attrs="select('@*')">
+  <meta charset="${response.charset}" />
+  <title py:if="False">Your generic title goes here</title>
+  <meta py:replace="select('*')"/>
+  <link rel="stylesheet" type="text/css" media="screen" href="${tg.url('/css/bootstrap.min.css')}" />
+  <link rel="stylesheet" type="text/css" media="screen" href="${tg.url('/css/bootstrap-responsive.min.css')}" />
+</head>
 
-  <body py:match="body" py:attrs="select('@*')">
-    <div class="container">
+<body py:match="body" py:attrs="select('@*')">
+  <div class="container">
 
-      <!-- Navbar -->
-      <div class="navbar">
-        <div class="navbar-inner">
-          <div class="container">
-            <a class="brand" href="#"><img src="${tg.url('/images/turbogears_logo.png')}" alt="TurboGears 2"/> {{project}}</a>
-            <ul class="nav">
-              <li class="first"><a href="${tg.url('/')}" class="${('', 'active')[defined('page') and page=='index']}">Welcome</a></li>
-              <li class="${('', 'active')[defined('page') and page=='about']}"><a href="${tg.url('/about')}">About</a></li>
-              <li class="${('', 'active')[defined('page') and page=='auth']}" py:if="tg.auth_stack_enabled"><a href="${tg.url('/auth')}">Authentication</a></li>
-              <li class="${('', 'active')[defined('page') and page=='environ']}"><a href="${tg.url('/environ')}">WSGI Environment</a></li>
-            </ul>
-            <ul class="nav pull-right" py:if="tg.auth_stack_enabled">
-              <li py:if="not request.identity"><a href="${tg.url('/login')}">Login</a></li>
-              <li py:if="request.identity"><a href="${tg.url('/logout_handler')}">Logout</a></li>
-              <li py:if="request.identity"><a href="${tg.url('/admin')}">Admin</a></li>
-            </ul>
-          </div>
+    <!-- Navbar -->
+    <div class="navbar">
+      <div class="navbar-inner">
+        <div class="container">
+          <a class="brand" href="#"><img src="${tg.url('/images/turbogears_logo.png')}" alt="TurboGears 2"/> {{project}}</a>
+          <ul class="nav">
+            <li class="first"><a href="${tg.url('/')}" class="${('', 'active')[defined('page') and page=='index']}">Welcome</a></li>
+            <li class="${('', 'active')[defined('page') and page=='about']}"><a href="${tg.url('/about')}">About</a></li>
+            <li class="${('', 'active')[defined('page') and page=='environ']}"><a href="${tg.url('/environ')}">WSGI Environment</a></li>
+          </ul>
+          <ul class="nav pull-right" py:if="tg.auth_stack_enabled">
+            <li py:if="not request.identity"><a href="${tg.url('/login')}">Login</a></li>
+            <li py:if="request.identity"><a href="${tg.url('/logout_handler')}">Logout</a></li>
+            <li py:if="request.identity"><a href="${tg.url('/admin')}">Admin</a></li>
+          </ul>
         </div>
       </div>
-
-      <!-- Flash messages -->
-
-      <py:with vars="flash=tg.flash_obj.render('flash', use_js=False)">
-        <div class="row"><div class="span8 offset2">
-          <div py:if="flash" py:replace="Markup(flash)" />
-        </div></div>
-      </py:with>
-
-      <!-- Main included content -->
-      <div py:replace="select('*|text()')"/>
-
-      <!-- Footer included from an external template -->
-      ${footer()}
     </div>
-  </body>
+
+    <!-- Flash messages -->
+
+    <py:with vars="flash=tg.flash_obj.render('flash', use_js=False)">
+      <div class="row"><div class="span8 offset2">
+        <div py:if="flash" py:replace="Markup(flash)" />
+      </div></div>
+    </py:with>
+
+    <!-- Main included content -->
+    <div py:replace="select('*|text()')"/>
+
+    <!-- Footer included from an external template -->
+    ${footer()}
+  </div>
+</body>
 </html>
