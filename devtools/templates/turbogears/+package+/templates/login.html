@@ -5,7 +5,6 @@
 <xi:include href="master.html" />
 
 <head>
-  <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" py:if="False"/>
   <title>Login Form</title>
 </head>
 
@@ -14,11 +13,11 @@
     <form action="${tg.url('/login_handler', params=dict(came_from=came_from.encode('utf-8'), __logins=login_counter.encode('utf-8')))}" method="post" accept-charset="UTF-8">
       <h2>Login</h2>
       <label>Username:</label><input type="text" name="login"></input><br/>
-      <label>Password:</label><input type="password" name="password"></input>
+      <label>Password:</label><input type="password" name="password"></input><br/>
+      <input class="btn" type="submit" id="submit" value="Login" />
       <label class="checkbox">
         <input type="checkbox" name="remember" value="2252000" /> remember me
       </label>
-      <input class="btn" type="submit" id="submit" value="Login" />
     </form>
   </div>
 </body>
