@@ -23,7 +23,7 @@ testpkgs=['WebTest >= 1.2.3',
                'repoze.who-testutil >= 1.0.1',
                ]
 install_requires=[
-    "TurboGears2 >= 2.1.5",
+    "TurboGears2 >= 2.1.4",
     {{if mako == 'True'}}
     "Mako",
     {{elif jinja == 'True'}}
@@ -102,7 +102,7 @@ setup(
     main = pylons.util:PylonsInstaller
     """,
     dependency_links=[
-        "http://tg.gy/215/"
+        "http://www.turbogears.org/2.1/downloads/current/"
         ],
     zip_safe=False
 )
