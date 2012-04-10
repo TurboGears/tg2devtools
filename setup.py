@@ -16,7 +16,7 @@ test_requirements = ['coverage',
                     ]
 
 install_requirements = [
-                        'TurboGears2 >= 2.1.4',
+                        'TurboGears2 >= 2.1.5',
                         ]
 
 setup(
