@@ -23,7 +23,7 @@ testpkgs=['WebTest >= 1.2.3',
                'repoze.who-testutil >= 1.0.1',
                ]
 install_requires=[
-    "TurboGears2 >= 2.1.4",
+    "TurboGears2 >= 2.2.0rc1",
     {{if mako == 'True'}}
     "Mako",
     {{elif jinja == 'True'}}
@@ -62,12 +62,6 @@ install_requires=[
     {{endif}}
     ]
 
-if sys.version_info[:2] == (2,4):
-    testpkgs.extend(['hashlib', 'pysqlite'])
-    install_requires.extend(['hashlib', 'pysqlite'])
-
-print install_requires
-
 setup(
     name='{{project}}',
     version='0.1',
@@ -102,7 +96,7 @@ setup(
     main = pylons.util:PylonsInstaller
     """,
     dependency_links=[
-        "http://www.turbogears.org/2.1/downloads/current/"
+        "http://tg.gy/beta"
         ],
     zip_safe=False
 )
