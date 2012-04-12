@@ -24,12 +24,11 @@ testpkgs=['WebTest >= 1.2.3',
                ]
 install_requires=[
     "TurboGears2 >= 2.2.0rc1",
+    "Genshi",
     {{if mako == 'True'}}
     "Mako",
     {{elif jinja == 'True'}}
     "Jinja2",
-    {{else}}
-    "Genshi",
     {{endif}}
     {{if sqlalchemy == 'True'}}
     "zope.sqlalchemy >= 0.4",
@@ -46,7 +45,7 @@ install_requires=[
     "repoze.what >= 1.0.8",
     "repoze.who-friendlyform >= 1.0.4",
     "repoze.who==1.0.19",
-    "tgext.admin >= 0.3.11",
+    "tgext.admin >= 0.5",
     {{endif}}
     {{if auth == "sqlalchemy"}}
     "repoze.who.plugins.sa",
@@ -56,9 +55,6 @@ install_requires=[
     "tw.forms",
     {{else}}
     "tw2.forms",
-    {{endif}}
-    {{if auth == "ming"}}
-    "sprox >= 0.7dev",
     {{endif}}
     ]
 
