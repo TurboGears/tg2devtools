@@ -73,6 +73,7 @@ ming.db = {{package}}
 # This line ensures that Genshi will render xhtml when sending the
 # output. Change to html or xml, as desired.
 templating.genshi.method = xhtml
+templating.genshi.doctype = html5
 
 # the compiled template dir is a directory that must be readable by your
 # webserver. It will be used to store the resulting templates once compiled

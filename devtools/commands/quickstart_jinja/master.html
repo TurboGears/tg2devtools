@@ -1,55 +1,62 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 <html>
-    {% from "header.html" import header with context %}
-    {% from "sidebars.html" import sidebar_bottom, sidebar_top with context %}
-    {% from "footer.html" import footer with context %}
 <head>
-    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type"
-          content="{{ response.content_type }}; charset={{ response.charset }}"/>
+    <meta charset="charset={{ response.charset }}"/>
     {% block master_head %}
     {% endblock %}
     <title>{% block master_title %}{% endblock %}</title>
-    <link rel="stylesheet" type="text/css" media="screen" href="{{ tg.url('/css/style.css') }}" />
-    <link rel="stylesheet" type="text/css" media="screen" href="{{ tg.url('/css/admin.css') }}" />
+    <link rel="stylesheet" type="text/css" media="screen" href="{{tg.url('/css/bootstrap.min.css')}}" />
+    <link rel="stylesheet" type="text/css" media="screen" href="{{tg.url('/css/bootstrap-responsive.min.css')}}" />
+    <style>
+        .footer { margin-top: 45px; padding: 35px 0 36px; border-top: 1px solid #e5e5e5; }
+        .footer p { margin-bottom: 0; color: #555; }
+    </style>
 </head>
 
 <body>
-  {{ header() }}
-  <ul id="mainmenu">
-    <li class="first"><a href="{{ tg.url('/') }}" class="{% if page == 'index' %}active{% endif %}">Welcome</a></li>
-        <li><a href="{{ tg.url('/about') }}" class="{% if page == 'about' %}active{% endif %}">About</a></li>
-        {% if tg.auth_stack_enabled %}
-            <li><a href="{{ tg.url('/auth') }}" class="{% if page=='auth' %}active{% endif %}">Authentication</a></li>
-        {% endif %}
+    <div class="container">
 
-        <li><a href="{{ tg.url('/environ') }}" class="{% if page == 'environ' %}active{% endif %}">WSGI Environment</a></li>
-        <li><a href="http://groups.google.com/group/turbogears">Contact</a></li>
-      {% if tg.auth_stack_enabled %}
-          {% if request.identity %}
-              <li id="login" class="loginlogout"><a href="{{ tg.url('/logout_handler') }}">Logout</a></li>
-              <li id="admin" class="loginlogout"><a href="{{ tg.url('/admin') }}">Admin</a></li>
-          {% else %}
-              <li id="login" class="loginlogout"><a href="{{ tg.url('/login') }}">Login</a></li>
-          {% endif %}
-    {% endif %}
-  </ul>
-  <div id="content">
-    {% if page %}
-        <div class="currentpage">
-            Now Viewing: {{ page }}
+        <!-- Navbar -->
+        <div class="navbar">
+            <div class="navbar-inner">
+                <div class="container">
+                    <a class="brand" href="#"><img src="{{tg.url('/images/turbogears_logo.png')}}" alt="TurboGears 2"/>turbogears2</a>
+                    <ul class="nav">
+                        <li class="{% if page == 'index' %}active{% endif %}"><a href="{{ tg.url('/') }}">Welcome</a></li>
+                        <li><a href="{{ tg.url('/about') }}" class="{% if page == 'about' %}active{% endif %}">About</a></li>
+                        <li><a href="{{ tg.url('/environ') }}" class="{% if page == 'environ' %}active{% endif %}">WSGI Environment</a></li>
+                    </ul>
+
+                    {% if tg.auth_stack_enabled %}
+                        <ul class="nav pull-right">
+                            {% if request.identity %}
+                                <li py:if="request.identity"><a href="{{tg.url('/logout_handler')}}">Logout</a></li>
+                                <li py:if="request.identity"><a href="{{tg.url('/admin')}}">Admin</a></li>
+                            {% else %}
+                                <li py:if="not request.identity"><a href="{{tg.url('/login')}}">Login</a></li>
+                            {% endif %}
+                        </ul>
+                    {% endif %}
+                </div>
+            </div>
         </div>
-    {% endif %}
 
-    {% with flash=tg.flash_obj.render('flash', use_js=False) %}
-        {{ flash|safe }}
-    {% endwith %}
+        <!-- Flash messages -->
 
-    {% block contents %}
-    {% endblock %}
+        {% with flash=tg.flash_obj.render('flash', use_js=False) %}
+            <div class="row"><div class="span8 offset2">
+                {{ flash|safe }}
+            </div></div>
+        {% endwith %}
 
-    <!-- End of main_content -->
-    {{ footer() }}
-  </div>
+        {% block contents %}
+        {% endblock %}
+
+        <!-- End of main_content -->
+        <footer class="footer hidden-tablet hidden-phone">
+            <a class="pull-right" href="http://www.turbogears.org/2.1/"><img style="vertical-align:middle;" src="{{tg.url('/images/under_the_hood_blue.png')}}" alt="TurboGears 2" /></a>
+            <p>Copyright &copy; turbogears2 {{h.current_year()}}</p>
+        </footer>
+    </div>
 </body>
 </html>

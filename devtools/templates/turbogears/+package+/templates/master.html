@@ -1,47 +1,57 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-                      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:py="http://genshi.edgewall.org/"
       xmlns:xi="http://www.w3.org/2001/XInclude"
       py:strip="">
-    <xi:include href="header.html" />
-    <xi:include href="sidebars.html" />
-    <xi:include href="footer.html" />
 <head py:match="head" py:attrs="select('@*')">
-    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type"
-          py:attrs="dict(content='%s; charset=%s' % (response.content_type, response.charset))" />
-    <title py:if="False">Your title goes here</title>
-    <meta py:replace="select('*')"/>
-    <link rel="stylesheet" type="text/css" media="screen" href="${tg.url('/css/style.css')}" />
-    <link rel="stylesheet" type="text/css" media="screen" href="${tg.url('/css/admin.css')}" />
+  <meta charset="${response.charset}" />
+  <title py:if="False">Your generic title goes here</title>
+  <meta py:replace="select('*')"/>
+  <link rel="stylesheet" type="text/css" media="screen" href="${tg.url('/css/bootstrap.min.css')}" />
+  <link rel="stylesheet" type="text/css" media="screen" href="${tg.url('/css/bootstrap-responsive.min.css')}" />
+  <style>
+    .footer { margin-top: 45px; padding: 35px 0 36px; border-top: 1px solid #e5e5e5; }
+    .footer p { margin-bottom: 0; color: #555; }
+  </style>
 </head>
 
 <body py:match="body" py:attrs="select('@*')">
-  ${header()}
-  <ul id="mainmenu">
-    <li class="first"><a href="${tg.url('/')}" class="${('', 'active')[defined('page') and page=='index']}">Welcome</a></li>
-        <li><a href="${tg.url('/about')}" class="${('', 'active')[defined('page') and page=='about']}">About</a></li>
-        <li py:if="tg.auth_stack_enabled"><a href="${tg.url('/auth')}" class="${('', 'active')[defined('page') and page=='auth']}">Authentication</a></li>
-        <li><a href="${tg.url('/environ')}" class="${('', 'active')[defined('page') and page=='environ']}">WSGI Environment</a></li>
-        <li><a href="http://groups.google.com/group/turbogears">Contact</a></li>
-    <py:if test="tg.auth_stack_enabled">
-        <li py:if="not request.identity" id="login" class="loginlogout"><a href="${tg.url('/login')}">Login</a></li>
-        <li py:if="request.identity" id="login" class="loginlogout"><a href="${tg.url('/logout_handler')}">Logout</a></li>
-        <li py:if="request.identity" id="admin" class="loginlogout"><a href="${tg.url('/admin')}">Admin</a></li>
-    </py:if>
-  </ul>
-  <div id="content">
-    <py:if test="defined('page')">
-    <div class="currentpage">
-     Now Viewing: <span py:replace="page"/>
-     </div>
-    </py:if>
+  <div class="container">
+
+    <!-- Navbar -->
+    <div class="navbar">
+      <div class="navbar-inner">
+        <div class="container">
+          <a class="brand" href="#"><img src="${tg.url('/images/turbogears_logo.png')}" alt="TurboGears 2"/> ${getattr(tmpl_context, 'project_name', 'turbogears2')}</a>
+          <ul class="nav">
+            <li class="${('', 'active')[defined('page') and page=='index']}"><a href="${tg.url('/')}">Welcome</a></li>
+            <li class="${('', 'active')[defined('page') and page=='about']}"><a href="${tg.url('/about')}">About</a></li>
+            <li class="${('', 'active')[defined('page') and page=='environ']}"><a href="${tg.url('/environ')}">WSGI Environment</a></li>
+          </ul>
+          <ul class="nav pull-right" py:if="tg.auth_stack_enabled">
+            <li py:if="not request.identity"><a href="${tg.url('/login')}">Login</a></li>
+            <li py:if="request.identity"><a href="${tg.url('/logout_handler')}">Logout</a></li>
+            <li py:if="request.identity"><a href="${tg.url('/admin')}">Admin</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Flash messages -->
+
     <py:with vars="flash=tg.flash_obj.render('flash', use_js=False)">
+      <div class="row"><div class="span8 offset2">
         <div py:if="flash" py:replace="Markup(flash)" />
+      </div></div>
     </py:with>
+
+    <!-- Main included content -->
     <div py:replace="select('*|text()')"/>
-    <!-- End of main_content -->
-    ${footer()}
+
+    <!-- Footer included from an external template -->
+    <footer class="footer hidden-tablet hidden-phone">
+      <a class="pull-right" href="http://www.turbogears.org/2.1/"><img style="vertical-align:middle;" src="${tg.url('/images/under_the_hood_blue.png')}" alt="TurboGears 2" /></a>
+      <p>Copyright &copy; ${getattr(tmpl_context, 'project_name', 'turbogears2')} ${h.current_year()}</p>
+    </footer>
   </div>
 </body>
 </html>
