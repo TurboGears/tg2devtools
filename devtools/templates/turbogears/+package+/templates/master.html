@@ -2,13 +2,16 @@
       xmlns:py="http://genshi.edgewall.org/"
       xmlns:xi="http://www.w3.org/2001/XInclude"
       py:strip="">
-  <xi:include href="footer.html" />
 <head py:match="head" py:attrs="select('@*')">
   <meta charset="${response.charset}" />
   <title py:if="False">Your generic title goes here</title>
   <meta py:replace="select('*')"/>
   <link rel="stylesheet" type="text/css" media="screen" href="${tg.url('/css/bootstrap.min.css')}" />
   <link rel="stylesheet" type="text/css" media="screen" href="${tg.url('/css/bootstrap-responsive.min.css')}" />
+  <style>
+    .footer { margin-top: 45px; padding: 35px 0 36px; border-top: 1px solid #e5e5e5; }
+    .footer p { margin-bottom: 0; color: #555; }
+  </style>
 </head>
 
 <body py:match="body" py:attrs="select('@*')">
@@ -18,9 +21,9 @@
     <div class="navbar">
       <div class="navbar-inner">
         <div class="container">
-          <a class="brand" href="#"><img src="${tg.url('/images/turbogears_logo.png')}" alt="TurboGears 2"/> {{project}}</a>
+          <a class="brand" href="#"><img src="${tg.url('/images/turbogears_logo.png')}" alt="TurboGears 2"/> ${getattr(tmpl_context, 'project_name', 'turbogears2')}</a>
           <ul class="nav">
-            <li class="first"><a href="${tg.url('/')}" class="${('', 'active')[defined('page') and page=='index']}">Welcome</a></li>
+            <li class="${('', 'active')[defined('page') and page=='index']}"><a href="${tg.url('/')}">Welcome</a></li>
             <li class="${('', 'active')[defined('page') and page=='about']}"><a href="${tg.url('/about')}">About</a></li>
             <li class="${('', 'active')[defined('page') and page=='environ']}"><a href="${tg.url('/environ')}">WSGI Environment</a></li>
           </ul>
@@ -45,7 +48,10 @@
     <div py:replace="select('*|text()')"/>
 
     <!-- Footer included from an external template -->
-    ${footer()}
+    <footer class="footer hidden-tablet hidden-phone">
+      <a class="pull-right" href="http://www.turbogears.org/2.1/"><img style="vertical-align:middle;" src="${tg.url('/images/under_the_hood_blue.png')}" alt="TurboGears 2" /></a>
+      <p>Copyright &copy; ${getattr(tmpl_context, 'project_name', 'turbogears2')} ${h.current_year()}</p>
+    </footer>
   </div>
 </body>
 </html>
