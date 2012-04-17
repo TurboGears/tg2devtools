@@ -52,7 +52,7 @@ class TestRootController(TestController):
                 <td>2</td>
             </tr>
 """
-        assert expected in response, response
+        assert expected in str(response), response
 
     def test_data_json(self):
         """The data display demo works with JSON"""
