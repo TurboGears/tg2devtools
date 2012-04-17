@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Main Controller"""
 
-from tg import expose, flash, require, url, lurl, request, redirect
+from tg import expose, flash, require, url, lurl, request, redirect, tmpl_context
 from tg.i18n import ugettext as _, lazy_ugettext as l_
 
 {{if auth == "sqlalchemy" or auth == "ming"}}
@@ -53,6 +53,9 @@ class RootController(BaseController):
 {{endif}}
 
     error = ErrorController()
+
+    def _before(self, *args, **kw):
+        tmpl_context.project_name = "{{package}}"
 
     @expose('{{package}}.templates.index')
     def index(self):
