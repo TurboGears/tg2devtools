@@ -5,10 +5,7 @@
     <title>${self.title()}</title>
     <link rel="stylesheet" type="text/css" media="screen" href="${tg.url('/css/bootstrap.min.css')}" />
     <link rel="stylesheet" type="text/css" media="screen" href="${tg.url('/css/bootstrap-responsive.min.css')}" />
-    <style>
-      .footer { margin-top: 45px; padding: 35px 0 36px; border-top: 1px solid #e5e5e5; }
-      .footer p { margin-bottom: 0; color: #555; }
-    </style>
+    <link rel="stylesheet" type="text/css" media="screen" href="${tg.url('/css/style.css')}" />
 </head>
 <body class="${self.body_class()}">
   <div class="container">
@@ -33,6 +30,7 @@
 <%def name="body_class()"></%def>
 <%def name="meta()">
   <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </%def>
 
 <%def name="title()">  </%def>
@@ -40,7 +38,7 @@
 <%def name="footer()">
   <footer class="footer hidden-tablet hidden-phone">
     <a class="pull-right" href="http://www.turbogears.org/2.1/"><img style="vertical-align:middle;" src="${tg.url('/images/under_the_hood_blue.png')}" alt="TurboGears 2" /></a>
-    <p>Copyright &copy; ${getattr(tmpl_context, 'project_name', 'turbogears2')} ${h.current_year()}</p>
+    <p>Copyright &copy; ${getattr(tmpl_context, 'project_name', 'TurboGears2')} ${h.current_year()}</p>
   </footer>
 </%def>
 

@@ -3,15 +3,13 @@
       xmlns:xi="http://www.w3.org/2001/XInclude"
       py:strip="">
 <head py:match="head" py:attrs="select('@*')">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <meta charset="${response.charset}" />
   <title py:if="False">Your generic title goes here</title>
   <meta py:replace="select('*')"/>
   <link rel="stylesheet" type="text/css" media="screen" href="${tg.url('/css/bootstrap.min.css')}" />
   <link rel="stylesheet" type="text/css" media="screen" href="${tg.url('/css/bootstrap-responsive.min.css')}" />
-  <style>
-    .footer { margin-top: 45px; padding: 35px 0 36px; border-top: 1px solid #e5e5e5; }
-    .footer p { margin-bottom: 0; color: #555; }
-  </style>
+  <link rel="stylesheet" type="text/css" media="screen" href="${tg.url('/css/style.css')}" />
 </head>
 
 <body py:match="body" py:attrs="select('@*')">
@@ -37,7 +35,6 @@
     </div>
 
     <!-- Flash messages -->
-
     <py:with vars="flash=tg.flash_obj.render('flash', use_js=False)">
       <div class="row"><div class="span8 offset2">
         <div py:if="flash" py:replace="Markup(flash)" />
@@ -50,7 +47,7 @@
     <!-- Footer included from an external template -->
     <footer class="footer hidden-tablet hidden-phone">
       <a class="pull-right" href="http://www.turbogears.org/2.1/"><img style="vertical-align:middle;" src="${tg.url('/images/under_the_hood_blue.png')}" alt="TurboGears 2" /></a>
-      <p>Copyright &copy; ${getattr(tmpl_context, 'project_name', 'turbogears2')} ${h.current_year()}</p>
+      <p>Copyright &copy; ${getattr(tmpl_context, 'project_name', 'TurboGears2')} ${h.current_year()}</p>
     </footer>
   </div>
 </body>

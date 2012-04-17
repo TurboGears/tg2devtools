@@ -137,10 +137,6 @@ or start project with authentication and authorization support::
         help="use toscawidgets 1.x in place of 2.x version",
         action="store_true", dest="tw1", default=False)
 
-    parser.add_option("--minimal",
-            help="use the minimal template to quickstart your application",
-            action="store_true", dest="minimal", default=False)
-
     parser.add_option("--dry-run",
             help="dry run (don't actually do anything)",
             action="store_true", dest="dry_run")
@@ -258,8 +254,6 @@ or start project with authentication and authorization support::
         command = create_distro.CreateDistroCommand("create")
         cmd_args = []
         templates = self.templates.split()
-        if self.minimal:
-            templates = ['turbogears2-minimal']
         for template in templates:
             cmd_args.append("--template=%s" % template)
         if self.dry_run:
@@ -317,7 +311,7 @@ or start project with authentication and authorization support::
             package_template_dir = os.path.abspath(os.path.join(self.package, 'templates'))
             shutil.rmtree(package_template_dir, ignore_errors=True)
 
-            #replace template files with mako ones
+            #replace template files with jinja ones
             jinja_template_dir = os.path.abspath(os.path.dirname(__file__))+'/quickstart_jinja'
             shutil.copytree(jinja_template_dir, package_template_dir)
 

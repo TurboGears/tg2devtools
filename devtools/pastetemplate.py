@@ -47,13 +47,6 @@ class TurboGearsTemplate(templates.Template):
         if vars['migrations'] == 'True':
             vars['egg_plugins'].append('tg.devtools')
 
-class TurboGearsMinimalTemplate(TurboGearsTemplate):
-    """
-    TurboGears 2 minimal template
-    """
-    _template_dir = 'templates/turbogears-minimal'
-    summary = 'TurboGears 2. Minimal Quickstart Template'
-
 class TurboGearsExtTemplate(templates.Template):
     """
     TurboGears 2 extension paster template class

@@ -63,7 +63,7 @@
     display: block;
   }
   .hidden-phone {
-    display: none;
+    display: none !important;
   }
   .hidden-desktop {
     display: block;
@@ -392,6 +392,7 @@
     padding-left: 10px;
     padding-right: 10px;
     margin: 0 0 0 -5px;
+    float: none;
   }
   .navbar .nav-collapse {
     clear: left;
