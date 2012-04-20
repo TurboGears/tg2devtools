@@ -27,7 +27,7 @@
             <li class="nav-header">About Architecture</li>
             <li><a href="#data-model">Data Model</a></li>
             <li><a href="#url-structure">URL Structure</a></li>
-            <li><a href="#template-reuse">Web page element's reuse</a></li>
+            <li><a href="#template-reuse">Templates</a></li>
             <li py:if="tg.auth_stack_enabled" class="nav-header">Authentication</li>
             <li py:if="tg.auth_stack_enabled"><a href="#authentication">Authorization and Authentication</a></li>
           </ul>
@@ -56,6 +56,16 @@
           <p>Those Python methods are responsible to create the dictionary of variables
           that will be used in your web views (template).</p>
         </div>
+
+        <div class="well" id="template-reuse">
+            <h3>Reuse the web page elements</h3>
+
+            <p>A web page viewed by user could be constructed by single or several reusable
+                templates under <code>/templates</code>.
+                Each projects gets quickstarted with a <strong><span class="label label-info">master.html</span></strong>
+                template and a bunch of templates for the pages provided by the RootController.
+            </p>
+        </div>
       </div>
 
       <div class="span8"><img src=
@@ -64,81 +74,16 @@
     </div>
 
     <div class="row">
-      <div class="span12" id="template-reuse">
-        <h3>Reuse the web page elements</h3>
-
-        <p>A web page viewed by user could be constructed by single or several reusable
-        templates under <code>/templates</code>. Take 'about' page for example, each
-        reusable templates generating a part of the page. We'll cover them in the order of
-        where they are found, listed near the top of the about.html template</p>
-
+      <div class="span12">
         <div class="row">
-          <div class="span6">
-            <p><strong><span class="label label-info">header.html</span></strong> - The
-            "header.html" template contains the HTML code to display the 'header': The div,
-            the h1 tag, and the subtitle are there, and the the blue gradient, TG2 logo,
-            are placed by way of the .css file (from style.css) are all at the top of every
-            page it is included on. When the "about.html" template is called, it includes
-            this "header.html" template (and the others) with a <code>&lt;xi:include
-            /&gt;</code> tag, part of the Genshi templating system. The "header.html"
-            template is not a completely static HTML -- it also includes (via
-            <code>&lt;xi:include/&gt;</code> tag) "master.html", which dynamically displays
-            the current page name with a Genshi template method called "replace" with the
-            code: <code>&lt;span py:replace="page"/&gt;</code>. It means replace this
-            <code>&lt;span /&gt;</code> region with the contents found in the variable
-            'page' that has been sent in the dictionary to this "about.html" template, and
-            is available through that namespace for use by this "header.html" template.
-            That's how it changes in the header depending on what page you are
-            visiting.</p>
+          <div class="span12">
+            <h3>The Master Template</h3>
 
-            <p><strong><span class="label label-info">sidebars.html</span></strong> - The
-            sidebars (navigation areas on the right side of the page) are generated as two
-            separate <code>py:def</code> blocks in the "sidebars.html" template. The
-            <code>py:def</code> construct is best thought of as a "macro" code... a simple
-            way to separate and reuse common code snippets. All it takes to include these
-            on the "about.html" page template is to write</p>
-            <pre>$${sidebar_top()}
-$${sidebar_bottom()}
-  </pre>in the page where they are wanted. CSS styling (in "/public/css/style.css") floats
-  them off to the right side. You can remove a sidebar or add more of them, and the CSS
-  will place them one atop the other.
-
-            <p>This is, of course, also exactly how the header and footer templates are
-            also displayed in their proper places, but we'll cover that in the
-            "master.html" template below.</p>
-
-            <p>Oh, and in sidebar_top we've added a dynamic menu that shows the link to
-            this page at the top when you're at the "index" page, and shows a link to the
-            Home (index) page when you're here. Study the "sidebars.html" template to see
-            how we used <code>py:choose</code> for that.</p>
-          </div>
-
-          <div class="span6">
-            <p><strong><span class="label label-info">footer.html</span></strong> - The
-            "footer.html" block is simple, but also utilizes a special "replace" method to
-            set the current YEAR in the footer copyright message. The code is:</p>
-            <pre>
-  &lt;span py:replace="now.strftime('%Y')"&gt;
-  </pre>and it uses the variable "now" that was passed in with the dictionary of variables.
-  But because "now" is a datetime object, we can use the Python <code>"strftime()"</code>
-  method with the "replace" call to say "Just Display The Year Here". Simple, elegant; we
-  format the date display in the template (the View in the Model/View/Controller
-  architecture) rather than formatting it in the Controller method and sending it to the
-  template as a string variable.
-
-            <p><strong><span class="label label-info">master.html</span></strong> - The
-            "master.html" template is called last, by design. The "master.html" template
-            controls the overall design of the page we're looking at, calling first the
-            "header" py:def macro, then the putting everything from this "about.html"
-            template into the "main_content" div, and then calling the "footer" macro at
-            the end. Thus the "master.html" template provides the overall architecture for
+            <p>The <strong><span class="label label-info">master.html</span></strong> template
+            controls the overall design of the page we're looking at. It draws the headers,
+            the footer, the notices flash and embeds the content of each page of your web applications.
+            Thus the "master.html" template provides the overall architecture for
             each page in this site.</p>
-
-            <p>But why then shouldn't we call it first? Isn't it the most important?
-            Perhaps, but that's precisely why we call it LAST. The "master.html" template
-            needs to know where to find everything else, everything that it will use in
-            py:def macros to build the page. So that means we call the other templates
-            first, and then call "master.html".</p>
 
             <p>There's more to the "master.html" template... study it to see how the
             &lt;title&gt; tags and static JS and CSS files are brought into the page.
