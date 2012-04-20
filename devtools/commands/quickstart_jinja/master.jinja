@@ -28,10 +28,10 @@
                     {% if tg.auth_stack_enabled %}
                         <ul class="nav pull-right">
                             {% if request.identity %}
-                                <li py:if="request.identity"><a href="{{tg.url('/logout_handler')}}">Logout</a></li>
-                                <li py:if="request.identity"><a href="{{tg.url('/admin')}}">Admin</a></li>
+                                <li><a href="{{tg.url('/logout_handler')}}">Logout</a></li>
+                                <li><a href="{{tg.url('/admin')}}">Admin</a></li>
                             {% else %}
-                                <li py:if="not request.identity"><a href="{{tg.url('/login')}}">Login</a></li>
+                                <li><a href="{{tg.url('/login')}}">Login</a></li>
                             {% endif %}
                         </ul>
                     {% endif %}
