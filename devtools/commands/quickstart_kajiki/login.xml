@@ -1,0 +1,19 @@
+<html py:extends="master.xml" py:strip="True">
+    <head py:block="head" py:strip="True">
+        <title py:block="master_title">Login</title>
+    </head>
+
+<body py:block="body" py:strip="True">
+  <div id="loginform">
+    <form action="${tg.url('/login_handler', params=dict(came_from=came_from.encode('utf-8'), __logins=login_counter.encode('utf-8')))}" method="post" accept-charset="UTF-8">
+      <h2>Login</h2>
+      <label>Username:</label><input type="text" name="login"></input><br/>
+      <label>Password:</label><input type="password" name="password"></input><br/>
+      <input class="btn" type="submit" id="submit" value="Login" />
+      <label class="checkbox">
+        <input type="checkbox" name="remember" value="2252000" /> remember me
+      </label>
+    </form>
+  </div>
+</body>
+</html>

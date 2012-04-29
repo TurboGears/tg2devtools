@@ -109,6 +109,10 @@ or start project with authentication and authorization support::
         help="default templates jinja",
         action="store_true", dest="jinja")
 
+    parser.add_option("-k", "--kajiki",
+        help="default templates kajiki",
+        action="store_true", dest="kajiki")
+
     parser.add_option("-g", "--geo",
             help="add GIS support",
             action="store_true", dest="geo")
@@ -181,23 +185,25 @@ or start project with authentication and authorization support::
                         "Enter package name [%s]: " % package).strip() or package
 
         if self.no_input:
-
             #defaults
             self.mako = False
             self.jinja = False
+            self.kajiki = False
             self.auth = True
 
-        if self.jinja is None and self.mako is None:
+        if self.jinja is None and self.mako is None and self.kajiki is None:
             template = None
             while template is None:
                 template = raw_input(
-                    "Would you prefer to use an alternative template system? (m=mako, j=jinja, n=no [default]): ")
-		template = dict(m="mako", j="jinja", n="none").get(
+                    "Would you prefer to use an alternative template system? (m=mako, j=jinja, k=kajiki, n=no [default]): ")
+		template = dict(m="mako", j="jinja", k='kajiki', n="none").get(
                     template.lstrip()[:1].lower() or 'n')
                 if template == "mako":
                     self.mako = True
                 elif template == "jinja":
                     self.jinja = True
+                elif template == "kajiki":
+                    self.kajiki = True
                 elif template is None:
                     print "Please enter an option or n(o)."
                 
@@ -269,6 +275,7 @@ or start project with authentication and authorization support::
         cmd_args.append("tgversion=%s" % self.version)
         cmd_args.append("mako=%s"%self.mako)
         cmd_args.append("jinja=%s"%self.jinja)
+        cmd_args.append("kajiki=%s"%self.kajiki)
         cmd_args.append("migrations=%s"%self.migrations)
         cmd_args.append("cookiesecret=%s"%self.cookiesecret)
         # set the exact ORM-version for the proper requirements
@@ -293,27 +300,23 @@ or start project with authentication and authorization support::
                 if file == "empty":
                     os.remove(os.path.join(base, file))
 
-        #copy over the mako templates if appropriate
-        if self.mako:
-            print 'Writing mako template files to ./'+os.path.join(self.package, 'templates')
+        #copy over the alternative templates if appropriate
+        if self.mako or self.kajiki or self.jinja:
+            def overwrite_templates(template_type):
+                print 'Writing ' + template_type + ' template files to ./'+os.path.join(self.package, 'templates')
+                #remove existing template files
+                package_template_dir = os.path.abspath(os.path.join(self.package, 'templates'))
+                shutil.rmtree(package_template_dir, ignore_errors=True)
+                #replace template files with alternative ones
+                alt_template_dir = os.path.abspath(os.path.dirname(__file__))+'/quickstart_'+template_type
+                shutil.copytree(alt_template_dir, package_template_dir)
 
-            #remove existing template files
-            package_template_dir = os.path.abspath(os.path.join(self.package, 'templates'))
-            shutil.rmtree(package_template_dir, ignore_errors=True)
-
-            #replace template files with mako ones
-            mako_template_dir = os.path.abspath(os.path.dirname(__file__))+'/quickstart_mako'
-            shutil.copytree(mako_template_dir, package_template_dir)
-        elif self.jinja:
-            print 'Writing jinja template files to ./'+os.path.join(self.package, 'templates')
-
-            #remove existing template files
-            package_template_dir = os.path.abspath(os.path.join(self.package, 'templates'))
-            shutil.rmtree(package_template_dir, ignore_errors=True)
-
-            #replace template files with jinja ones
-            jinja_template_dir = os.path.abspath(os.path.dirname(__file__))+'/quickstart_jinja'
-            shutil.copytree(jinja_template_dir, package_template_dir)
+            if self.mako:
+                overwrite_templates('mako')
+            elif self.jinja:
+                overwrite_templates('jinja')
+            elif self.kajiki:
+                overwrite_templates('kajiki')
 
         if self.ming:
             print 'Writing Ming model files to ./'+os.path.join(self.package, 'model')

@@ -43,6 +43,9 @@ base_config.renderers.append('mako')
 base_config.default_renderer = 'jinja'
 base_config.renderers.append('jinja')
 base_config.jinja_extensions = ['jinja2.ext.with_']
+{{elif kajiki == 'True' or template_engine == 'kajiki'}}
+base_config.default_renderer = 'kajiki'
+base_config.renderers.append('kajiki')
 {{elif template_engine == 'genshi'}}
 base_config.default_renderer = 'genshi'
 # if you want raw speed and have installed chameleon.genshi
