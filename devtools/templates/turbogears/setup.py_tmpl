@@ -42,14 +42,12 @@ install_requires=[
     "tgming",
     {{endif}}
     {{if auth == "sqlalchemy" or auth == "ming"}}
-    "repoze.what >= 1.0.8",
     "repoze.who-friendlyform >= 1.0.4",
     "repoze.who==1.0.19",
     "tgext.admin >= 0.5",
     {{endif}}
     {{if auth == "sqlalchemy"}}
     "repoze.who.plugins.sa",
-    "repoze.what.plugins.sql>=1.0.1",
     {{endif}}
     {{if tw1 == 'True'}}
     "tw.forms",

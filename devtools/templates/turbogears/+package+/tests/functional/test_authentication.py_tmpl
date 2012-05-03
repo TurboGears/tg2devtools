@@ -12,15 +12,11 @@ from {{package}}.tests import TestController
 
 
 class TestAuthentication(TestController):
-    """Tests for the default authentication setup.
+    """
+    Tests for the default authentication setup.
 
-    By default in TurboGears 2, :mod:`repoze.who` is configured with the same
-    plugins specified by repoze.what-quickstart (which are listed in
-    http://code.gustavonarea.net/repoze.what-quickstart/#repoze.what.plugins.quickstart.setup_sql_auth).
-
-    As the settings for those plugins change, or the plugins are replaced,
-    these tests should be updated.
-
+    If your application changes how the authentication layer is configured
+    those tests should be updated accordingly
     """
 
     application_under_test = 'main'

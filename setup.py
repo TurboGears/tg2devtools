@@ -10,7 +10,6 @@ test_requirements = ['coverage',
                     'TurboJson >= 1.3',
                     'zope.sqlalchemy >= 0.4',
                     'SQLAlchemy >= 0.5',
-                    'repoze.what-quickstart >= 1.0.3',
                     'Babel >=0.9.4',
                     'tgext.admin>=0.3.9',
                     ]

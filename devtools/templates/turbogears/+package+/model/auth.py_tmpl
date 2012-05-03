@@ -2,8 +2,7 @@
 """
 Auth* related model.
 
-This is where the models used by :mod:`repoze.who` and :mod:`repoze.what` are
-defined.
+This is where the models used by the authentication stack are defined.
 
 It's perfectly fine to re-use this definition in the {{project}} application,
 though.
@@ -11,16 +10,9 @@ though.
 """
 
 {{if auth == "sqlalchemy" or auth == "ming"}}
-import os
+import os, sys
 from datetime import datetime
-import sys
-try:
-    from hashlib import sha256
-except ImportError:
-    sys.exit('ImportError: No module named hashlib\n'
-             'If you are on python2.4 this library is not part of python. '
-             'Please install it. Example: easy_install hashlib')
-
+from hashlib import sha256
 {{endif}}
 
 {{if auth == "sqlalchemy"}}
@@ -32,11 +24,8 @@ from sqlalchemy.orm import relation, synonym
 
 from {{package}}.model import DeclarativeBase, metadata, DBSession
 
-#{ Association tables
-
-
 # This is the association table for the many-to-many relationship between
-# groups and permissions. This is required by repoze.what.
+# groups and permissions.
 group_permission_table = Table('tg_group_permission', metadata,
     Column('group_id', Integer, ForeignKey('tg_group.group_id',
         onupdate="CASCADE", ondelete="CASCADE"), primary_key=True),
@@ -45,7 +34,7 @@ group_permission_table = Table('tg_group_permission', metadata,
 )
 
 # This is the association table for the many-to-many relationship between
-# groups and members - this is, the memberships. It's required by repoze.what.
+# groups and members - this is, the memberships.
 user_group_table = Table('tg_user_group', metadata,
     Column('user_id', Integer, ForeignKey('tg_user.user_id',
         onupdate="CASCADE", ondelete="CASCADE"), primary_key=True),
@@ -54,34 +43,21 @@ user_group_table = Table('tg_user_group', metadata,
 )
 
 
-#{ The auth* model itself
-
-
 class Group(DeclarativeBase):
     """
-    Group definition for :mod:`repoze.what`.
+    Group definition
 
-    Only the ``group_name`` column is required by :mod:`repoze.what`.
+    Only the ``group_name`` column is required.
 
     """
 
     __tablename__ = 'tg_group'
 
-    #{ Columns
-
     group_id = Column(Integer, autoincrement=True, primary_key=True)
-
     group_name = Column(Unicode(16), unique=True, nullable=False)
-
     display_name = Column(Unicode(255))
-
     created = Column(DateTime, default=datetime.now)
-
-    #{ Relations
-
     users = relation('User', secondary=user_group_table, backref='groups')
-
-    #{ Special methods
 
     def __repr__(self):
         return ('<Group: name=%s>' % self.group_name).encode('utf-8')
@@ -89,12 +65,6 @@ class Group(DeclarativeBase):
     def __unicode__(self):
         return self.group_name
 
-    #}
-
-
-# The 'info' argument we're passing to the email_address and password columns
-# contain metadata that Rum (http://python-rum.org/) can use generate an
-# admin interface for your models.
 class User(DeclarativeBase):
     """
     User definition.
@@ -105,23 +75,12 @@ class User(DeclarativeBase):
     """
     __tablename__ = 'tg_user'
 
-    #{ Columns
-
     user_id = Column(Integer, autoincrement=True, primary_key=True)
-
     user_name = Column(Unicode(16), unique=True, nullable=False)
-
-    email_address = Column(Unicode(255), unique=True, nullable=False,
-                           info={'rum': {'field':'Email'{{end_braces}})
-
+    email_address = Column(Unicode(255), unique=True, nullable=False)
     display_name = Column(Unicode(255))
-
-    _password = Column('password', Unicode(128),
-                       info={'rum': {'field':'Password'{{end_braces}})
-
+    _password = Column('password', Unicode(128))
     created = Column(DateTime, default=datetime.now)
-
-    #{ Special methods
 
     def __repr__(self):
         return ('<User: name=%s, email=%s, display=%s>' % (
@@ -129,8 +88,6 @@ class User(DeclarativeBase):
 
     def __unicode__(self):
         return self.display_name or self.user_name
-
-    #{ Getters and setters
 
     @property
     def permissions(self):
@@ -177,8 +134,6 @@ class User(DeclarativeBase):
     password = synonym('_password', descriptor=property(_get_password,
                                                         _set_password))
 
-    #}
-
     def validate_password(self, password):
         """
         Check the password against existing credentials.
@@ -200,28 +155,21 @@ class User(DeclarativeBase):
 
 class Permission(DeclarativeBase):
     """
-    Permission definition for :mod:`repoze.what`.
+    Permission definition.
 
-    Only the ``permission_name`` column is required by :mod:`repoze.what`.
+    Only the ``permission_name`` column is required.
 
     """
 
     __tablename__ = 'tg_permission'
 
-    #{ Columns
 
     permission_id = Column(Integer, autoincrement=True, primary_key=True)
-
     permission_name = Column(Unicode(63), unique=True, nullable=False)
-
     description = Column(Unicode(255))
-
-    #{ Relations
 
     groups = relation(Group, secondary=group_permission_table,
                       backref='permissions')
-
-    #{ Special methods
 
     def __repr__(self):
         return ('<Permission: name=%s>' % self.permission_name).encode('utf-8')
@@ -229,10 +177,6 @@ class Permission(DeclarativeBase):
     def __unicode__(self):
         return self.permission_name
 
-    #}
-
-
-#}
 {{elif auth == 'ming'}}
 __all__ = ['User', 'Group', 'Permission']
 
@@ -246,7 +190,7 @@ from session import DBSession
 
 class Group(MappedClass):
     """
-    Group definition for :mod:`repoze.what`.
+    Group definition.
     """
     class __mongometa__:
         session = DBSession
@@ -273,7 +217,7 @@ class Group(MappedClass):
 
 class Permission(MappedClass):
     """
-    Permission definition for :mod:`repoze.what`.
+    Permission definition.
     """
     class __mongometa__:
         session = DBSession

@@ -4,7 +4,7 @@
 {{if auth == "sqlalchemy" or auth == "ming"}}
 from tg import expose, flash
 from tg.i18n import ugettext as _, lazy_ugettext as l_
-from repoze.what.predicates import has_permission
+from tg.predicates import has_permission
 
 from {{package}}.lib.base import BaseController
 

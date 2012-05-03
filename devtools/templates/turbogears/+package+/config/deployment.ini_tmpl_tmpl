@@ -89,8 +89,8 @@ qualname = sqlalchemy.engine
 
 {{if auth == "sqlalchemy"}}
 
-# A logger for authentication, identification and authorization -- this is
-# repoze.who and repoze.what:
+# A logger for authentication, identification and authorization
+# This is repoze.who:
 [logger_auth]
 level = WARN
 handlers =

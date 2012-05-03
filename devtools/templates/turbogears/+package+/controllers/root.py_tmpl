@@ -5,8 +5,8 @@ from tg import expose, flash, require, url, lurl, request, redirect, tmpl_contex
 from tg.i18n import ugettext as _, lazy_ugettext as l_
 
 {{if auth == "sqlalchemy" or auth == "ming"}}
+from tg import predicates
 from {{package}} import model
-from repoze.what import predicates
 from {{package}}.controllers.secure import SecureController
 {{endif}}
 
