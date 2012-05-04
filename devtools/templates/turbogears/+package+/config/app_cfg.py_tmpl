@@ -117,9 +117,9 @@ base_config.sa_auth.authmetadata = ApplicationAuthMetadata(base_config.sa_auth)
 #base_config.sa_auth.authenticators = [('myauth', SomeAuthenticator()]
 
 # You can add more repoze.who metadata providers to fetch
-# user metadata. Remember to set base_config.sa_auth.authmetadata
-# to TGAuthMetadata() to disable authmetadata and use only your own
-# metadata providers
+# user metadata.
+# Remember to set base_config.sa_auth.authmetadata to None
+# to disable authmetadata and use only your own metadata providers
 #base_config.sa_auth.mdproviders = [('myprovider', SomeMDProvider()]
 
 # override this if you would like to provide a different who plugin for
