@@ -21,10 +21,10 @@
         <div class="container">
           <a class="brand" href="#"><img src="${tg.url('/images/turbogears_logo.png')}" alt="TurboGears 2"/> ${getattr(tmpl_context, 'project_name', 'turbogears2')}</a>
           <ul class="nav">
-            <li class="${('', 'active')['page' in self._context and page=='index']}"><a href="${tg.url('/')}">Welcome</a></li>
-            <li class="${('', 'active')['page' in self._context and page=='about']}"><a href="${tg.url('/about')}">About</a></li>
-            <li class="${('', 'active')['page' in self._context and page=='data']}"><a href="${tg.url('/data')}">Serving Data</a></li>
-            <li class="${('', 'active')['page' in self._context and page=='environ']}"><a href="${tg.url('/environ')}">WSGI Environment</a></li>
+            <li class="${('', 'active')[self.defined('page') and page=='index']}"><a href="${tg.url('/')}">Welcome</a></li>
+            <li class="${('', 'active')[self.defined('page') and page=='about']}"><a href="${tg.url('/about')}">About</a></li>
+            <li class="${('', 'active')[self.defined('page') and page=='data']}"><a href="${tg.url('/data')}">Serving Data</a></li>
+            <li class="${('', 'active')[self.defined('page') and page=='environ']}"><a href="${tg.url('/environ')}">WSGI Environment</a></li>
           </ul>
           <ul class="nav pull-right" py:if="tg.auth_stack_enabled">
             <li py:if="not request.identity"><a href="${tg.url('/login')}">Login</a></li>

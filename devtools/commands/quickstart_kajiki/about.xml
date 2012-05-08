@@ -79,7 +79,7 @@
             each page in this site.</p>
 
             <p>There's more to the "master.html" template... study it to see how the
-            &amp;lt;title&amp;gt; tags and static JS and CSS files are brought into the page.
+            &lt;title&gt; tags and static JS and CSS files are brought into the page.
             Templating with Genshi is a powerful tool and we've only scratched the surface.
             There are also a few little CSS tricks hidden in these pages, like the use of a
             "clearingdiv" to make sure that your footer stays below the sidebars and always

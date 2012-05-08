@@ -29,6 +29,8 @@ install_requires=[
     "Mako",
     {{elif jinja == 'True'}}
     "Jinja2",
+    {{elif kajiki == 'True'}}
+    "Kajiki >= 0.3.5",
     {{endif}}
     {{if sqlalchemy == 'True'}}
     "zope.sqlalchemy >= 0.4",
