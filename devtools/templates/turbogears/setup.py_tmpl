@@ -46,6 +46,7 @@ install_requires=[
     {{if auth == "sqlalchemy" or auth == "ming"}}
     "repoze.who-friendlyform >= 1.0.4",
     "repoze.who==1.0.19",
+    "repoze.who-testutil",
     "tgext.admin >= 0.5.1",
     {{endif}}
     {{if auth == "sqlalchemy"}}
