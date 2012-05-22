@@ -7,6 +7,14 @@
 #
 #
 
+#This is just a work-around for a Python2.7 issue causing
+#interpreter crash at exit when trying to log an info message.
+try:
+    import logging
+    import multiprocessing
+except:
+    pass
+
 import sys
 
 try:
