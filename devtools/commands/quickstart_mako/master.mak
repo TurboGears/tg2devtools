@@ -29,7 +29,7 @@
 
 <%def name="body_class()"></%def>
 <%def name="meta()">
-  <meta charset="utf-8" />
+  <meta charset="${response.charset}" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </%def>
 
@@ -47,7 +47,7 @@
     <div class="navbar-inner">
       <div class="container">
         <a class="brand" href="#"><img src="${tg.url('/images/turbogears_logo.png')}" alt="TurboGears 2"/> ${getattr(tmpl_context, 'project_name', 'turbogears2')}</a>
-        <ul class="nav">
+        <ul class="nav nav-pills">
           <li class="${('', 'active')[page=='index']}"><a href="${tg.url('/')}">Welcome</a></li>
           <li class="${('', 'active')[page=='about']}"><a href="${tg.url('/about')}">About</a></li>
           <li class="${('', 'active')[page=='data']}"><a href="${tg.url('/data')}">Serving Data</a></li>
@@ -55,7 +55,7 @@
         </ul>
 
         % if tg.auth_stack_enabled:
-          <ul class="nav pull-right">
+          <ul class="nav nav-pills pull-right">
             % if not request.identity:
               <li><a href="${tg.url('/login')}">Login</a></li>
             % else:

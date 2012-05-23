@@ -19,7 +19,7 @@
             <div class="navbar-inner">
                 <div class="container">
                     <a class="brand" href="#"><img src="{{tg.url('/images/turbogears_logo.png')}}" alt="TurboGears 2"/>turbogears2</a>
-                    <ul class="nav">
+                    <ul class="nav nav-pills">
                         <li class="{% if page == 'index' %}active{% endif %}"><a href="{{ tg.url('/') }}">Welcome</a></li>
                         <li><a href="{{ tg.url('/about') }}" class="{% if page == 'about' %}active{% endif %}">About</a></li>
                         <li><a href="{{ tg.url('/data') }}" class="{% if page == 'data' %}active{% endif %}">Serving Data</a></li>
@@ -27,7 +27,7 @@
                     </ul>
 
                     {% if tg.auth_stack_enabled %}
-                        <ul class="nav pull-right">
+                        <ul class="nav nav-pills pull-right">
                             {% if request.identity %}
                                 <li><a href="{{tg.url('/logout_handler')}}">Logout</a></li>
                                 <li><a href="{{tg.url('/admin')}}">Admin</a></li>
