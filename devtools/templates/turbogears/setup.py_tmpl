@@ -28,7 +28,6 @@ testpkgs=['WebTest >= 1.2.3',
                'nose',
                'coverage',
                'wsgiref',
-               'repoze.who-testutil >= 1.0.1',
                ]
 install_requires=[
     "TurboGears2 >= 2.2.0rc1",
@@ -52,9 +51,8 @@ install_requires=[
     "tgming",
     {{endif}}
     {{if auth == "sqlalchemy" or auth == "ming"}}
+    "repoze.who",
     "repoze.who-friendlyform >= 1.0.4",
-    "repoze.who==1.0.19",
-    "repoze.who-testutil",
     "tgext.admin >= 0.5.1",
     {{endif}}
     {{if auth == "sqlalchemy"}}
