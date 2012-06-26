@@ -99,7 +99,7 @@ setup(
     main = pylons.util:PylonsInstaller
     """,
     dependency_links=[
-        "http://tg.gy/beta"
+        "http://tg.gy/220rc2"
         ],
     zip_safe=False
 )

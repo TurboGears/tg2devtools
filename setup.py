@@ -20,7 +20,7 @@ install_requirements = [
 
 setup(
     name='tg.devtools',
-    version="2.2.0rc1",
+    version="2.2.0rc2",
     description="",
     long_description="""""",
     classifiers=[],
@@ -51,6 +51,6 @@ setup(
     test_suite='nose.collector',
     tests_require = test_requirements,
     dependency_links=[
-        "http://tg.gy/beta"
+        "http://tg.gy/220rc2"
         ]
 )
