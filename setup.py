@@ -16,11 +16,14 @@ test_requirements = ['coverage',
 
 install_requirements = [
                         'TurboGears2 >= 2.2.0',
+                        'gearbox',
+                        'backlash',
+                        'WebTest'
                         ]
 
 setup(
     name='tg.devtools',
-    version="2.2.0",
+    version="2.3.0",
     description="",
     long_description="""""",
     classifiers=[],
@@ -33,21 +36,15 @@ setup(
     include_package_data=True,
     zip_safe=False,
     install_requires = install_requirements,
-    entry_points='''
-        [paste.global_paster_command]
-        quickstart = devtools.commands.quickstart:QuickstartCommand
-        [paste.paster_command]
-        migrate = devtools.commands.migration:MigrateCommand
-        [turbogears2.command]
-        quickstart = devtools.commands.quickstart:QuickstartCommand
-        migrate = devtools.commands.migration:MigrateCommand
-        [paste.paster_create_template]
-        turbogears2=devtools.pastetemplate:TurboGearsTemplate
-        turbogears2-minimal=devtools.pastetemplate:TurboGearsMinimalTemplate
-        tgext=devtools.pastetemplate:TurboGearsExtTemplate
-        [turbogears2.template]
-        turbogears2=devtools.pastetemplate:TurboGearsTemplate
-    ''',
+    entry_points={
+        'gearbox.commands': [
+            'quickstart = devtools.gearbox.quickstart:QuickstartCommand',
+            'tgshell = devtools.gearbox.tgshell:ShellCommand'
+            ],
+        'gearbox.project_commands': [
+            'migrate = devtools.gearbox.migrate:MigrateCommand'
+        ],
+    },
     test_suite='nose.collector',
     tests_require = test_requirements,
     dependency_links=[

@@ -72,8 +72,6 @@ setup(
     author='',
     author_email='',
     #url='',
-    setup_requires=["PasteScript >= 1.7"],
-    paster_plugins={{egg_plugins}},
     packages=find_packages(exclude=['ez_setup']),
     install_requires=install_requires,
     include_package_data=True,
@@ -91,13 +89,14 @@ setup(
             {{endif}}
             {{babel_templates_extractor}}('public/**', 'ignore', None)]},
 
-    entry_points="""
-    [paste.app_factory]
-    main = {{package}}.config.middleware:make_app
-
-    [paste.app_install]
-    main = pylons.util:PylonsInstaller
-    """,
+    entry_points={
+        'paste.app_factory': [
+            'main = {{package}}.config.middleware:make_app'
+        ],
+        'gearbox.plugins': [
+            'turbogears-devtools = tg.devtools'
+        ]
+    },
     dependency_links=[
         "http://tg.gy/220"
         ],
