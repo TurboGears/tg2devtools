@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """Setup the {{project}} application"""
+from __future__ import print_function
 
 import logging
 from tg import config
@@ -19,7 +20,7 @@ def setup_schema(command, conf, vars):
 
     
     # <websetup.websetup.schema.before.metadata.create_all>
-    print "Creating tables"
+    print("Creating tables")
     model.metadata.create_all(bind=config['pylons.app_globals'].sa_engine)
     # <websetup.websetup.schema.after.metadata.create_all>
     transaction.commit()
@@ -31,5 +32,5 @@ def setup_schema(command, conf, vars):
     try:
         main(argv=['version_control'], url=config['sqlalchemy.url'], repository='migration', name='migration')
     except DatabaseAlreadyControlledError:
-        print 'Database already under version control'
+        print('Database already under version control')
     {{endif}}

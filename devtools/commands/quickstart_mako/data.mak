@@ -17,7 +17,7 @@ the entries as JSON.  Here, try it out: <a href="/data.html?a=1&b=2">/data.html?
 <p>Click here for the <a href="${tg.url('/data.json', params=params)}">JSON Version of this page.</a></p>
 <p>The data provided in the template call is: 
     <table>
-        %for key, value in params.iteritems():
+        %for key, value in params.items():
             <tr>
                 <td>${key}</td>
                 <td>${value}</td>

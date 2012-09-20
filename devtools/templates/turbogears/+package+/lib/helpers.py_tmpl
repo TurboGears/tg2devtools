@@ -3,6 +3,7 @@
 """WebHelpers used in {{project}}."""
 
 #from webhelpers import date, feedgenerator, html, number, misc, text
+from markupsafe import Markup
 from datetime import datetime
 
 def current_year():
@@ -11,6 +12,6 @@ def current_year():
 
 def icon(icon_name, white=False):
     if (white):
-        return html.literal('<i class="icon-%s icon-white"></i>' % icon_name)
+        return Markup('<i class="icon-%s icon-white"></i>' % icon_name)
     else:
-        return html.literal('<i class="icon-%s"></i>' % icon_name)
+        return Markup('<i class="icon-%s"></i>' % icon_name)

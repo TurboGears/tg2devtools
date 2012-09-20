@@ -95,6 +95,10 @@ class QuickstartCommand(Command):
             help="use toscawidgets 1.x in place of 2.x version",
             action="store_true", dest="tw1", default=False)
 
+        parser.add_argument("--skip-tw",
+            help="Disables ToscaWidgets",
+            action="store_true", dest="skip_tw", default=False)
+
         parser.add_argument("--noinput",
             help="no input (don't ask any questions)",
             action="store_true", dest="no_input")
@@ -126,6 +130,9 @@ class QuickstartCommand(Command):
             opts.jinja = False
             opts.kajiki = False
             opts.auth = True
+
+        if opts.tw1:
+            opts.skip_tw = False
 
         if opts.auth:
             if opts.ming:
