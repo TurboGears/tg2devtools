@@ -42,7 +42,7 @@ setup(
             'tgshell = devtools.gearbox.tgshell:ShellCommand'
             ],
         'gearbox.project_commands': [
-            'migrate = devtools.gearbox.migrate:MigrateCommand'
+            'migrate = devtools.gearbox.sqlamigrate:MigrateCommand'
         ],
     },
     test_suite='nose.collector',
