@@ -38,11 +38,11 @@ setup(
     install_requires = install_requirements,
     entry_points={
         'gearbox.commands': [
-            'quickstart = devtools.gearbox.quickstart:QuickstartCommand',
-            'tgshell = devtools.gearbox.tgshell:ShellCommand'
+            'quickstart = devtools.gearbox.quickstart:QuickstartCommand'
             ],
         'gearbox.project_commands': [
-            'migrate = devtools.gearbox.sqlamigrate:MigrateCommand'
+            'migrate = devtools.gearbox.sqlamigrate:MigrateCommand',
+            'tgshell = devtools.gearbox.tgshell:ShellCommand'
         ],
     },
     test_suite='nose.collector',
