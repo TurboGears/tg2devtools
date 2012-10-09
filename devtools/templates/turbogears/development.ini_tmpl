@@ -75,13 +75,15 @@ ming.db = {{package}}
 templating.genshi.method = xhtml
 templating.genshi.doctype = html5
 
-# the compiled template dir is a directory that must be readable by your
-# webserver. It will be used to store the resulting templates once compiled
-# by the TemplateLookup system.
+# the compiled template dir is a directory that must be readable and writable
+# by your webserver. It will be used to store the resulting templates once
+# compiled by the TemplateLookup system.
 # During development you generally don't need this option since paste's HTTP
 # server will have access to you development directories, but in production
 # you'll most certainly want to have apache or nginx to write in a directory
-# that does not contain any source code in any form for obvious security reasons.
+# that does not contain any source code in any form for obvious security
+# reasons.  If disabled, None, False, or not writable, it will fall back
+# to an in-memory cache.
 templating.mako.compiled_templates_dir = %(here)s/data/templates
 
 # WARNING: *THE LINE BELOW MUST BE UNCOMMENTED ON A PRODUCTION ENVIRONMENT*
