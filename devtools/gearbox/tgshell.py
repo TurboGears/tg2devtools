@@ -22,7 +22,7 @@ class ShellCommand(Command):
 
     """
     def get_description(self):
-        return "Opens an interactive shell with a PasteDeploy app loaded"
+        return "Opens an interactive shell with a TurboGears2 app loaded"
 
     def get_parser(self, prog_name):
         parser = super(ShellCommand, self).get_parser(prog_name)
