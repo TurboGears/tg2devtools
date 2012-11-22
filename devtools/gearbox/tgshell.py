@@ -2,7 +2,6 @@ from __future__ import print_function
 
 import os, sys, tg
 
-from tg.support import registry
 from cliff.command import Command
 from paste.deploy import loadapp
 from webtest import TestApp
@@ -51,18 +50,8 @@ class ShellCommand(Command):
         wsgiapp = loadapp(config_name, relative_to=here_dir)
         test_app = TestApp(wsgiapp)
 
-        # Query the test app to setup the environment
+        # Make available the tg.request and other global variables
         tresponse = test_app.get('/_test_vars')
-        request_id = int(tresponse.body)
-
-        # Disable restoration during test_app requests
-        test_app.pre_request_hook = lambda self:\
-        registry.restorer.restoration_end()
-        test_app.post_request_hook = lambda self:\
-        registry.restorer.restoration_begin(request_id)
-
-        # Restore the state of the StackedObjectProxies
-        registry.restorer.restoration_begin(request_id)
 
         pkg_name = tg.config['package_name']
 
@@ -118,10 +107,7 @@ class ShellCommand(Command):
                 shell = IPShellEmbed()
                 shell.set_banner(shell.IP.BANNER + '\n\n' + banner)
 
-            try:
-                shell(local_ns=locs, global_ns={})
-            finally:
-                registry.restorer.restoration_end()
+            shell(local_ns=locs, global_ns={})
         except ImportError:
             import code
             py_prefix = sys.platform.startswith('java') and 'J' or 'P'
@@ -133,10 +119,8 @@ class ShellCommand(Command):
                 import readline
             except ImportError:
                 pass
-            try:
-                shell.interact(banner)
-            finally:
-                registry.restorer.restoration_end()
+            
+            shell.interact(banner)
 
     def _can_import(self, name):
         try:
