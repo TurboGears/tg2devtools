@@ -208,11 +208,11 @@ class Group(MappedClass):
         #erase removed permissions
         for perm in current_permissions:
             if perm not in value:
-                perm._groups = set(perm._groups) - set([self.group_name])
+                perm._groups = list(set(perm._groups) - set([self.group_name]))
         #set added permissions
         for perm in value:
             if perm not in current_permissions:
-                perm._groups = set([self.group_name]) | set(perm._groups)
+                perm._groups = list(set([self.group_name]) | set(perm._groups))
     permissions = ProgrammaticRelationProperty('Permission', _get_permissions, _set_permissions)
 
 class Permission(MappedClass):
