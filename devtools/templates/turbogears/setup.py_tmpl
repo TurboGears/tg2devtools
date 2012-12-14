@@ -30,6 +30,7 @@ testpkgs=['WebTest >= 1.2.3',
                'wsgiref',
                ]
 install_requires=[
+    "Babel",
     "TurboGears2 >= 2.2.0",
     "Genshi",
     {{if mako == 'True'}}

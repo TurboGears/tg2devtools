@@ -16,7 +16,7 @@ test_requirements = ['coverage',
 
 install_requirements = [
                         'TurboGears2 >= 2.2.0',
-                        'gearbox',
+                        'gearbox-command',
                         'backlash',
                         'WebTest'
                         ]
