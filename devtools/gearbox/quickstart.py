@@ -5,7 +5,7 @@ import shutil
 import sys
 
 from gearbox.template import GearBoxTemplate
-from cliff.command import Command
+from gearbox.command import Command
 
 beginning_letter = re.compile(r"^[^a-z]*")
 valid_only = re.compile(r"[^a-z0-9_]")
