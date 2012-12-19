@@ -66,6 +66,7 @@ class ShellCommand(Command):
         if self._can_import(helpers_module):
             locs['h'] = sys.modules[helpers_module]
 
+        exec ('import tg') in locs
         exec ('from tg import app_globals, config, request, response, '
               'session, tmpl_context, url') in locs
         locs.pop('__builtins__', None)
