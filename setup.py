@@ -41,7 +41,8 @@ setup(
             'quickstart = devtools.gearbox.quickstart:QuickstartCommand'
             ],
         'gearbox.project_commands': [
-            'migrate = devtools.gearbox.sqlamigrate:MigrateCommand',
+            'sqla-migrate = devtools.gearbox.sqlamigrate:MigrateCommand',
+            'migrate = devtools.gearbox.alembic_migrate:MigrateCommand',
             'tgshell = devtools.gearbox.tgshell:ShellCommand'
         ],
     },

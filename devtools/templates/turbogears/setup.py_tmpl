@@ -46,7 +46,7 @@ install_requires=[
     "sqlalchemy",
     {{endif}}
     {{if sqlalchemy == 'True' and migrations == 'True'}}
-    "sqlalchemy-migrate",
+    "alembic",
     {{endif}}
     {{if ming == 'True'}}
     "tgming",

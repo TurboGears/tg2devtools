@@ -88,7 +88,7 @@ class QuickstartCommand(Command):
             action="store_true", dest="no_sqlalchemy", default=False)
 
         parser.add_argument("--disable-migrations",
-            help="disable sqlalchemy-migrate model migrations",
+            help="disable alembic model migrations",
             action="store_false", dest="migrations", default=True)
 
         parser.add_argument("--enable-tw1",

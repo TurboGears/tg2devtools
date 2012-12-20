@@ -38,7 +38,7 @@ check http://code.google.com/p/sqlalchemy-migrate/wiki/MigrateVersioning for det
 
 """
 from __future__ import print_function
-from cliff.command import Command
+from gearbox.command import Command
 
 try:
     from configparser import ConfigParser
@@ -46,7 +46,6 @@ except ImportError:
     from ConfigParser import ConfigParser
 
 import sys, os
-from migrate.versioning.shell import main
 
 class MigrateCommand(Command):
     """Create and apply SQLAlchemy migrations
@@ -78,6 +77,8 @@ class MigrateCommand(Command):
         return parser
 
     def take_action(self, opts):
+        from migrate.versioning.shell import main
+
         sect = 'app:main'
         option = 'sqlalchemy.url'
 
