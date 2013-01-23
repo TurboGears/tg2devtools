@@ -32,7 +32,9 @@ testpkgs=['WebTest >= 1.2.3',
 install_requires=[
     "Babel",
     "TurboGears2 >= 2.2.0",
+    {{if skip_genshi != 'True'}}
     "Genshi",
+    {{endif}}
     {{if mako == 'True'}}
     "Mako",
     {{elif jinja == 'True'}}
@@ -53,15 +55,17 @@ install_requires=[
     {{endif}}
     {{if auth == "sqlalchemy" or auth == "ming"}}
     "repoze.who",
-    "tgext.admin >= 0.5.1",
     {{endif}}
     {{if auth == "sqlalchemy"}}
     "repoze.who.plugins.sa",
     {{endif}}
     {{if tw1 == 'True'}}
     "tw.forms",
-    {{else}}
+    {{elif skip_tw != 'True'}}
     "tw2.forms",
+    {{endif}}
+    {{if skip_tw != 'True' and (auth == "sqlalchemy" or auth == "ming")}}
+    "tgext.admin >= 0.5.1",
     {{endif}}
     ]
 

@@ -99,6 +99,10 @@ class QuickstartCommand(Command):
             help="Disables ToscaWidgets",
             action="store_true", dest="skip_tw", default=False)
 
+        parser.add_argument("--skip-genshi",
+            help="Disables Genshi default template",
+            action="store_true", dest="skip_genshi", default=False)
+
         parser.add_argument("--noinput",
             help="no input (don't ask any questions)",
             action="store_true", dest="no_input")
@@ -198,13 +202,15 @@ class QuickstartCommand(Command):
                 if file == "empty":
                     os.remove(os.path.join(base, file))
 
+        if opts.skip_genshi or opts.mako or opts.kajiki or opts.jinja:
+            #remove existing template files
+            package_template_dir = os.path.abspath(os.path.join(opts.package, 'templates'))
+            shutil.rmtree(package_template_dir, ignore_errors=True)
+
         #copy over the alternative templates if appropriate
         if opts.mako or opts.kajiki or opts.jinja:
             def overwrite_templates(template_type):
                 print('Writing ' + template_type + ' template files to ./'+os.path.join(opts.package, 'templates'))
-                #remove existing template files
-                package_template_dir = os.path.abspath(os.path.join(opts.package, 'templates'))
-                shutil.rmtree(package_template_dir, ignore_errors=True)
                 #replace template files with alternative ones
                 alt_template_dir = devtools_path+'commands/quickstart_'+template_type
                 shutil.copytree(alt_template_dir, package_template_dir)

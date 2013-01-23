@@ -35,9 +35,11 @@ base_config.package = {{package}}
 #Enable json in expose
 base_config.renderers.append('json')
 
+{{if skip_genshi != 'True'}}
 #Enable genshi in expose to have a lingua franca for extensions and pluggable apps
 #you can remove this if you don't plan to use it.
 base_config.renderers.append('genshi')
+{{endif}}
 
 #Set the default renderer
 {{if mako == 'True' or template_engine == 'mako'}}
