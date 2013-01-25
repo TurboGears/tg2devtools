@@ -15,7 +15,7 @@ smtp_server = localhost
 error_email_from = paste@localhost
 
 [server:main]
-use = egg:gearbox-command#wsgiref
+use = egg:gearbox#wsgiref
 host = 127.0.0.1
 port = 8080
 
