@@ -30,8 +30,11 @@ testpkgs=['WebTest >= 1.2.3',
                'wsgiref',
                ]
 install_requires=[
-    "TurboGears2 >= 2.2.2",
+    "Babel",
+    "TurboGears2 >= 2.2.0",
+    {{if skip_genshi != 'True'}}
     "Genshi",
+    {{endif}}
     {{if mako == 'True'}}
     "Mako",
     {{elif jinja == 'True'}}
@@ -42,26 +45,27 @@ install_requires=[
     {{if sqlalchemy == 'True'}}
     "zope.sqlalchemy >= 0.4",
     "repoze.tm2 >= 1.0a5",
-    "sqlalchemy<0.8b1",
+    "sqlalchemy",
     {{endif}}
     {{if sqlalchemy == 'True' and migrations == 'True'}}
-    "sqlalchemy-migrate",
+    "alembic",
     {{endif}}
     {{if ming == 'True'}}
     "tgming",
     {{endif}}
     {{if auth == "sqlalchemy" or auth == "ming"}}
     "repoze.who",
-    "repoze.who-friendlyform >= 1.0.4",
-    "tgext.admin >= 0.5.1",
     {{endif}}
     {{if auth == "sqlalchemy"}}
     "repoze.who.plugins.sa",
     {{endif}}
     {{if tw1 == 'True'}}
     "tw.forms",
-    {{else}}
+    {{elif skip_tw != 'True'}}
     "tw2.forms",
+    {{endif}}
+    {{if skip_tw != 'True' and (auth == "sqlalchemy" or auth == "ming")}}
+    "tgext.admin >= 0.5.1",
     {{endif}}
     ]
 
@@ -72,8 +76,6 @@ setup(
     author='',
     author_email='',
     #url='',
-    setup_requires=["PasteScript >= 1.7"],
-    paster_plugins={{egg_plugins}},
     packages=find_packages(exclude=['ez_setup']),
     install_requires=install_requires,
     include_package_data=True,
@@ -91,15 +93,16 @@ setup(
             {{endif}}
             {{babel_templates_extractor}}('public/**', 'ignore', None)]},
 
-    entry_points="""
-    [paste.app_factory]
-    main = {{package}}.config.middleware:make_app
-
-    [paste.app_install]
-    main = pylons.util:PylonsInstaller
-    """,
+    entry_points={
+        'paste.app_factory': [
+            'main = {{package}}.config.middleware:make_app'
+        ],
+        'gearbox.plugins': [
+            'turbogears-devtools = tg.devtools'
+        ]
+    },
     dependency_links=[
-        "http://tg.gy/222"
+        "http://tg.gy/230"
         ],
     zip_safe=False
 )

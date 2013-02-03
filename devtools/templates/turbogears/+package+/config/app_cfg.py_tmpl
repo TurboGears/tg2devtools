@@ -22,8 +22,12 @@ from {{package}}.lib import app_globals, helpers
 base_config = AppConfig()
 base_config.renderers = []
 
-{{if tw1 != 'True'}}
+{{if tw1 != 'True' and skip_tw != 'True'}}
 base_config.prefer_toscawidgets2 = True
+{{endif}}
+{{if skip_tw == 'True'}}
+base_config.use_toscawidgets = False
+base_config.use_toscawidgets2 = False
 {{endif}}
 
 base_config.package = {{package}}
@@ -31,9 +35,11 @@ base_config.package = {{package}}
 #Enable json in expose
 base_config.renderers.append('json')
 
+{{if skip_genshi != 'True'}}
 #Enable genshi in expose to have a lingua franca for extensions and pluggable apps
 #you can remove this if you don't plan to use it.
 base_config.renderers.append('genshi')
+{{endif}}
 
 #Set the default renderer
 {{if mako == 'True' or template_engine == 'mako'}}
