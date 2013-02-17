@@ -82,7 +82,7 @@ base_config.use_toscawidgets=False
 # Configure the authentication backend
 
 # YOU MUST CHANGE THIS VALUE IN PRODUCTION TO SECURE YOUR APP 
-base_config.sa_auth.cookie_secret = "ChangeME" 
+base_config.sa_auth.cookie_secret = "{{cookiesecret}}"
 
 base_config.auth_backend = '{{auth}}'
 
@@ -96,6 +96,10 @@ from tg.configuration.auth import TGAuthMetadata
 class ApplicationAuthMetadata(TGAuthMetadata):
     def __init__(self, sa_auth):
         self.sa_auth = sa_auth
+    def authenticate(self, environ, identity):
+        user = self.sa_auth.dbsession.query(self.sa_auth.user_class).filter_by(user_name=identity['login']).first()
+        if user and user.validate_password(identity['password']):
+            return identity['login']
     def get_user(self, identity, userid):
         return self.sa_auth.dbsession.query(self.sa_auth.user_class).filter_by(user_name=userid).first()
     def get_groups(self, identity, userid):
@@ -108,6 +112,10 @@ base_config.sa_auth.dbsession = model.DBSession
 class ApplicationAuthMetadata(TGAuthMetadata):
     def __init__(self, sa_auth):
         self.sa_auth = sa_auth
+    def authenticate(self, environ, identity):
+        user = self.sa_auth.user_class.query.get(user_name=identity['login'])
+        if user and user.validate_password(identity['password']):
+            return identity['login']
     def get_user(self, identity, userid):
         return self.sa_auth.user_class.query.get(user_name=userid)
     def get_groups(self, identity, userid):
@@ -131,9 +139,6 @@ base_config.sa_auth.authmetadata = ApplicationAuthMetadata(base_config.sa_auth)
 # override this if you would like to provide a different who plugin for
 # managing login and logout of your application
 base_config.sa_auth.form_plugin = None
-
-# override this if you are using a different charset for the login form
-base_config.sa_auth.charset = 'utf-8'
 
 # You may optionally define a page where you want users to be redirected to
 # on login:

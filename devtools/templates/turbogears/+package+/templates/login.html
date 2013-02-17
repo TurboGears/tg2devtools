@@ -10,7 +10,7 @@
 
 <body>
   <div id="loginform">
-    <form action="${tg.url('/login_handler', params=dict(came_from=came_from.encode('utf-8'), __logins=login_counter.encode('utf-8')))}" method="post" accept-charset="UTF-8">
+    <form action="${tg.url('/login_handler', params=dict(came_from=came_from, __logins=login_counter))}" method="post" accept-charset="UTF-8">
       <h2>Login</h2>
       <label>Username:</label><input type="text" name="login"></input><br/>
       <label>Password:</label><input type="password" name="password"></input><br/>

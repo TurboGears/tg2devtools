@@ -7,6 +7,7 @@ import sys
 from gearbox.template import GearBoxTemplate
 from gearbox.command import Command
 
+PY3 = sys.version_info[0] == 3
 beginning_letter = re.compile(r"^[^a-z]*")
 valid_only = re.compile(r"[^a-z0-9_]")
 
@@ -189,6 +190,7 @@ class QuickstartCommand(Command):
             if value is True:
                 template_vars[key] = 'True'
 
+        template_vars['PY3'] = PY3
         QuickstartTemplate().run(devtools_path + '/templates/turbogears', opts.name, template_vars)
 
         os.chdir(opts.name)

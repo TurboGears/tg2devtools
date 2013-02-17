@@ -30,8 +30,10 @@ testpkgs=['WebTest >= 1.2.3',
                'wsgiref',
                ]
 install_requires=[
-    "Babel",
     "TurboGears2 >= 2.2.0",
+    {{if PY3 == False}}
+    "Babel",
+    {{endif}}
     {{if skip_genshi != 'True'}}
     "Genshi",
     {{endif}}
@@ -55,9 +57,6 @@ install_requires=[
     {{endif}}
     {{if auth == "sqlalchemy" or auth == "ming"}}
     "repoze.who",
-    {{endif}}
-    {{if auth == "sqlalchemy"}}
-    "repoze.who.plugins.sa",
     {{endif}}
     {{if tw1 == 'True'}}
     "tw.forms",
