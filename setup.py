@@ -18,7 +18,7 @@ install_requirements = [
                         'TurboGears2 >= 2.3.0dev',
                         'gearbox',
                         'backlash',
-                        'WebTest'
+                        'WebTest<2.0'
                         ]
 
 setup(
