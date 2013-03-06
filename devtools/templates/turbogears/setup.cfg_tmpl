@@ -2,9 +2,6 @@
 tag_build = dev
 tag_svn_revision = true
 
-[nosetests]
-with-pylons=test.ini
-
 # Babel configuration
 [compile_catalog]
 domain = {{package}}

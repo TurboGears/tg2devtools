@@ -2,14 +2,16 @@
 """Unit and functional test suite for {{project}}."""
 
 from os import path
-import sys
+import sys, os
 
 from tg import config
 from paste.deploy import loadapp
-from paste.script.appinstall import SetupCommand
 from routes import url_for
 from webtest import TestApp
 from nose.tools import eq_
+
+from gearbox.commands.setup_app import SetupAppCommand
+from tg.util import Bunch
 
 from {{package}} import model
 
@@ -18,22 +20,22 @@ __all__ = ['setup_db', 'teardown_db', 'TestController', 'url_for']
 {{if ming == 'True'}}
 def setup_db():
     """Method used to build a database"""
-    datastore = config['pylons.app_globals'].ming_datastore
+    datastore = config['tg.app_globals'].ming_datastore
     model.init_model(datastore)
 def teardown_db():
     """Method used to destroy a database"""
-    datastore = config['pylons.app_globals'].ming_datastore
+    datastore = config['tg.app_globals'].ming_datastore
     datastore.conn.drop_all()
 {{elif sqlalchemy == 'True'}}
 def setup_db():
     """Method used to build a database"""
-    engine = config['pylons.app_globals'].sa_engine
+    engine = config['tg.app_globals'].sa_engine
     model.init_model(engine)
     model.metadata.create_all(engine)
 
 def teardown_db():
     """Method used to destroy a database"""
-    engine = config['pylons.app_globals'].sa_engine
+    engine = config['tg.app_globals'].sa_engine
     model.metadata.drop_all(engine)
 {{endif}}
 
@@ -58,15 +60,18 @@ class TestController(object):
     
     def setUp(self):
         """Method called by nose before running each test"""
+        conf_dir = os.getcwd()
+
         # Loading the application:
-        conf_dir = config.here
         wsgiapp = loadapp('config:test.ini#%s' % self.application_under_test,
                           relative_to=conf_dir)
         self.app = TestApp(wsgiapp)
+
         # Setting it up:
         test_file = path.join(conf_dir, 'test.ini')
-        cmd = SetupCommand('setup-app')
-        cmd.run([test_file])
+        cmd = SetupAppCommand(Bunch({'options':Bunch({'verbose_level':1})}), Bunch())
+        cmd.run(Bunch({'config_file':'config:test.ini',
+                       'section_name':None}))
 
     def tearDown(self):
         """Method called by nose after running each test"""
