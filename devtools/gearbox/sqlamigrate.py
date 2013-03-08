@@ -77,6 +77,10 @@ class MigrateCommand(Command):
         return parser
 
     def take_action(self, opts):
+        #Work-around for SQLA0.8 being incompatible with sqlalchemy-migrate
+        import sqlalchemy
+        sqlalchemy.exceptions = sqlalchemy.exc
+
         from migrate.versioning.shell import main
 
         sect = 'app:main'
