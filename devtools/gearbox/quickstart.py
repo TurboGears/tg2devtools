@@ -104,10 +104,6 @@ class QuickstartCommand(Command):
             help="Disables Genshi default template",
             action="store_true", dest="skip_genshi", default=False)
 
-        parser.add_argument("--noinput",
-            help="no input (don't ask any questions)",
-            action="store_true", dest="no_input")
-
         return parser
 
     def take_action(self, opts):
@@ -128,13 +124,6 @@ class QuickstartCommand(Command):
             package = beginning_letter.sub("", package)
             package = valid_only.sub("", package)
             opts.package = package
-
-        if opts.no_input:
-            #defaults
-            opts.mako = False
-            opts.jinja = False
-            opts.kajiki = False
-            opts.auth = True
 
         if opts.tw1:
             opts.skip_tw = False
