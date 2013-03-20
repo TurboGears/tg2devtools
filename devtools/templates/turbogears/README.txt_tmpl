@@ -7,18 +7,18 @@ Installation and Setup
 Install ``{{project}}`` using the setup.py script::
 
     $ cd {{project}}
-    $ python setup.py install
+    $ python setup.py develop
 
 Create the project database for any model classes defined::
 
-    $ paster setup-app development.ini
+    $ gearbox setup-app
 
 Start the paste http server::
 
-    $ paster serve development.ini
+    $ gearbox serve
 
 While developing you may want the server to reload after changes in package files (or its dependencies) are saved. This can be achieved easily by adding the --reload option::
 
-    $ paster serve --reload development.ini
+    $ gearbox serve --reload --debug
 
 Then you are ready to go.
