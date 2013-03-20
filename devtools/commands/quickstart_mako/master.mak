@@ -37,7 +37,7 @@
 
 <%def name="footer()">
   <footer class="footer hidden-tablet hidden-phone">
-    <a class="pull-right" href="http://www.turbogears.org/2.2/"><img style="vertical-align:middle;" src="${tg.url('/images/under_the_hood_blue.png')}" alt="TurboGears 2" /></a>
+    <a class="pull-right" href="http://www.turbogears.org"><img style="vertical-align:middle;" src="${tg.url('/images/under_the_hood_blue.png')}" alt="TurboGears 2" /></a>
     <p>Copyright &copy; ${getattr(tmpl_context, 'project_name', 'TurboGears2')} ${h.current_year()}</p>
   </footer>
 </%def>
