@@ -6,7 +6,6 @@ import sys, os
 
 from tg import config
 from paste.deploy import loadapp
-from routes import url_for
 from webtest import TestApp
 from nose.tools import eq_
 
@@ -15,7 +14,7 @@ from tg.util import Bunch
 
 from {{package}} import model
 
-__all__ = ['setup_db', 'teardown_db', 'TestController', 'url_for']
+__all__ = ['setup_db', 'teardown_db', 'TestController']
 
 {{if ming == 'True'}}
 def setup_db():
