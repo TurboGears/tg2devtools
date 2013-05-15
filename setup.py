@@ -5,7 +5,6 @@ import sys, os
 
 test_requirements = ['coverage',
                     'nose',
-                    'repoze.tm2 >= 1.0a5',
                     'TurboKid >= 1.0.4',
                     'TurboJson >= 1.3',
                     'zope.sqlalchemy >= 0.4',
