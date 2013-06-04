@@ -25,14 +25,13 @@ class BaseController(TGController):
 
     """
 
-    def __call__(self, environ, start_response):
+    def __call__(self, environ, context):
         """Invoke the Controller"""
         # TGController.__call__ dispatches to the Controller method
-        # the request is routed to. This routing information is
-        # available in environ['pylons.routes_dict']
+        # the request is routed to.
 
         {{if auth == "sqlalchemy" or auth == "ming"}}
         request.identity = request.environ.get('repoze.who.identity')
         tmpl_context.identity = request.identity
         {{endif}}
-        return TGController.__call__(self, environ, start_response)
+        return TGController.__call__(self, environ, context)
