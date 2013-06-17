@@ -1,7 +1,7 @@
 <%inherit file="local:templates.master"/>
 
 <%def name="title()">
-  Welcome to TurboGears 2.1, standing on the shoulders of giants, since 2007
+  Welcome to TurboGears 2.3, standing on the shoulders of giants, since 2007
 </%def>
 
 <h2>Content Type Dispatch</h2>

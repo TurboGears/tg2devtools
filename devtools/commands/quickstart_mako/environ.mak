@@ -1,7 +1,7 @@
 <%inherit file="local:templates.master"/>
 
 <%def name="title()">
-  Learning TurboGears 2.1: Information about TG and WSGI
+  Learning TurboGears 2.3: Information about TG and WSGI
 </%def>
 
 <h2>The WSGI nature of the framework</h2>
