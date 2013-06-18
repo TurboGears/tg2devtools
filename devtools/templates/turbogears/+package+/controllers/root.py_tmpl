@@ -4,20 +4,20 @@
 from tg import expose, flash, require, url, lurl, request, redirect, tmpl_context
 from tg.i18n import ugettext as _, lazy_ugettext as l_
 
-{{if auth == "sqlalchemy" or auth == "ming"}}
+{{if auth}}
 from tg import predicates
 from {{package}} import model
 from {{package}}.controllers.secure import SecureController
 {{endif}}
 
-{{if sqlalchemy=="True"}}
+{{if sqlalchemy}}
 from {{package}}.model import DBSession, metadata
 {{endif}}
 
-{{if auth == "sqlalchemy" and skip_tw != 'True'}}
+{{if auth == "sqlalchemy" and not skip_tw}}
 from tgext.admin.tgadminconfig import TGAdminConfig
 from tgext.admin.controller import AdminController
-{{elif auth == "ming" and skip_tw != 'True'}}
+{{elif auth == "ming" and not skip_tw}}
 from tgext.admin.mongo import TGMongoAdminConfig
 from tgext.admin.controller import AdminController
 {{endif}}
@@ -46,9 +46,9 @@ class RootController(BaseController):
     secc = SecureController()
 {{endif}}
 
-{{if auth == "sqlalchemy" and skip_tw != 'True'}}
+{{if auth == "sqlalchemy" and not skip_tw}}
     admin = AdminController(model, DBSession, config_type=TGAdminConfig)
-{{elif auth == "ming" and skip_tw != 'True'}}
+{{elif auth == "ming" and not skip_tw}}
     admin = AdminController(model, None, config_type=TGMongoAdminConfig)
 {{endif}}
 

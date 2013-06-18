@@ -6,7 +6,7 @@ from {{package}} import model
 from {{package}}.tests.models import ModelTest
 
 
-{{if auth == "sqlalchemy" or auth == "ming"}}
+{{if auth}}
 class TestGroup(ModelTest):
     """Unit test case for the ``Group`` model."""
     klass = model.Group

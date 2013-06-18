@@ -117,7 +117,7 @@ class QuickstartCommand(Command):
             opts.migrations = False
 
         if opts.no_auth:
-            opts.auth=False
+            opts.auth = False
 
         if not opts.package:
             package = opts.name.lower()
@@ -137,6 +137,8 @@ class QuickstartCommand(Command):
                 opts.sqlalchemy = True
         else:
             opts.auth = None
+
+        opts.database = opts.sqlalchemy or opts.ming
 
         opts.name = pkg_resources.safe_name(opts.name)
         opts.project = opts.name
@@ -175,7 +177,7 @@ class QuickstartCommand(Command):
 
         #Work around for template ported from Paste which checked for 'True' instead of True
         template_vars = dict(vars(opts))
-        for key,value in template_vars.items():
+        for key, value in template_vars.items():
             if value is True:
                 template_vars[key] = 'True'
 

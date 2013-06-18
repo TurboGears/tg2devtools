@@ -4,12 +4,12 @@
 
 from tg import TGController, tmpl_context
 from tg.render import render
-{{if auth == "sqlalchemy" or auth == "ming"}}
+{{if auth}}
 from tg import request
 {{endif}}
 from tg.i18n import ugettext as _, ungettext
 
-{{if sqlalchemy == 'True'}}
+{{if sqlalchemy}}
 import {{package}}.model as model
 {{endif}}
 
@@ -30,7 +30,7 @@ class BaseController(TGController):
         # TGController.__call__ dispatches to the Controller method
         # the request is routed to.
 
-        {{if auth == "sqlalchemy" or auth == "ming"}}
+        {{if auth}}
         request.identity = request.environ.get('repoze.who.identity')
         tmpl_context.identity = request.identity
         {{endif}}

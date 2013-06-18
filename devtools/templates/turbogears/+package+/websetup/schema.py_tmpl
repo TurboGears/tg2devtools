@@ -5,13 +5,13 @@ from __future__ import print_function
 import logging
 from tg import config
 
-{{if sqlalchemy == 'True'}}
+{{if sqlalchemy}}
 import transaction
 {{endif}}
 
 def setup_schema(command, conf, vars):
     """Place any commands to setup {{package}} here"""
-    {{if sqlalchemy == 'True'}}
+    {{if sqlalchemy}}
     # Load the models
 
     # <websetup.websetup.schema.before.model.import>
@@ -26,7 +26,7 @@ def setup_schema(command, conf, vars):
     transaction.commit()
     {{endif}}
 
-    {{if sqlalchemy == 'True' and migrations == 'True'}}
+    {{if sqlalchemy and migrations}}
     print('Initializing Migrations')
     import alembic.config, alembic.command
     alembic_cfg = alembic.config.Config()

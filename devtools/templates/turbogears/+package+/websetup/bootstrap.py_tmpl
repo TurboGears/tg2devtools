@@ -6,7 +6,7 @@ import logging
 from tg import config
 from {{package}} import model
 
-{{if sqlalchemy == 'True'}}
+{{if sqlalchemy}}
 import transaction
 {{endif}}
 

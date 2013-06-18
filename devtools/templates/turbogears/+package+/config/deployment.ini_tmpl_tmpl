@@ -58,7 +58,7 @@ templating.genshi.method = xhtml
 # http://docs.python.org/lib/logging-config-fileformat.html
 
 [loggers]
-keys = root, {{package_logger}}{{if sqlalchemy}}, sqlalchemy{{endif}}{{if auth == "sqlalchemy"}}, auth{{endif}}
+keys = root, {{package_logger}}{{if sqlalchemy}}, sqlalchemy{{endif}}{{if auth}}, auth{{endif}}
 
 [handlers]
 keys = console
