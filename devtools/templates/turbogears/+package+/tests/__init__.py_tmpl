@@ -58,15 +58,11 @@ class TestController(object):
 
     def setUp(self):
         """Method called by nose before running each test"""
-        conf_dir = getcwd()
-
         # Loading the application:
         wsgiapp = loadapp('config:test.ini#%s' % self.application_under_test,
-                          relative_to=conf_dir)
+                          relative_to=getcwd())
         self.app = TestApp(wsgiapp)
-
         # Setting it up:
-        test_file = path.join(conf_dir, 'test.ini')
         cmd = SetupAppCommand(Bunch(options=Bunch(verbose_level=1)), Bunch())
         cmd.run(Bunch(config_file='config:test.ini', section_name=None))
 
