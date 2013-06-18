@@ -1,15 +1,14 @@
 # -*- coding: utf-8 -*-
 """Unit and functional test suite for {{project}}."""
 
-from os import path
-import sys, os
+from os import getcwd, path
 
-from tg import config
 from paste.deploy import loadapp
 from webtest import TestApp
 from nose.tools import eq_
 
 from gearbox.commands.setup_app import SetupAppCommand
+from tg import config
 from tg.util import Bunch
 
 from {{package}} import model
@@ -41,36 +40,31 @@ def teardown_db():
 class TestController(object):
     """
     Base functional test case for the controllers.
-    
-    The {{project}} application instance (``self.app``) set up in this test 
+
+    The {{project}} application instance (``self.app``) set up in this test
     case (and descendants) has authentication disabled, so that developers can
     test the protected areas independently of the :mod:`repoze.who` plugins
     used initially. This way, authentication can be tested once and separately.
-    
+
     Check {{package}}.tests.functional.test_authentication for the repoze.who
     integration tests.
-    
+
     This is the officially supported way to test protected areas with
     repoze.who-testutil (http://code.gustavonarea.net/repoze.who-testutil/).
-    
+
     """
-    
+
     application_under_test = 'main_without_authn'
-    
+
     def setUp(self):
         """Method called by nose before running each test"""
-        conf_dir = os.getcwd()
-
         # Loading the application:
         wsgiapp = loadapp('config:test.ini#%s' % self.application_under_test,
-                          relative_to=conf_dir)
+                          relative_to=getcwd())
         self.app = TestApp(wsgiapp)
-
         # Setting it up:
-        test_file = path.join(conf_dir, 'test.ini')
-        cmd = SetupAppCommand(Bunch({'options':Bunch({'verbose_level':1})}), Bunch())
-        cmd.run(Bunch({'config_file':'config:test.ini',
-                       'section_name':None}))
+        cmd = SetupAppCommand(Bunch(options=Bunch(verbose_level=1)), Bunch())
+        cmd.run(Bunch(config_file='config:test.ini', section_name=None))
 
     def tearDown(self):
         """Method called by nose after running each test"""
@@ -79,3 +73,4 @@ class TestController(object):
         model.DBSession.remove()
 {{endif}}
         teardown_db()
+
