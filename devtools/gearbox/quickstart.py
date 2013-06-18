@@ -1,6 +1,8 @@
 from __future__ import print_function
 
-import re, pkg_resources, os, imp
+import re
+import pkg_resources
+import os
 import shutil
 import sys
 
@@ -11,7 +13,9 @@ PY3 = sys.version_info[0] == 3
 beginning_letter = re.compile(r"^[^a-z]*")
 valid_only = re.compile(r"[^a-z0-9_]")
 
+
 class QuickstartTemplate(GearBoxTemplate):
+
     def pre(self, command, output_dir, vars):
         """Called before template is applied."""
         package_logger = vars['package']
@@ -20,15 +24,12 @@ class QuickstartTemplate(GearBoxTemplate):
             package_logger = 'app'
         vars['package_logger'] = package_logger
 
-        template_engine = \
-                        vars.setdefault('template_engine',
-                                        'genshi')
+        template_engine = vars.setdefault('template_engine', 'genshi')
 
         if template_engine == 'mako':
             # Support a Babel extractor default for Mako
-            vars['babel_templates_extractor'] = \
-                "('templates/**.mako', 'mako', None),\n%s#%s" % (' ' * 4,
-                                                                 ' ' * 8)
+            vars['babel_templates_extractor'] = ("('templates/**.mako',"
+                " 'mako', None),\n%s#%s") % (' ' * 4, ' ' * 8)
         else:
             vars['babel_templates_extractor'] = ''
 
@@ -39,7 +40,9 @@ class QuickstartTemplate(GearBoxTemplate):
         if vars['migrations'] == 'True':
             vars['egg_plugins'].append('tg.devtools')
 
+
 class QuickstartCommand(Command):
+
     def get_description(self):
         return 'Creates a new TurboGears2 project'
 
@@ -153,13 +156,15 @@ class QuickstartCommand(Command):
         import imp
         try:
             if imp.find_module(opts.package):
-                print('The package name "%s" is already in use' % opts.package)
+                print('The package name "%s" is already in use'
+                    % opts.package)
                 return
         except ImportError:
             pass
 
         if os.path.exists(opts.name):
-            print('A directory called "%s" already exists. Exiting.' % opts.name)
+            print('A directory called "%s" already exists. Exiting.'
+                % opts.name)
             return
 
         opts.cookiesecret = None
@@ -170,42 +175,49 @@ class QuickstartCommand(Command):
             import random
             import base64
             import struct
-            opts.cookiesecret = base64.b64encode("".join([struct.pack('i', random.randrange(2**31)) for x in [1,2,3,4,5,6]])).strip()
+            opts.cookiesecret = base64.b64encode(''.join(
+                [struct.pack('i', random.randrange(2 ** 31))
+                    for _n in range(6)])).strip()
 
+        devtools_path = os.path.dirname(os.path.os.path.abspath(
+            os.path.dirname(__file__)))
 
-        devtools_path = os.path.abspath(os.path.dirname(__file__)) + '/../'
-
-        #Work around for template ported from Paste which checked for 'True' instead of True
+        # Workaround for templates ported from Paste
+        # which check for 'True' instead of True
         template_vars = dict(vars(opts))
         for key, value in template_vars.items():
             if value is True:
                 template_vars[key] = 'True'
 
         template_vars['PY3'] = PY3
-        QuickstartTemplate().run(devtools_path + '/templates/turbogears', opts.name, template_vars)
+        QuickstartTemplate().run(os.path.join(devtools_path,
+            'templates', 'turbogears'), opts.name, template_vars)
 
         os.chdir(opts.name)
 
-        sys.argv = ["setup.py", "egg_info"]
-        imp.load_module("setup", *imp.find_module("setup", ["."]))
+        sys.argv = ['setup.py', 'egg_info']
+        imp.load_module('setup', *imp.find_module('setup', ['.']))
 
         # dirty hack to allow "empty" dirs
-        for base, path, files in os.walk("./"):
-            for file in files:
-                if file == "empty":
-                    os.remove(os.path.join(base, file))
+        for base, _path, files in os.walk('./'):
+            for filename in files:
+                if file == 'empty':
+                    os.remove(os.path.join(base, filename))
 
         if opts.skip_genshi or opts.mako or opts.kajiki or opts.jinja:
-            #remove existing template files
-            package_template_dir = os.path.abspath(os.path.join(opts.package, 'templates'))
+            # remove existing template files
+            package_template_dir = os.path.abspath(os.path.join(opts.package,
+                'templates'))
             shutil.rmtree(package_template_dir, ignore_errors=True)
 
-        #copy over the alternative templates if appropriate
+        # copy over the alternative templates if appropriate
         if opts.mako or opts.kajiki or opts.jinja:
             def overwrite_templates(template_type):
-                print('Writing ' + template_type + ' template files to ./'+os.path.join(opts.package, 'templates'))
-                #replace template files with alternative ones
-                alt_template_dir = devtools_path+'commands/quickstart_'+template_type
+                print('Writing %s template files to ./%s' % (
+                    template_type, os.path.join(opts.package, 'templates')))
+                # replace template files with alternative ones
+                alt_template_dir = os.path.join(devtools_path,
+                    'commands', 'quickstart_%s' % template_type)
                 shutil.copytree(alt_template_dir, package_template_dir)
 
             if opts.mako:
@@ -216,14 +228,17 @@ class QuickstartCommand(Command):
                 overwrite_templates('kajiki')
 
         if opts.ming:
-            print('Writing Ming model files to ./'+os.path.join(opts.package, 'model'))
-            package_model_dir = os.path.abspath(os.path.join(opts.package, 'model'))
-            ming_model_dir = devtools_path+'commands/model_ming'
-            shutil.copy(os.path.join(ming_model_dir, 'session.py'), package_model_dir)
+            print('Writing Ming model files to ./%s' % os.path.join(
+                opts.package, 'model'))
+            package_model_dir = os.path.abspath(os.path.join(opts.package,
+                'model'))
+            ming_model_dir = os.path.join(devtools_path,
+                'commands', 'model_ming')
+            shutil.copy(os.path.join(ming_model_dir, 'session.py'),
+                package_model_dir)
 
         if not opts.migrations:
             print('Disabling migrations support')
-
-            #remove existing migrations directory
+            # remove existing migrations directory
             package_migrations_dir = os.path.abspath('migration')
             shutil.rmtree(package_migrations_dir, ignore_errors=True)
