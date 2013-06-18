@@ -1,0 +1,28 @@
+* text=auto
+
+# Tempita doesn't work properly with crlf
+*_tmpl text eol=lf
+
+*.bat text eol=crlf
+*.cfg text
+*.css text
+*.genshi text
+*.html text
+*.in text
+*.ini text
+*.jinja2 text
+*.js text
+*.json text
+*.mako text
+*.prefs text
+*.py text
+*.rst text
+*.sh text eol=lf
+*.txt text
+*.po text
+*.pot text
+
+*.gif binary
+*.jpg binary
+*.mo binary
+*.png binary
