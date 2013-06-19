@@ -201,7 +201,7 @@ class QuickstartCommand(Command):
         # dirty hack to allow "empty" dirs
         for base, _path, files in os.walk('./'):
             for filename in files:
-                if file == 'empty':
+                if filename == 'empty':
                     os.remove(os.path.join(base, filename))
 
         if opts.skip_genshi or opts.mako or opts.kajiki or opts.jinja:
