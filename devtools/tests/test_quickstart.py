@@ -22,7 +22,7 @@ class BaseTestQuickStart(object):
 
         # This is to avoid the TGTest package to be detected as
         # being already installed.
-        proj_name = '%s-%s' % (BASE_PROJECT_NAME, COUNTER.next())
+        proj_name = '%s-%s' % (BASE_PROJECT_NAME, next(COUNTER))
         self.proj_dir = os.path.join(self.base_dir, proj_name)
 
         opts = self.parser.parse_args(self.args.split() + [proj_name])
