@@ -1,5 +1,5 @@
 #
-# {{project}} - TurboGears configuration
+# {{project}} - TurboGears 2 production environment configuration
 #
 # The %(here)s variable will be replaced with the parent directory of this file
 #
@@ -10,10 +10,10 @@
 debug = false
 email_to = you@yourdomain.com
 smtp_server = localhost
-error_email_from = paste@localhost
+error_email_from = turbogears@localhost
 
 [server:main]
-use = egg:Paste#http
+use = egg:gearbox#wsgiref
 host = 0.0.0.0
 port = 8080
 
