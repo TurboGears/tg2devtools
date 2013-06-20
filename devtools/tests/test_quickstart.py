@@ -1,17 +1,46 @@
-import os, shutil, nose
+import os
+import shutil
+import subprocess
+from nose.tools import ok_
 import pkg_resources
 from paste.deploy import loadapp
 from webtest import TestApp
 from itertools import count
-from nose.tools import ok_
 
 from devtools.gearbox.quickstart import QuickstartCommand
 
-BASE_PROJECT_NAME = 'TGTest'
+PROJECT_NAME = 'TGTest-%02d'
+CLEANUP = True
 COUNTER = count()
 
+
+def get_passed_and_failed(testpath):
+    """Run test suite under testpath, return set of passed tests."""
+    os.chdir(testpath)
+    args = 'python -W ignore setup.py test'.split()
+    out = subprocess.Popen(args, stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE).communicate()[1]
+    passed, failed = [], []
+    test = None
+    for line in out.splitlines():
+        line = line.split(' ... ', 1)
+        if line[0].startswith('tgtest'):
+            test = line[0]
+        if test and len(line) == 2:
+            if line[1] in ('ok', 'OK'):
+                passed.append(test)
+                test = None
+            elif line[1] in ('ERROR', 'FAIL'):
+                failed.append(test)
+                test = None
+    return passed, failed
+
+
 class BaseTestQuickStart(object):
-    def __init__(self,**options):
+
+    args = ''
+
+    def __init__(self, **options):
         self.command = QuickstartCommand(None, {})
         self.parser = self.command.get_parser('tg2devtools-test')
 
@@ -22,7 +51,7 @@ class BaseTestQuickStart(object):
 
         # This is to avoid the TGTest package to be detected as
         # being already installed.
-        proj_name = '%s-%s' % (BASE_PROJECT_NAME, next(COUNTER))
+        proj_name = PROJECT_NAME % next(COUNTER)
         self.proj_dir = os.path.join(self.base_dir, proj_name)
 
         opts = self.parser.parse_args(self.args.split() + [proj_name])
@@ -37,57 +66,108 @@ class BaseTestQuickStart(object):
 
     def tearDown(self):
         os.chdir(self.base_dir)
-        shutil.rmtree(self.proj_dir, ignore_errors=False)       
+        if CLEANUP:
+            shutil.rmtree(self.proj_dir, ignore_errors=False)
+
 
 class CommonTestQuickStart(BaseTestQuickStart):
+
+    # tests that must be passed
+    pass_tests = [
+        '.tests.functional.test_authentication.',
+        '.tests.functional.test_root.',
+        '.tests.models.test_auth.']
+    # tests that must fail (should not exist)
+    fail_tests = []
+    # tests that must not be run
+    skip_tests = []
+
     def test_index(self):
         resp = self.app.get('/')
-        assert 'Welcome to TurboGears' in resp, resp
+        ok_('Welcome to TurboGears' in resp, resp)
 
     def test_login(self):
         resp = self.app.get('/login')
-        assert '<div id="loginform">' in resp
+        ok_('<div id="loginform">' in resp)
 
     def test_unauthenticated_admin(self):
-        assert '<div id="loginform">' in self.app.get('/admin/', status=302).follow()
+        ok_('<div id="loginform">'
+            in self.app.get('/admin/', status=302).follow())
 
     def test_subtests(self):
-        # Don't know if there is a better way to run
-        # testsuite of the quickstarted project
-        testspath = os.path.join(self.proj_dir)
-        ok_(nose.run(argv=['-w', testspath]))
+        passed, failed = get_passed_and_failed(os.path.join(self.proj_dir))
+        for has_failed in failed:
+            for must_fail in self.fail_tests:
+                if must_fail in has_failed:
+                    break
+            else:
+                ok_(False, 'Failed %s' % has_failed)
+        for must_pass in self.pass_tests:
+            for has_passed in passed:
+                if must_pass in has_passed:
+                    break
+            else:
+                print("Passed:\n" + '\n'.join(passed))
+                ok_(False, 'Did not pass %s' % must_pass)
+        for must_fail in self.fail_tests:
+            for has_failed in failed:
+                if must_fail in has_failed:
+                    break
+            else:
+                print("Failed:\n" + '\n'.join(failed))
+                ok_(False, 'Did not fail %s' % must_fail)
+        for must_skip in self.skip_tests:
+            for has_run in passed + failed:
+                if must_skip in has_run:
+                    print("Run:\n" + '\n'.join(passed + failed))
+                    ok_(False, 'Did not skip %s' % must_skip)
+
 
 class TestDefaultQuickStart(CommonTestQuickStart):
+
     args = ''
 
+
 class TestMakoQuickStart(CommonTestQuickStart):
+
     args = '--mako'
 
+
 class TestJinjaQuickStart(CommonTestQuickStart):
+
     args = '--jinja'
 
+
 class TestNoDBQuickStart(CommonTestQuickStart):
+
     args = '--nosa'
 
+
 class TestNoAuthQuickStart(CommonTestQuickStart):
+
+    pass_tests = ['.tests.functional.test_root.']
+    skip_tests = [
+        '.tests.functional.test_root.test_secc',
+        '.tests.functional.test_authentication.',
+        '.tests.models.test_auth.']
+
     args = '--noauth'
 
     def test_login(self):
-        resp = self.app.get('/login', status=404)
-        assert resp.status_code == 404, resp.status_code
+        self.app.get('/login', status=404)
 
     def test_unauthenticated_admin(self):
-        resp = self.app.get('/admin', status=404)
-        assert resp.status_code == 404, resp.status_code
+        self.app.get('/admin', status=404)
+
 
 class TestMingBQuickStart(CommonTestQuickStart):
+
     args = '--ming'
 
+
 class TestNoTWQuickStart(CommonTestQuickStart):
+
     args = '--skip-tw'
 
     def test_unauthenticated_admin(self):
-        resp = self.app.get('/admin', status=404)
-        assert resp.status_code == 404, resp.status_code
-
-
+        self.app.get('/admin', status=404)
