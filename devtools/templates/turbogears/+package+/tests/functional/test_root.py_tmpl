@@ -43,13 +43,11 @@ class TestRootController(TestController):
     def test_data(self):
         """The data display demo works with HTML"""
         response = self.app.get('/data.html?a=1&b=2')
-        expected1 = """<td>a</td>
-                <td>1</td>"""
-        expected2 = """<td>b</td>
-                <td>2</td>"""
-
-        ok_(expected1 in response, response)
-        ok_(expected2 in response, response)
+        expected1 = """<td>a</td>\n                <td>1</td>"""
+        expected2 = """<td>b</td>\n                <td>2</td>"""
+        body = '\n'.join(response.body.splitlines())
+        ok_(expected1 in body, response)
+        ok_(expected2 in body, response)
 
     def test_data_json(self):
         """The data display demo works with JSON"""
