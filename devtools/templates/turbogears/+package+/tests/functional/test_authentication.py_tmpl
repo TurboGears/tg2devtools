@@ -7,6 +7,7 @@ As {{project}} grows and the authentication method changes, only these tests
 should be updated.
 
 """
+from __future__ import unicode_literals
 
 from nose.tools import eq_, ok_
 
@@ -38,7 +39,7 @@ class TestAuthentication(TestController):
         resp = resp.follow(status=200)
         form = resp.form
         # Submitting the login form:
-        form['login'] = u'manager'
+        form['login'] = 'manager'
         form['password'] = 'managepass'
         post_login = form.submit(status=302)
         # Being redirected to the initially requested page:
@@ -55,7 +56,7 @@ class TestAuthentication(TestController):
         resp = self.app.get('/login', status=200)
         form = resp.form
         # Submitting the login form:
-        form['login'] = u'manager'
+        form['login'] = 'manager'
         form['password'] = 'managepass'
         post_login = form.submit(status=302)
         # Being redirected to the home page:

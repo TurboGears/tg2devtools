@@ -90,5 +90,5 @@ class ModelTest(object):
         {{elif sqlalchemy}}
         obj = DBSession.query(self.klass).one()
         {{endif}}
-        for key, value in self.attrs.iteritems():
+        for key, value in self.attrs.items():
             eq_(getattr(obj, key), value)

@@ -185,9 +185,9 @@ class QuickstartCommand(Command):
         # Workaround for templates ported from Paste
         # which check for 'True' instead of True
         template_vars = dict(vars(opts))
-        for key, value in template_vars.items():
-            if value is True:
-                template_vars[key] = 'True'
+        #for key, value in template_vars.items():
+        #    if value is True:
+        #        template_vars[key] = 'True'
 
         template_vars['PY3'] = PY3
         QuickstartTemplate().run(os.path.join(devtools_path,

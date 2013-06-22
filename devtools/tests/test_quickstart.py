@@ -1,14 +1,17 @@
 import os
 import shutil
 import subprocess
+import sys
 from nose.tools import ok_
 import pkg_resources
 from paste.deploy import loadapp
 from webtest import TestApp
 from itertools import count
+from nose import SkipTest
 
 from devtools.gearbox.quickstart import QuickstartCommand
 
+PY2 = sys.version_info[0] == 2
 PROJECT_NAME = 'TGTest-%02d'
 CLEANUP = True
 COUNTER = count()
@@ -23,7 +26,7 @@ def get_passed_and_failed(testpath):
     passed, failed = [], []
     test = None
     for line in out.splitlines():
-        line = line.split(' ... ', 1)
+        line = line.decode('utf-8').split(' ... ', 1)
         if line[0].startswith('tgtest'):
             test = line[0]
         if test and len(line) == 2:
@@ -124,23 +127,61 @@ class CommonTestQuickStart(BaseTestQuickStart):
 
 
 class TestDefaultQuickStart(CommonTestQuickStart):
-
     args = ''
+
+    def setUp(self):
+        if not PY2:
+            raise SkipTest('Skipping Test, admin not available on Py3')
+        super(TestDefaultQuickStart, self).setUp()
 
 
 class TestMakoQuickStart(CommonTestQuickStart):
+    args = '--mako --nosa --noauth'
 
-    args = '--mako'
+    pass_tests = ['.tests.functional.test_root.']
+    skip_tests = [
+        '.tests.functional.test_root.test_secc',
+        '.tests.functional.test_authentication.',
+        '.tests.models.test_auth.']
+
+    def test_login(self):
+        self.app.get('/login', status=404)
+
+    def test_unauthenticated_admin(self):
+        self.app.get('/admin', status=404)
 
 
 class TestJinjaQuickStart(CommonTestQuickStart):
+    args = '--jinja --nosa --noauth'
 
-    args = '--jinja'
+    pass_tests = ['.tests.functional.test_root.']
+    skip_tests = [
+        '.tests.functional.test_root.test_secc',
+        '.tests.functional.test_authentication.',
+        '.tests.models.test_auth.']
+
+    def test_login(self):
+        self.app.get('/login', status=404)
+
+    def test_unauthenticated_admin(self):
+        self.app.get('/admin', status=404)
 
 
 class TestNoDBQuickStart(CommonTestQuickStart):
 
-    args = '--nosa'
+    pass_tests = ['.tests.functional.test_root.']
+    skip_tests = [
+        '.tests.functional.test_root.test_secc',
+        '.tests.functional.test_authentication.',
+        '.tests.models.test_auth.']
+
+    args = '--nosa --noauth'
+
+    def test_login(self):
+        self.app.get('/login', status=404)
+
+    def test_unauthenticated_admin(self):
+        self.app.get('/admin', status=404)
 
 
 class TestNoAuthQuickStart(CommonTestQuickStart):
@@ -153,6 +194,11 @@ class TestNoAuthQuickStart(CommonTestQuickStart):
 
     args = '--noauth'
 
+    def setUp(self):
+        if not PY2:
+            raise SkipTest('Skipping Test, admin not available on Py3')
+        super(TestNoAuthQuickStart, self).setUp()
+
     def test_login(self):
         self.app.get('/login', status=404)
 
@@ -163,6 +209,11 @@ class TestNoAuthQuickStart(CommonTestQuickStart):
 class TestMingBQuickStart(CommonTestQuickStart):
 
     args = '--ming'
+
+    def setUp(self):
+        if not PY2:
+            raise SkipTest('Skipping Test, admin not available on Py3')
+        super(TestMingBQuickStart, self).setUp()
 
 
 class TestNoTWQuickStart(CommonTestQuickStart):

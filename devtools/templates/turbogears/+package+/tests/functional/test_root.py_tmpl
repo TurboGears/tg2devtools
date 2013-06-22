@@ -45,7 +45,7 @@ class TestRootController(TestController):
         response = self.app.get('/data.html?a=1&b=2')
         expected1 = """<td>a</td>\n                <td>1</td>"""
         expected2 = """<td>b</td>\n                <td>2</td>"""
-        body = '\n'.join(response.body.splitlines())
+        body = '\n'.join(response.text.splitlines())
         ok_(expected1 in body, response)
         ok_(expected2 in body, response)
 
@@ -61,7 +61,7 @@ class TestRootController(TestController):
         # Note how authentication is forged:
         environ = {'REMOTE_USER': 'manager'}
         resp = self.app.get('/secc', extra_environ=environ, status=200)
-        ok_('Secure Controller here' in resp.body, resp.body)
+        ok_('Secure Controller here' in resp.text, resp.text)
 
     def test_secc_with_editor(self):
         """The editor cannot access the secure controller"""
