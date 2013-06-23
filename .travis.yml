@@ -6,8 +6,8 @@ python:
   - "3.3"
 
 branches:
-  only:
-    - "development"
+  except:
+    - master
 
 install:
   - "pip install nose"
