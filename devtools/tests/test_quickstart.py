@@ -4,17 +4,17 @@ import subprocess
 import sys
 from nose.tools import ok_
 import pkg_resources
-from paste.deploy import loadapp
 from webtest import TestApp
 from itertools import count
 from nose import SkipTest
 from virtualenv import create_environment
+import site
 
 from devtools.gearbox.quickstart import QuickstartCommand
 
 PY2 = sys.version_info[0] == 2
 PROJECT_NAME = 'TGTest-%02d'
-ENV_NAME = 'TESTENV-%02d'
+ENV_NAME = 'TESTENV'
 CLEANUP = True
 COUNTER = count()
 
@@ -52,28 +52,31 @@ class BaseTestQuickStart(object):
         cls.parser = cls.command.get_parser('tg2devtools-test')
 
         cls.base_dir = os.getcwd()
-        os.chdir(cls.base_dir)
 
-        fixture_index = next(COUNTER)
+        # All the envs must be named equally due to python not supporting
+        # unloading modules, so the modules loaded on first fixture must
+        # be in the same place on the next fixtures.
+        cls.env_dir = os.path.join(os.path.abspath(cls.base_dir), ENV_NAME)
 
-        # Create a new virtualenv for the current test fixture
-        env_name = ENV_NAME % fixture_index
-        cls.env_dir = os.path.join(os.path.abspath(cls.base_dir), env_name)
+        # This is to avoid previously failed tests to break successive fixtures
+        shutil.rmtree(cls.env_dir, ignore_errors=True)
+
+        # Create virtualenv for current fixture
         create_environment(cls.env_dir)
 
         # Enable the newly created virtualenv
-        cls.pip_cmd, cls.python_cmd, cls.env_cmd = cls.enter_virtualenv()
+        cls.pip_cmd, cls.python_cmd, cls.env_cmd, site_packages = cls.enter_virtualenv()
 
         # Reinstall gearbox to force it being installed inside the
         # virtualenv
-        subprocess.call([cls.pip_cmd, 'install', '-I', 'gearbox'])
+        subprocess.call([cls.pip_cmd, '-q', 'install', '-I', 'gearbox'])
 
         # Install tg.devtools inside the virtualenv
-        subprocess.call([cls.pip_cmd, 'install', '-e', cls.base_dir])
+        subprocess.call([cls.pip_cmd, '-q', 'install', '-e', cls.base_dir])
 
         # This is to avoid the TGTest package to be detected as
         # being already installed.
-        proj_name = PROJECT_NAME % fixture_index
+        proj_name = PROJECT_NAME % next(COUNTER)
         cls.proj_dir = os.path.join(cls.base_dir, proj_name)
 
         # Create a quickstarted app by runnig 'gearbox quickstart'
@@ -81,26 +84,28 @@ class BaseTestQuickStart(object):
         cls.command.run(opts)
 
         # Install quickstarted project dependencies
-        subprocess.call([cls.pip_cmd, 'install', '-e', cls.proj_dir])
-        cls.exit_virtualenv()
+        subprocess.call([cls.pip_cmd, '-q', 'install', '-e', cls.proj_dir])
 
-        # Mark the packages as installed even outide the virtualenv
+        # Mark the packages as installed even outside the virtualenv
         # so we can load app in tests which are not executed inside
         # the newly created virtualenv.
+        site.addsitedir(site_packages)
+        cls.past_working_set_state = pkg_resources.working_set.__getstate__()
+        pkg_resources.working_set.add_entry(site_packages)
         pkg_resources.working_set.add_entry(cls.proj_dir)
 
     def setUp(self):
-        self.enter_virtualenv()
-
         os.chdir(self.proj_dir)
+
+        from paste.deploy import loadapp
         self.app = loadapp('config:test.ini', relative_to=self.proj_dir)
         self.app = TestApp(self.app)
 
-    def tearDown(self):
-        self.exit_virtualenv()
-
     @classmethod
     def tearDownClass(cls):
+        pkg_resources.working_set.__setstate__(cls.past_working_set_state)
+        cls.exit_virtualenv()
+
         os.chdir(cls.base_dir)
         if CLEANUP:
             shutil.rmtree(cls.proj_dir, ignore_errors=False)
@@ -111,14 +116,13 @@ class BaseTestQuickStart(object):
         cls.old_os_path = os.environ['PATH']
         os.environ['PATH'] = cls.env_dir + os.pathsep + cls.old_os_path
 
-        base = os.path.dirname(os.path.abspath(cls.env_dir))
+        base = os.path.abspath(cls.env_dir)
         site_packages = os.path.join(base, 'lib', 'python%s' % sys.version[:3], 'site-packages')
         cls.prev_sys_path = list(sys.path)
 
         cls.past_prefix = sys.prefix
         cls.past_real_prefix = getattr(sys, 'real_prefix', None)
 
-        import site
         site.addsitedir(site_packages)
         sys.real_prefix = sys.prefix
         sys.prefix = base
@@ -133,13 +137,15 @@ class BaseTestQuickStart(object):
 
         return (os.path.join(cls.env_dir, 'bin', 'pip'),
                 os.path.join(cls.env_dir, 'bin', 'python'),
-                os.path.join(cls.env_dir, 'bin', 'activate'))
+                os.path.join(cls.env_dir, 'bin', 'activate'),
+                site_packages)
 
     @classmethod
     def exit_virtualenv(cls):
         os.environ['PATH'] = cls.old_os_path
         sys.path = cls.prev_sys_path
         sys.prefix = cls.past_prefix
+        sys.real_prefix = cls.past_real_prefix
 
         if cls.past_real_prefix is not None:
             sys.real_prefix = cls.past_real_prefix
