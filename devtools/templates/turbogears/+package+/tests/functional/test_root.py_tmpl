@@ -52,7 +52,7 @@ class TestRootController(TestController):
     def test_data_json(self):
         """The data display demo works with JSON"""
         resp = self.app.get('/data.json?a=1&b=2')
-        ok_('"a": "1", "b": "2"' in resp, resp)
+        ok_(dict(page='data', params={'a':'1', 'b':'2'}) == resp.json, resp.json)
 
 
 {{if auth}}

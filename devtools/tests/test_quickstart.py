@@ -106,6 +106,10 @@ class BaseTestQuickStart(object):
 
     @classmethod
     def tearDownClass(cls):
+        # This is in case the tests have been skipped
+        if not hasattr(cls, 'past_working_set_state'):
+            return
+
         pkg_resources.working_set.__setstate__(cls.past_working_set_state)
         cls.exit_virtualenv()
 
@@ -214,8 +218,13 @@ class TestDefaultQuickStart(CommonTestQuickStart):
     @classmethod
     def setUpClass(cls):
         if not PY2:
-            raise SkipTest('Skipping Test, admin not available on Py3')
+            return
         super(TestDefaultQuickStart, cls).setUpClass()
+
+    def setUp(self):
+        if not PY2:
+            raise SkipTest('Skipping Test, admin not available on Py3')
+        super(TestDefaultQuickStart, self).setUp()
 
 
 class TestMakoQuickStart(CommonTestQuickStart):
@@ -280,8 +289,13 @@ class TestNoAuthQuickStart(CommonTestQuickStart):
     @classmethod
     def setUpClass(cls):
         if not PY2:
-            raise SkipTest('Skipping Test, admin not available on Py3')
+            return
         super(TestNoAuthQuickStart, cls).setUpClass()
+
+    def setUp(self):
+        if not PY2:
+            raise SkipTest('Skipping Test, admin not available on Py3')
+        super(TestNoAuthQuickStart, self).setUp()
 
     def test_login(self):
         self.app.get('/login', status=404)
@@ -298,8 +312,13 @@ class TestMingBQuickStart(CommonTestQuickStart):
     @classmethod
     def setUpClass(cls):
         if not PY2:
-            raise SkipTest('Skipping Test, admin not available on Py3')
+            return
         super(TestMingBQuickStart, cls).setUpClass()
+
+    def setUp(self):
+        if not PY2:
+            raise SkipTest('Skipping Test, admin not available on Py3')
+        super(TestMingBQuickStart, self).setUp()
 
 
 class TestNoTWQuickStart(CommonTestQuickStart):
