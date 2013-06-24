@@ -4,6 +4,7 @@
 *.pyc
 *.pyo
 *.swp
+TESTENV
 TGTest-*
 .coverage
 .project

@@ -59,6 +59,10 @@ class BaseTestQuickStart(object):
         # be in the same place on the next fixtures.
         cls.env_dir = os.path.join(os.path.abspath(cls.base_dir), ENV_NAME)
 
+        # directory for executable scripts in the virtual environment
+        cls.bin_dir = os.path.join(cls.env_dir,
+            'Scripts' if sys.platform == 'win32' else 'bin')
+
         # This is to avoid previously failed tests to break successive fixtures
         shutil.rmtree(cls.env_dir, ignore_errors=True)
 
@@ -142,9 +146,9 @@ class BaseTestQuickStart(object):
                 sys.path.remove(item)
         sys.path[:0] = new_sys_path
 
-        return (os.path.join(cls.env_dir, 'bin', 'pip'),
-                os.path.join(cls.env_dir, 'bin', 'python'),
-                os.path.join(cls.env_dir, 'bin', 'activate'),
+        return  (os.path.join(cls.bin_dir, 'pip'),
+                os.path.join(cls.bin_dir, 'python'),
+                os.path.join(cls.bin_dir, 'activate'),
                 site_packages)
 
     @classmethod
