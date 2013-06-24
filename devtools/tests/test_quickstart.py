@@ -45,6 +45,7 @@ def get_passed_and_failed(env_cmd, python_cmd, testpath):
 class BaseTestQuickStart(object):
 
     args = ''
+    preinstall = []
 
     @classmethod
     def setUpClass(cls):
@@ -70,6 +71,8 @@ class BaseTestQuickStart(object):
         # Reinstall gearbox to force it being installed inside the
         # virtualenv
         subprocess.call([cls.pip_cmd, '-q', 'install', '-I', 'gearbox'])
+        for p in cls.preinstall:
+            subprocess.call([cls.pip_cmd, '-q', 'install', '-I', p])
 
         # Install tg.devtools inside the virtualenv
         subprocess.call([cls.pip_cmd, '-q', 'install', '-e', cls.base_dir])
@@ -145,7 +148,6 @@ class BaseTestQuickStart(object):
         os.environ['PATH'] = cls.old_os_path
         sys.path = cls.prev_sys_path
         sys.prefix = cls.past_prefix
-        sys.real_prefix = cls.past_real_prefix
 
         if cls.past_real_prefix is not None:
             sys.real_prefix = cls.past_real_prefix
@@ -289,6 +291,7 @@ class TestNoAuthQuickStart(CommonTestQuickStart):
 class TestMingBQuickStart(CommonTestQuickStart):
 
     args = '--ming'
+    preinstall = ['Paste', 'PasteScript']
 
     def setUp(self):
         if not PY2:
