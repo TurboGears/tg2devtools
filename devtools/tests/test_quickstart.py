@@ -63,7 +63,7 @@ class BaseTestQuickStart(object):
         shutil.rmtree(cls.env_dir, ignore_errors=True)
 
         # Create virtualenv for current fixture
-        create_environment(cls.env_dir)
+        create_environment(cls.env_dir, use_distribute=True)
 
         # Enable the newly created virtualenv
         cls.pip_cmd, cls.python_cmd, cls.env_cmd, site_packages = cls.enter_virtualenv()
@@ -211,14 +211,15 @@ class CommonTestQuickStart(BaseTestQuickStart):
 class TestDefaultQuickStart(CommonTestQuickStart):
     args = ''
 
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         if not PY2:
             raise SkipTest('Skipping Test, admin not available on Py3')
-        super(TestDefaultQuickStart, self).setUp()
+        super(TestDefaultQuickStart, cls).setUpClass()
 
 
 class TestMakoQuickStart(CommonTestQuickStart):
-    args = '--mako --nosa --noauth'
+    args = '--mako --nosa --noauth --skip-tw'
 
     pass_tests = ['.tests.functional.test_root.']
     skip_tests = [
@@ -234,7 +235,7 @@ class TestMakoQuickStart(CommonTestQuickStart):
 
 
 class TestJinjaQuickStart(CommonTestQuickStart):
-    args = '--jinja --nosa --noauth'
+    args = '--jinja --nosa --noauth --skip-tw'
 
     pass_tests = ['.tests.functional.test_root.']
     skip_tests = [
@@ -257,7 +258,7 @@ class TestNoDBQuickStart(CommonTestQuickStart):
         '.tests.functional.test_authentication.',
         '.tests.models.test_auth.']
 
-    args = '--nosa --noauth'
+    args = '--nosa --noauth --skip-tw'
 
     def test_login(self):
         self.app.get('/login', status=404)
@@ -276,10 +277,11 @@ class TestNoAuthQuickStart(CommonTestQuickStart):
 
     args = '--noauth'
 
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         if not PY2:
             raise SkipTest('Skipping Test, admin not available on Py3')
-        super(TestNoAuthQuickStart, self).setUp()
+        super(TestNoAuthQuickStart, cls).setUpClass()
 
     def test_login(self):
         self.app.get('/login', status=404)
@@ -293,10 +295,11 @@ class TestMingBQuickStart(CommonTestQuickStart):
     args = '--ming'
     preinstall = ['Paste', 'PasteScript']
 
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         if not PY2:
             raise SkipTest('Skipping Test, admin not available on Py3')
-        super(TestMingBQuickStart, self).setUp()
+        super(TestMingBQuickStart, cls).setUpClass()
 
 
 class TestNoTWQuickStart(CommonTestQuickStart):
