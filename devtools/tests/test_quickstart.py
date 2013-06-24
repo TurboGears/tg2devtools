@@ -8,21 +8,24 @@ from paste.deploy import loadapp
 from webtest import TestApp
 from itertools import count
 from nose import SkipTest
+from virtualenv import create_environment
 
 from devtools.gearbox.quickstart import QuickstartCommand
 
 PY2 = sys.version_info[0] == 2
 PROJECT_NAME = 'TGTest-%02d'
+ENV_NAME = 'TESTENV-%02d'
 CLEANUP = True
 COUNTER = count()
 
 
-def get_passed_and_failed(testpath):
+def get_passed_and_failed(env_cmd, python_cmd, testpath):
     """Run test suite under testpath, return set of passed tests."""
     os.chdir(testpath)
-    args = 'python -W ignore setup.py test'.split()
+    args = '. %s; %s -W ignore setup.py test' % (env_cmd, python_cmd)
     out = subprocess.Popen(args, stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE).communicate()[1]
+            stderr=subprocess.PIPE,
+            shell=True).communicate()[1]
     passed, failed = [], []
     test = None
     for line in out.splitlines():
@@ -43,34 +46,105 @@ class BaseTestQuickStart(object):
 
     args = ''
 
-    def __init__(self, **options):
-        self.command = QuickstartCommand(None, {})
-        self.parser = self.command.get_parser('tg2devtools-test')
+    @classmethod
+    def setUpClass(cls):
+        cls.command = QuickstartCommand(None, {})
+        cls.parser = cls.command.get_parser('tg2devtools-test')
 
-        self.base_dir = os.getcwd()
+        cls.base_dir = os.getcwd()
+        os.chdir(cls.base_dir)
 
-    def setUp(self):
-        os.chdir(self.base_dir)
+        fixture_index = next(COUNTER)
+
+        # Create a new virtualenv for the current test fixture
+        env_name = ENV_NAME % fixture_index
+        cls.env_dir = os.path.join(os.path.abspath(cls.base_dir), env_name)
+        create_environment(cls.env_dir)
+
+        # Enable the newly created virtualenv
+        cls.pip_cmd, cls.python_cmd, cls.env_cmd = cls.enter_virtualenv()
+
+        # Reinstall gearbox to force it being installed inside the
+        # virtualenv
+        subprocess.call([cls.pip_cmd, 'install', '-I', 'gearbox'])
+
+        # Install tg.devtools inside the virtualenv
+        subprocess.call([cls.pip_cmd, 'install', '-e', cls.base_dir])
 
         # This is to avoid the TGTest package to be detected as
         # being already installed.
-        proj_name = PROJECT_NAME % next(COUNTER)
-        self.proj_dir = os.path.join(self.base_dir, proj_name)
+        proj_name = PROJECT_NAME % fixture_index
+        cls.proj_dir = os.path.join(cls.base_dir, proj_name)
 
-        opts = self.parser.parse_args(self.args.split() + [proj_name])
-        self.command.run(opts)
+        # Create a quickstarted app by runnig 'gearbox quickstart'
+        opts = cls.parser.parse_args(cls.args.split() + [proj_name])
+        cls.command.run(opts)
 
-        # Mark the packages as installed so we can load app
-        pkg_resources.working_set.add_entry(self.proj_dir)
+        # Install quickstarted project dependencies
+        subprocess.call([cls.pip_cmd, 'install', '-e', cls.proj_dir])
+        cls.exit_virtualenv()
+
+        # Mark the packages as installed even outide the virtualenv
+        # so we can load app in tests which are not executed inside
+        # the newly created virtualenv.
+        pkg_resources.working_set.add_entry(cls.proj_dir)
+
+    def setUp(self):
+        self.enter_virtualenv()
 
         os.chdir(self.proj_dir)
         self.app = loadapp('config:test.ini', relative_to=self.proj_dir)
         self.app = TestApp(self.app)
 
     def tearDown(self):
-        os.chdir(self.base_dir)
+        self.exit_virtualenv()
+
+    @classmethod
+    def tearDownClass(cls):
+        os.chdir(cls.base_dir)
         if CLEANUP:
-            shutil.rmtree(self.proj_dir, ignore_errors=False)
+            shutil.rmtree(cls.proj_dir, ignore_errors=False)
+            shutil.rmtree(cls.env_dir, ignore_errors=False)
+
+    @classmethod
+    def enter_virtualenv(cls):
+        cls.old_os_path = os.environ['PATH']
+        os.environ['PATH'] = cls.env_dir + os.pathsep + cls.old_os_path
+
+        base = os.path.dirname(os.path.abspath(cls.env_dir))
+        site_packages = os.path.join(base, 'lib', 'python%s' % sys.version[:3], 'site-packages')
+        cls.prev_sys_path = list(sys.path)
+
+        cls.past_prefix = sys.prefix
+        cls.past_real_prefix = getattr(sys, 'real_prefix', None)
+
+        import site
+        site.addsitedir(site_packages)
+        sys.real_prefix = sys.prefix
+        sys.prefix = base
+
+        # Move the added items to the front of the path:
+        new_sys_path = []
+        for item in list(sys.path):
+            if item not in cls.prev_sys_path:
+                new_sys_path.append(item)
+                sys.path.remove(item)
+        sys.path[:0] = new_sys_path
+
+        return (os.path.join(cls.env_dir, 'bin', 'pip'),
+                os.path.join(cls.env_dir, 'bin', 'python'),
+                os.path.join(cls.env_dir, 'bin', 'activate'))
+
+    @classmethod
+    def exit_virtualenv(cls):
+        os.environ['PATH'] = cls.old_os_path
+        sys.path = cls.prev_sys_path
+        sys.prefix = cls.past_prefix
+
+        if cls.past_real_prefix is not None:
+            sys.real_prefix = cls.past_real_prefix
+        else:
+            delattr(sys, 'real_prefix')
 
 
 class CommonTestQuickStart(BaseTestQuickStart):
@@ -98,7 +172,7 @@ class CommonTestQuickStart(BaseTestQuickStart):
             in self.app.get('/admin/', status=302).follow())
 
     def test_subtests(self):
-        passed, failed = get_passed_and_failed(os.path.join(self.proj_dir))
+        passed, failed = get_passed_and_failed(self.env_cmd, self.python_cmd, os.path.join(self.proj_dir))
         for has_failed in failed:
             for must_fail in self.fail_tests:
                 if must_fail in has_failed:
