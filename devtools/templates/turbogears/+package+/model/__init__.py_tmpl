@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-{{if sqlalchemy == 'True'}}
+{{if sqlalchemy}}
 """The application's model objects"""
 
 from zope.sqlalchemy import ZopeTransactionExtension
@@ -38,7 +38,7 @@ metadata = DeclarativeBase.metadata
 # and import them at the bottom of this file.
 #
 ######
-{{elif ming == 'True'}}
+{{elif ming}}
 """The application's model objects"""
 
 import ming.orm
@@ -48,7 +48,7 @@ from session import mainsession, DBSession
 def init_model(engine):
     """Call me before using any of the tables or classes in the model."""
 
-{{if sqlalchemy == 'True'}}
+{{if sqlalchemy}}
     DBSession.configure(bind=engine)
 
     # If you are using reflection to introspect your database and create
@@ -66,7 +66,7 @@ def init_model(engine):
     #    autoload=True, autoload_with=engine)
 
     #mapper(Reflected, t_reflected)
-{{elif ming == 'True'}}
+{{elif ming}}
     mainsession.bind = engine
     ming.orm.Mapper.compile_all()
 
@@ -75,6 +75,6 @@ def init_model(engine):
 {{endif}}
 
 # Import your model modules here.
-{{if auth == "sqlalchemy" or auth == "ming"}}
+{{if auth}}
 from {{package}}.model.auth import User, Group, Permission
 {{endif}}

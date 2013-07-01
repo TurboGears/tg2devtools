@@ -9,8 +9,8 @@ though.
 
 """
 
-{{if auth == "sqlalchemy" or auth == "ming"}}
-import os, sys
+{{if auth}}
+import os
 from datetime import datetime
 from hashlib import sha256
 {{endif}}
@@ -187,7 +187,6 @@ from ming.orm import FieldProperty, ForeignIdProperty, RelationProperty
 from ming.orm import Mapper
 from ming.orm.declarative import MappedClass
 from tgming import SynonymProperty, ProgrammaticRelationProperty
-import os
 from session import DBSession
 
 class Group(MappedClass):
@@ -229,7 +228,7 @@ class Permission(MappedClass):
     _id = FieldProperty(s.ObjectId)
     permission_name = FieldProperty(s.String)
     description = FieldProperty(s.String)
-    
+
     _groups = FieldProperty(s.Array(str))
 
     def _get_groups(self):
@@ -266,7 +265,7 @@ class User(MappedClass):
     def _set_groups(self, groups):
         self._groups = [group.group_name for group in groups]
     groups = ProgrammaticRelationProperty(Group, _get_groups, _set_groups)
-    
+
     @property
     def permissions(self):
         return Permission.query.find(dict(_groups={'$in':self._groups})).all()

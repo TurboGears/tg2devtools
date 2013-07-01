@@ -5,7 +5,6 @@ from os import getcwd, path
 
 from paste.deploy import loadapp
 from webtest import TestApp
-from nose.tools import eq_
 
 from gearbox.commands.setup_app import SetupAppCommand
 from tg import config
@@ -13,33 +12,50 @@ from tg.util import Bunch
 
 from {{package}} import model
 
-__all__ = ['setup_db', 'teardown_db', 'TestController']
+__all__ = ['setup_app', 'setup_db', 'teardown_db', 'TestController']
 
-{{if ming == 'True'}}
+application_name = 'main_without_authn'
+
+
+def load_app(name=application_name):
+    """Load the test application."""
+    return TestApp(loadapp('config:test.ini#%s' % name, relative_to=getcwd()))
+
+
+def setup_app():
+    """Setup the application."""
+    cmd = SetupAppCommand(Bunch(options=Bunch(verbose_level=1)), Bunch())
+    cmd.run(Bunch(config_file='config:test.ini', section_name=None))
+
+
+{{if ming}}
 def setup_db():
-    """Method used to build a database"""
+    """Create the database schema (not needed when you run setup_app)."""
     datastore = config['tg.app_globals'].ming_datastore
     model.init_model(datastore)
+
+
 def teardown_db():
-    """Method used to destroy a database"""
+    """Destroy the database schema."""
     datastore = config['tg.app_globals'].ming_datastore
     datastore.conn.drop_all()
-{{elif sqlalchemy == 'True'}}
+{{elif sqlalchemy}}
 def setup_db():
-    """Method used to build a database"""
+    """Create the database schema (not needed when you run setup_app)."""
     engine = config['tg.app_globals'].sa_engine
     model.init_model(engine)
     model.metadata.create_all(engine)
 
+
 def teardown_db():
-    """Method used to destroy a database"""
+    """Destroy the database schema."""
     engine = config['tg.app_globals'].sa_engine
     model.metadata.drop_all(engine)
 {{endif}}
 
+
 class TestController(object):
-    """
-    Base functional test case for the controllers.
+    """Base functional test case for the controllers.
 
     The {{project}} application instance (``self.app``) set up in this test
     case (and descendants) has authentication disabled, so that developers can
@@ -54,23 +70,20 @@ class TestController(object):
 
     """
 
-    application_under_test = 'main_without_authn'
+    application_under_test = application_name
 
     def setUp(self):
-        """Method called by nose before running each test"""
-        # Loading the application:
-        wsgiapp = loadapp('config:test.ini#%s' % self.application_under_test,
-                          relative_to=getcwd())
-        self.app = TestApp(wsgiapp)
-        # Setting it up:
-        cmd = SetupAppCommand(Bunch(options=Bunch(verbose_level=1)), Bunch())
-        cmd.run(Bunch(config_file='config:test.ini', section_name=None))
+        """Setup test fixture for each functional test method."""
+        self.app = load_app(self.application_under_test)
+        setup_app()
 
     def tearDown(self):
-        """Method called by nose after running each test"""
-        # Cleaning up the database:
-{{if sqlalchemy == 'True'}}
+        """Tear down test fixture for each functional test method."""
+{{if sqlalchemy}}
         model.DBSession.remove()
 {{endif}}
+{{if database}}
         teardown_db()
-
+{{else}}
+        pass
+{{endif}}

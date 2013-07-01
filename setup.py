@@ -3,18 +3,12 @@
 from setuptools import setup, find_packages
 import sys, os
 
-test_requirements = ['coverage',
-                    'nose',
-                    'TurboKid >= 1.0.4',
-                    'TurboJson >= 1.3',
-                    'zope.sqlalchemy >= 0.4',
-                    'SQLAlchemy >= 0.5',
-                    'Babel >=0.9.4',
-                    'tgext.admin>=0.3.9',
+test_requirements = ['nose',
+                     'virtualenv'
                     ]
 
 install_requirements = [
-                        'TurboGears2 >= 2.3.0dev',
+                        'TurboGears2 >= 2.3.0b2',
                         'gearbox',
                         'backlash',
                         'WebTest<2.0'
@@ -22,7 +16,7 @@ install_requirements = [
 
 setup(
     name='tg.devtools',
-    version="2.3.0",
+    version="2.3.0b2",
     description="",
     long_description="""""",
     classifiers=[],

@@ -4,9 +4,12 @@
 *.pyc
 *.pyo
 *.swp
+TESTENV
+TGTest-*
 .coverage
 .project
 .pydevproject
+.settings
 devtools/tests/data/
 dist/
 build/

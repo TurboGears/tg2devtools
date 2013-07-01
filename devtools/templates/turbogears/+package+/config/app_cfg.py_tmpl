@@ -22,10 +22,10 @@ from {{package}}.lib import app_globals, helpers
 base_config = AppConfig()
 base_config.renderers = []
 
-{{if tw1 != 'True' and skip_tw != 'True'}}
+{{if not tw1 and not skip_tw}}
 base_config.prefer_toscawidgets2 = True
 {{endif}}
-{{if skip_tw == 'True'}}
+{{if skip_tw}}
 base_config.use_toscawidgets = False
 base_config.use_toscawidgets2 = False
 {{endif}}
@@ -35,21 +35,21 @@ base_config.package = {{package}}
 #Enable json in expose
 base_config.renderers.append('json')
 
-{{if skip_genshi != 'True'}}
+{{if not skip_genshi}}
 #Enable genshi in expose to have a lingua franca for extensions and pluggable apps
 #you can remove this if you don't plan to use it.
 base_config.renderers.append('genshi')
 {{endif}}
 
 #Set the default renderer
-{{if mako == 'True' or template_engine == 'mako'}}
+{{if mako or template_engine == 'mako'}}
 base_config.default_renderer = 'mako'
 base_config.renderers.append('mako')
-{{elif jinja == 'True' or template_engine == 'jinja'}}
+{{elif jinja or template_engine == 'jinja'}}
 base_config.default_renderer = 'jinja'
 base_config.renderers.append('jinja')
 base_config.jinja_extensions = ['jinja2.ext.with_']
-{{elif kajiki == 'True' or template_engine == 'kajiki'}}
+{{elif kajiki or template_engine == 'kajiki'}}
 base_config.default_renderer = 'kajiki'
 base_config.renderers.append('kajiki')
 {{elif template_engine == 'genshi'}}
@@ -60,12 +60,12 @@ base_config.default_renderer = 'genshi'
 #base_config.renderers.append('chameleon_genshi')
 {{endif}}
 
-{{if sqlalchemy == 'True'}}
+{{if sqlalchemy}}
 #Configure the base SQLALchemy Setup
 base_config.use_sqlalchemy = True
 base_config.model = {{package}}.model
 base_config.DBSession = {{package}}.model.DBSession
-{{elif ming == 'True'}}
+{{elif ming}}
 #Configure the base Ming Setup
 base_config.use_ming = True
 base_config.use_sqlalchemy=False
@@ -78,7 +78,7 @@ base_config.auth_backend=None
 base_config.use_toscawidgets=False
 {{endif}}
 
-{{if auth == "sqlalchemy" or auth == "ming"}}
+{{if auth}}
 # Configure the authentication backend
 
 # YOU MUST CHANGE THIS VALUE IN PRODUCTION TO SECURE YOUR APP 
