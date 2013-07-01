@@ -31,7 +31,7 @@ testpkgs=['WebTest >= 1.2.3',
                ]
 
 install_requires=[
-    "TurboGears2 >= 2.3.0dev",
+    "TurboGears2 >= 2.3.0b2",
     {{if PY3 == False}}
     "Babel",
     {{endif}}
