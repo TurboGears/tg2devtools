@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 import sys, os
 
 test_requirements = ['nose',
-                     'virtualenv'
+                     'virtualenv >= 1.10'
                     ]
 
 install_requirements = [

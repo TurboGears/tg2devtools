@@ -67,7 +67,7 @@ class BaseTestQuickStart(object):
         shutil.rmtree(cls.env_dir, ignore_errors=True)
 
         # Create virtualenv for current fixture
-        create_environment(cls.env_dir, use_distribute=True)
+        create_environment(cls.env_dir)
 
         # Enable the newly created virtualenv
         cls.pip_cmd, cls.python_cmd, cls.env_cmd, site_packages = cls.enter_virtualenv()
