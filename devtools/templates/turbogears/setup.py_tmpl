@@ -28,6 +28,7 @@ except ImportError:
 testpkgs=['WebTest >= 1.2.3',
                'nose',
                'coverage',
+               'gearbox'
                ]
 
 install_requires=[
