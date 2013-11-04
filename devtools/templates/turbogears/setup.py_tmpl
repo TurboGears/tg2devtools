@@ -32,7 +32,7 @@ testpkgs=['WebTest >= 1.2.3',
                ]
 
 install_requires=[
-    "TurboGears2 >= 2.3.0b3",
+    "TurboGears2 >= 2.3.1",
     {{if PY3 == False}}
     "Babel",
     {{endif}}
@@ -107,8 +107,5 @@ setup(
             'turbogears-devtools = tg.devtools'
         ]
     },
-    dependency_links=[
-        "http://tg.gy/230"
-        ],
     zip_safe=False
 )

@@ -8,7 +8,7 @@ test_requirements = ['nose',
                     ]
 
 install_requirements = [
-                        'TurboGears2 >= 2.3.0',
+                        'TurboGears2 >= 2.3.1',
                         'gearbox',
                         'backlash',
                         'WebTest<2.0'
@@ -16,7 +16,7 @@ install_requirements = [
 
 setup(
     name='tg.devtools',
-    version="2.3.0",
+    version="2.3.1",
     description="",
     long_description="""""",
     classifiers=[],
@@ -41,7 +41,4 @@ setup(
     },
     test_suite='nose.collector',
     tests_require = test_requirements,
-    dependency_links=[
-        "http://tg.gy/230"
-        ]
 )
