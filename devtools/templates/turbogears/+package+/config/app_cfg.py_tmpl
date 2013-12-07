@@ -22,6 +22,14 @@ from {{package}}.lib import app_globals, helpers
 base_config = AppConfig()
 base_config.renderers = []
 
+# True to prevent dispatcher from striping extensions
+# For example /socket.io would be served by "socket_io" method instead of "socket"
+base_config.disable_request_extensions = False
+
+# Set None to disable escaping punctuation characters to "_" when dispatching methods.
+# Set to a function to provide custom escaping.
+base_config.dispatch_path_translator = True 
+
 {{if not tw1 and not skip_tw}}
 base_config.prefer_toscawidgets2 = True
 {{endif}}
