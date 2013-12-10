@@ -38,7 +38,12 @@ def setup_db():
 def teardown_db():
     """Destroy the database schema."""
     datastore = config['tg.app_globals'].ming_datastore
-    datastore.conn.drop_all()
+    try:
+        # On MIM drop all data
+        datastore.conn.drop_all()
+    except TypeError:
+        # On MongoDB drop database
+        datastore.conn.drop_database(datastore.db)
 {{elif sqlalchemy}}
 def setup_db():
     """Create the database schema (not needed when you run setup_app)."""
