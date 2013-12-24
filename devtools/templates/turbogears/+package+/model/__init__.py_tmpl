@@ -41,7 +41,7 @@ metadata = DeclarativeBase.metadata
 {{elif ming}}
 """The application's model objects"""
 
-import ming.orm
+import ming.odm
 from session import mainsession, DBSession
 {{endif}}
 
@@ -68,9 +68,9 @@ def init_model(engine):
     #mapper(Reflected, t_reflected)
 {{elif ming}}
     mainsession.bind = engine
-    ming.orm.Mapper.compile_all()
+    ming.odm.Mapper.compile_all()
 
-    for mapper in ming.orm.Mapper.all_mappers():
+    for mapper in ming.odm.Mapper.all_mappers():
         mainsession.ensure_indexes(mapper.collection)
 {{endif}}
 

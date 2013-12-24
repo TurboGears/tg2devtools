@@ -5,7 +5,7 @@
 
     <body py:block="body" py:strip="True">
   <div class="row">
-    <div class="span6">
+    <div class="col-md-6">
       <h2>Content Type Dispatch</h2>
         <p>
           This page shows how you can provide multiple pages
@@ -18,7 +18,7 @@
 
         <p>Click here for the <a href="${tg.url('/data.json', params=params)}">JSON Version of this page.</a></p>
     </div>
-    <div class="span6">
+    <div class="col-md-6">
       <p>The data provided in the template call is:
         <table class="table table-bordered table-striped">
           <thead>

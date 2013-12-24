@@ -1,5 +1,5 @@
 from ming import Session
-from ming.orm import ThreadLocalORMSession
+from ming.odm import ThreadLocalORMSession
 
 mainsession = Session()
 DBSession = ThreadLocalORMSession(mainsession)

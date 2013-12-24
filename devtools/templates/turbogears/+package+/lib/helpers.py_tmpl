@@ -10,8 +10,5 @@ def current_year():
   now = datetime.now()
   return now.strftime('%Y')
 
-def icon(icon_name, white=False):
-    if (white):
-        return Markup('<i class="icon-%s icon-white"></i>' % icon_name)
-    else:
-        return Markup('<i class="icon-%s"></i>' % icon_name)
+def icon(icon_name):
+    return Markup('<i class="glyphicon glyphicon-%s"></i>' % icon_name)
