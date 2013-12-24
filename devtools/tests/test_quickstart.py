@@ -181,10 +181,10 @@ class CommonTestQuickStart(BaseTestQuickStart):
 
     def test_login(self):
         resp = self.app.get('/login')
-        ok_('<div id="loginform">' in resp)
+        ok_('<h1>Login</h1>' in resp)
 
     def test_unauthenticated_admin(self):
-        ok_('<div id="loginform">'
+        ok_('<h1>Login</h1>'
             in self.app.get('/admin/', status=302).follow())
 
     def test_subtests(self):
