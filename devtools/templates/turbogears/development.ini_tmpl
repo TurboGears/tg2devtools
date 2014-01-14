@@ -8,11 +8,28 @@
 # and generally should not be modified by end users.
 
 [DEFAULT]
+# Set false on production to disable interactive debugger
+# and enable email/sentry error reporting.
 debug = true
-# Uncomment and replace with the address which should receive any error reports
-#email_to = you@yourdomain.com
-smtp_server = localhost
-error_email_from = turbogears@localhost
+
+# ERROR REPORTING BY EMAIL
+# Uncomment to enable email error reporting
+#trace_errors.error_email = you@yourdomain.com
+trace_errors.from_address = turbogears@localhost
+trace_errors.smtp_server = localhost
+
+# Uncomment if email server requires authentication
+#trace_errors.smtp_use_tls = true
+#trace_errors.smtp_username = unknown
+#trace_errors.smtp_password = unknown
+
+# Uncomment to enable additional context data for email error reporting
+#trace_errors.dump_request = true
+#trace_errors.dump_local_frames = true
+
+# ERROR REPORTING TO SENTRY
+# Uncomment to enable reporting errors to a Sentry server
+#trace_errors.sentry_dsn = http://public:secret@example.com/1
 
 [server:main]
 use = egg:gearbox#wsgiref
