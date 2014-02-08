@@ -52,6 +52,7 @@ install_requires=[
     {{if sqlalchemy and migrations}}
     "alembic",
     {{endif}}
+    {{if ming}}
     "ming>=0.4.3",
     {{endif}}
     {{if auth}}
