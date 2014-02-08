@@ -38,7 +38,6 @@ install_requires=[
     {{endif}}
     {{if not skip_genshi}}
     "Genshi",
-    "tgext.debugbar",
     {{endif}}
     {{if mako}}
     "Mako",

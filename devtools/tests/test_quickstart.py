@@ -93,9 +93,6 @@ class BaseTestQuickStart(object):
         # Install quickstarted project dependencies
         subprocess.call([cls.pip_cmd, '-q', 'install', '-e', cls.proj_dir])
 
-        # Uninstall debugbar so it doesn't get between when running tests
-        subprocess.call([cls.pip_cmd, '-q', 'uninstall', '-y', 'tgext.debugbar'])
-
         # Mark the packages as installed even outside the virtualenv
         # so we can load app in tests which are not executed inside
         # the newly created virtualenv.
