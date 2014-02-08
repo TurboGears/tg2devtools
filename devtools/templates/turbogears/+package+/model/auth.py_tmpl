@@ -186,7 +186,6 @@ from ming import schema as s
 from ming.odm import FieldProperty, ForeignIdProperty, RelationProperty
 from ming.odm import Mapper
 from ming.odm.declarative import MappedClass
-from tgming import SynonymProperty, ProgrammaticRelationProperty
 from session import DBSession
 
 class Group(MappedClass):
@@ -202,19 +201,8 @@ class Group(MappedClass):
     group_name = FieldProperty(s.String)
     display_name = FieldProperty(s.String)
 
-    def _get_permissions(self):
-        return Permission.query.find(dict(_groups=self.group_name)).all()
-    def _set_permissions(self, value):
-        current_permissions = self.permissions
-        #erase removed permissions
-        for perm in current_permissions:
-            if perm not in value:
-                perm._groups = list(set(perm._groups) - set([self.group_name]))
-        #set added permissions
-        for perm in value:
-            if perm not in current_permissions:
-                perm._groups = list(set([self.group_name]) | set(perm._groups))
-    permissions = ProgrammaticRelationProperty('Permission', _get_permissions, _set_permissions)
+    permissions = RelationProperty('Permission')
+
 
 class Permission(MappedClass):
     """
@@ -229,13 +217,9 @@ class Permission(MappedClass):
     permission_name = FieldProperty(s.String)
     description = FieldProperty(s.String)
 
-    _groups = FieldProperty(s.Array(str))
+    _groups = ForeignIdProperty(Group, uselist=True)
+    groups = RelationProperty(Group)
 
-    def _get_groups(self):
-        return Group.query.find(dict(group_name={'$in':self._groups})).all()
-    def _set_groups(self, groups):
-        self._groups = [group.group_name for group in groups]
-    groups = ProgrammaticRelationProperty(Group, _get_groups, _set_groups)
 
 class User(MappedClass):
     """
@@ -250,21 +234,40 @@ class User(MappedClass):
         name = 'tg_user'
         unique_indexes = [('user_name',),]
 
+    class PasswordProperty(FieldProperty):
+        @classmethod
+        def _hash_password(cls, password):
+            salt = sha256()
+            salt.update(os.urandom(60))
+            salt = salt.hexdigest()
+
+            hash = sha256()
+            # Make sure password is a str because we cannot hash unicode objects
+            hash.update((password + salt).encode('utf-8'))
+            hash = hash.hexdigest()
+
+            password = salt + hash
+
+            # Make sure the hashed password is a unicode object at the end of the
+            # process because SQLAlchemy _wants_ unicode objects for Unicode cols
+            password = password.decode('utf-8')
+
+            return password
+
+        def __set__(self, instance, value):
+            value = self._hash_password(value)
+            return FieldProperty.__set__(self, instance, value)
+
     _id = FieldProperty(s.ObjectId)
     user_name = FieldProperty(s.String)
     email_address = FieldProperty(s.String)
     display_name = FieldProperty(s.String)
 
-    _groups = FieldProperty(s.Array(str))
+    _groups = ForeignIdProperty(Group, uselist=True)
+    groups = RelationProperty(Group)
 
-    _password = FieldProperty(s.String)
+    password = PasswordProperty(s.String)
     created = FieldProperty(s.DateTime, if_missing=datetime.now)
-
-    def _get_groups(self):
-        return Group.query.find(dict(group_name={'$in':self._groups})).all()
-    def _set_groups(self, groups):
-        self._groups = [group.group_name for group in groups]
-    groups = ProgrammaticRelationProperty(Group, _get_groups, _set_groups)
 
     @property
     def permissions(self):
@@ -274,37 +277,6 @@ class User(MappedClass):
     def by_email_address(cls, email):
         """Return the user object whose email address is ``email``."""
         return cls.query.get(email_address=email)
-
-    @classmethod
-    def _hash_password(cls, password):
-        salt = sha256()
-        salt.update(os.urandom(60))
-        salt = salt.hexdigest()
-
-        hash = sha256()
-        # Make sure password is a str because we cannot hash unicode objects
-        hash.update((password + salt).encode('utf-8'))
-        hash = hash.hexdigest()
-
-        password = salt + hash
-
-        {{if PY3 == False}}
-        # Make sure the hashed password is a unicode object at the end of the
-        # process because SQLAlchemy _wants_ unicode objects for Unicode cols
-        password = password.decode('utf-8')
-        {{endif}}
-
-        return password
-
-    def _set_password(self, password):
-        """Hash ``password`` on the fly and store its hashed version."""
-        self._password = self._hash_password(password)
-
-    def _get_password(self):
-        """Return the hashed version of the password."""
-        return self._password
-
-    password = SynonymProperty(_get_password, _set_password)
 
     def validate_password(self, password):
         """

@@ -38,6 +38,7 @@ install_requires=[
     {{endif}}
     {{if not skip_genshi}}
     "Genshi",
+    "tgext.debugbar",
     {{endif}}
     {{if mako}}
     "Mako",
@@ -51,8 +52,7 @@ install_requires=[
     {{if sqlalchemy and migrations}}
     "alembic",
     {{endif}}
-    {{if ming}}
-    "tgming",
+    "ming>=0.4.3",
     {{endif}}
     {{if auth}}
     "repoze.who",
