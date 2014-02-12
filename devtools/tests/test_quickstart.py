@@ -74,12 +74,12 @@ class BaseTestQuickStart(object):
 
         # Reinstall gearbox to force it being installed inside the
         # virtualenv
-        subprocess.call([cls.pip_cmd, '-q', 'install', '-I', 'gearbox'])
+        subprocess.call([cls.pip_cmd, '-q', 'install', '--pre', '-I', 'gearbox'])
         for p in cls.preinstall:
-            subprocess.call([cls.pip_cmd, '-q', 'install', '-I', p])
+            subprocess.call([cls.pip_cmd, '-q', 'install', '--pre', '-I', p])
 
         # Install tg.devtools inside the virtualenv
-        subprocess.call([cls.pip_cmd, '-q', 'install', '-e', cls.base_dir])
+        subprocess.call([cls.pip_cmd, '-q', 'install', '--pre', '-e', cls.base_dir])
 
         # This is to avoid the TGTest package to be detected as
         # being already installed.
@@ -91,7 +91,7 @@ class BaseTestQuickStart(object):
         cls.command.run(opts)
 
         # Install quickstarted project dependencies
-        subprocess.call([cls.pip_cmd, '-q', 'install', '-e', cls.proj_dir])
+        subprocess.call([cls.pip_cmd, '-q', 'install', '--pre', '-e', cls.proj_dir])
 
         # Mark the packages as installed even outside the virtualenv
         # so we can load app in tests which are not executed inside
