@@ -5,7 +5,6 @@ import sys, os
 
 test_requirements = ['nose',
                      'virtualenv == 1.10',
-                     'pbr==0.5.21', # This is required due to issues with PBR 0.6 currently
                     ]
 
 install_requirements = [
