@@ -10,6 +10,6 @@ branches:
 
 install:
   - "pip install nose"
-  - "pip install -e ."
+  - "pip install -e .[testing]"
 
 script: "python setup.py nosetests"
