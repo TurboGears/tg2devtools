@@ -91,6 +91,9 @@ class BaseTestQuickStart(object):
         opts = cls.parser.parse_args(cls.args.split() + [proj_name])
         cls.command.run(opts)
 
+        # Install TurboGears from development branch to test future compatibility
+        subprocess.call([cls.pip_cmd, '-q', 'install', '-I', 'git+git://github.com/TurboGears/tg2.git@development'])
+
         # Install quickstarted project dependencies
         subprocess.call([cls.pip_cmd, '-q', 'install', '--pre', '-e', cls.proj_dir])
 
