@@ -15,10 +15,10 @@ from {{package}}.model import DBSession, metadata
 {{endif}}
 
 {{if auth == "sqlalchemy" and not skip_tw}}
-from tgext.admin.tgadminconfig import TGAdminConfig
+from tgext.admin.tgadminconfig import BootstrapTGAdminConfig as TGAdminConfig
 from tgext.admin.controller import AdminController
 {{elif auth == "ming" and not skip_tw}}
-from tgext.admin.mongo import TGMongoAdminConfig
+from tgext.admin.mongo import BootstrapTGMongoAdminConfig as TGAdminConfig
 from tgext.admin.controller import AdminController
 {{endif}}
 
@@ -49,7 +49,7 @@ class RootController(BaseController):
 {{if auth == "sqlalchemy" and not skip_tw}}
     admin = AdminController(model, DBSession, config_type=TGAdminConfig)
 {{elif auth == "ming" and not skip_tw}}
-    admin = AdminController(model, None, config_type=TGMongoAdminConfig)
+    admin = AdminController(model, None, config_type=TGAdminConfig)
 {{endif}}
 
     error = ErrorController()
