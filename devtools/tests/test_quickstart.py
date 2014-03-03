@@ -12,6 +12,7 @@ import site
 
 from devtools.gearbox.quickstart import QuickstartCommand
 
+PY_VERSION = sys.version_info[:2]
 PY2 = sys.version_info[0] == 2
 PROJECT_NAME = 'TGTest-%02d'
 ENV_NAME = 'TESTENV'
@@ -84,6 +85,17 @@ class BaseTestQuickStart(object):
 
         # Install tg.devtools inside the virtualenv
         subprocess.call([cls.pip_cmd, '-q', 'install', '--pre', '-e', cls.base_dir])
+
+        # Install All Template Engines inside the virtualenv so that
+        # They all get configured as we share a single python process
+        # for all configurations.
+        if PY_VERSION == (3, 2):
+            jinja_version = 'Jinja2 < 2.7'
+        else:
+            jinja_version = 'Jinja2'
+        subprocess.call([cls.pip_cmd, '-q', 'install', '--pre', jinja_version])
+        subprocess.call([cls.pip_cmd, '-q', 'install', '--pre', 'Genshi'])
+        subprocess.call([cls.pip_cmd, '-q', 'install', '--pre', 'mako'])
 
         # This is to avoid the TGTest package to be detected as
         # being already installed.
