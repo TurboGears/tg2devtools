@@ -17,6 +17,8 @@ def plugme(configurator, options=None):
     log.info('Setting up {{package}} extension...')
     milestones.config_ready.register(SetupExtension(configurator))
 
+    # This is required to be compatible with the
+    # tgext.pluggable interface
     return dict(appid='{{package}}')
 
 
