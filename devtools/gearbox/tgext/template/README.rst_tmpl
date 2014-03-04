@@ -10,4 +10,18 @@ Installing
 
     pip install {{package}}
 
-should just work for most of the users
+should just work for most of the users.
+
+Enabling
+-------------------------------
+
+To enable {{package}} put inside your application
+``config/app_cfg.py`` the following::
+
+    import {{package}}
+    {{package}}.plugme(base_config)
+
+or you can use ``tgext.pluggable`` when available::
+
+    from tgext.pluggable import plug
+    plug(base_config, '{{package}}')

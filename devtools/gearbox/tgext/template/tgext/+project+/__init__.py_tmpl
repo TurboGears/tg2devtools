@@ -28,7 +28,7 @@ class SetupExtension(object):
         self.configurator = configurator
 
     def __call__(self):
-        log.info('>>> Plugin files path is %s' % config['paths']['static_files'])
+        log.info('>>> Public files path is %s' % config['paths']['static_files'])
         hooks.register('startup', self.on_startup)
 
         def echo_wrapper_factory(handler, config):
