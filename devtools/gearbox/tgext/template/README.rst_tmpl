@@ -1,0 +1,13 @@
+About {{package}}
+-------------------------
+
+{{package}} is a TurboGears2 extension
+
+Installing
+-------------------------------
+
+{{package}} can be installed from pypi::
+
+    pip install {{package}}
+
+should just work for most of the users

@@ -63,7 +63,7 @@ install_requires=[
     "tw2.forms",
     {{endif}}
     {{if not skip_tw and database}}
-    "tgext.admin >= 0.5.1",
+    "tgext.admin >= 0.6.1",
     {{endif}}
     ]
 

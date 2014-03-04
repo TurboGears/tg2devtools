@@ -1,7 +1,0 @@
-include README
-include LICENSE
-include CONTRIBUTORS
-include THANKS
-recursive-include tgext *
-global-exclude *.pyc
-global-exclude .DS_Store
