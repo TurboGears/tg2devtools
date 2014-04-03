@@ -3,6 +3,7 @@
 
 from tg import expose, flash, require, url, lurl, request, redirect, tmpl_context
 from tg.i18n import ugettext as _, lazy_ugettext as l_
+from tg.exceptions import HTTPFound
 
 {{if auth}}
 from tg import predicates
@@ -113,7 +114,10 @@ class RootController(BaseController):
                 params=dict(came_from=came_from, __logins=login_counter))
         userid = request.identity['repoze.who.userid']
         flash(_('Welcome back, %s!') % userid)
-        redirect(came_from)
+
+        # Do not use tg.redirect with tg.url as it will add the mountpoint
+        # of the application twice.
+        return HTTPFound(location=came_from)
 
     @expose()
     def post_logout(self, came_from=lurl('/')):
@@ -123,5 +127,5 @@ class RootController(BaseController):
 
         """
         flash(_('We hope to see you soon!'))
-        redirect(came_from)
+        return HTTPFound(location=came_from)
 {{endif}}
