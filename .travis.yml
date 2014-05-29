@@ -11,6 +11,7 @@ branches:
 install:
   - "pip install nose"
   - "pip install pbr==0.5.21"
+  - "travis_retry pip install git+git://github.com/TurboGears/crank.git"
   - "travis_retry pip install git+git://github.com/TurboGears/tg2.git@development"
   - "pip install -e ."
 
