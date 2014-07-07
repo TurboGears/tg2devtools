@@ -31,6 +31,10 @@ trace_errors.smtp_server = localhost
 # Uncomment to enable reporting errors to a Sentry server
 #trace_errors.sentry_dsn = http://public:secret@example.com/1
 
+# REPORT SLOW REQUESTS
+#trace_slowreqs.enable = true
+#trace_slowreqs.interval = 25
+
 [server:main]
 use = egg:gearbox#wsgiref
 host = 127.0.0.1
