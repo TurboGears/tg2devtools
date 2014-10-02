@@ -8,7 +8,7 @@ test_requirements = ['nose',
                     ]
 
 install_requirements = [
-                        'TurboGears2 >= 2.3.3',
+                        'TurboGears2 >= 2.3.4',
                         'gearbox',
                         'backlash > 0.0.5',
                         'WebTest<2.0'
@@ -16,7 +16,7 @@ install_requirements = [
 
 setup(
     name='tg.devtools',
-    version="2.3.3",
+    version="2.3.4",
     description="",
     long_description="""""",
     classifiers=[],
