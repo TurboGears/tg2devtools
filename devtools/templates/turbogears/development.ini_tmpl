@@ -40,9 +40,6 @@ use = egg:gearbox#wsgiref
 host = 127.0.0.1
 port = 8080
 
-[sa_auth]
-cookie_secret = {{cookiesecret}}
-
 [app:main]
 use = egg:{{project}}
 full_stack = true
