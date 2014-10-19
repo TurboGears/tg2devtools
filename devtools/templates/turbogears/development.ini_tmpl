@@ -8,12 +8,14 @@
 # and generally should not be modified by end users.
 
 [DEFAULT]
-# Set false on production to disable interactive debugger
-# and enable email/sentry error reporting.
+# WARNING: *THE LINE BELOW MUST BE FALSE ON A PRODUCTION ENVIRONMENT*
+# Debug mode will enable the interactive debugging tool, allowing ANYONE to
+# execute malicious code after an exception is raised.
 debug = true
 
 # ERROR REPORTING BY EMAIL
-# Uncomment to enable email error reporting
+# Uncomment to enable email error reporting, you probably want this
+# on production to receive application crashes by email
 #trace_errors.error_email = you@yourdomain.com
 trace_errors.from_address = turbogears@localhost
 trace_errors.smtp_server = localhost
@@ -42,8 +44,11 @@ port = 8080
 
 [app:main]
 use = egg:{{project}}
-full_stack = true
-#lang = ru
+
+# Default application language, when available this will be
+# used when none of the browser requested languages is available.
+#lang = en
+
 cache_dir = %(here)s/data
 beaker.session.key = {{package}}
 beaker.session.secret = {{cookiesecret}}
@@ -54,6 +59,12 @@ beaker.session.secret = {{cookiesecret}}
 beaker.session.type = cookie
 beaker.session.validate_key = {{cookiesecret}}
 
+# If you'd like to fine-tune the individual locations of the cache data dirs
+# for the Cache data, or the Session saves, un-comment the desired settings
+# here:
+#beaker.cache.data_dir = %(here)s/data/cache
+#beaker.session.data_dir = %(here)s/data/sessions
+
 # Disable template autoreload to boost performances in production
 # WARNING: if you want to deploy your application using a zipped egg
 # (ie: if your application's setup.py defines zip-safe=True, then you
@@ -61,11 +72,14 @@ beaker.session.validate_key = {{cookiesecret}}
 # be no disk and real files to compare time with.
 #auto_reload_templates = false
 
-# If you'd like to fine-tune the individual locations of the cache data dirs
-# for the Cache data, or the Session saves, un-comment the desired settings
-# here:
-#beaker.cache.data_dir = %(here)s/data/cache
-#beaker.session.data_dir = %(here)s/data/sessions
+# Turn off static files serving from public/ directory
+# this can be a speed boost if you have a proxy server already
+# serving them for you.
+#serve_static = false
+
+#turn this setting to "min" if you would like tw to produce minified
+#javascript files (if your library supports that)
+toscawidgets.framework.resource_variant=debug
 
 # pick the form for your database
 # %(here) may include a ':' character on Windows environments; this can
@@ -104,20 +118,10 @@ templating.genshi.doctype = html5
 # to an in-memory cache.
 templating.mako.compiled_templates_dir = %(here)s/data/templates
 
-# WARNING: *THE LINE BELOW MUST BE UNCOMMENTED ON A PRODUCTION ENVIRONMENT*
-# Debug mode will enable the interactive debugging tool, allowing ANYONE to
-# execute malicious code after an exception is raised.
-#set debug = false
-
 # Logging configuration
 # Add additional loggers, handlers, formatters here
 # Uses python's logging config file format
 # http://docs.python.org/lib/logging-config-fileformat.html
-
-#turn this setting to "min" if you would like tw to produce minified
-#javascript files (if your library supports that)
-toscawidgets.framework.resource_variant=debug
-
 [loggers]
 keys = root, {{package_logger}}{{if sqlalchemy}}, sqlalchemy{{endif}}{{if auth == "sqlalchemy"}}, auth{{endif}}
 
