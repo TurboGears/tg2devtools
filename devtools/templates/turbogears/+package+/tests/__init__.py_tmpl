@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
 """Unit and functional test suite for {{project}}."""
 
-from os import getcwd, path
-
+from os import getcwd
 from paste.deploy import loadapp
 from webtest import TestApp
-
 from gearbox.commands.setup_app import SetupAppCommand
 from tg import config
 from tg.util import Bunch
@@ -26,6 +24,7 @@ def setup_app():
     """Setup the application."""
     cmd = SetupAppCommand(Bunch(options=Bunch(verbose_level=1)), Bunch())
     cmd.run(Bunch(config_file='config:test.ini', section_name=None))
+
 
 
 {{if ming}}
@@ -74,7 +73,6 @@ class TestController(object):
     repoze.who-testutil (http://code.gustavonarea.net/repoze.who-testutil/).
 
     """
-
     application_under_test = application_name
 
     def setUp(self):

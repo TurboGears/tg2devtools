@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
-#quickstarted Options:
+
+#  Quickstarted Options:
 #
-# sqlalchemy: {{sqlalchemy}}
-# auth:       {{auth}}
-# mako:       {{mako}}
+#  sqlalchemy: {{sqlalchemy}}
+#  auth:       {{auth}}
+#  mako:       {{mako}}
 #
 #
 
-#This is just a work-around for a Python2.7 issue causing
-#interpreter crash at exit when trying to log an info message.
+# This is just a work-around for a Python2.7 issue causing
+# interpreter crash at exit when trying to log an info message.
 try:
     import logging
     import multiprocessing
@@ -25,13 +26,14 @@ except ImportError:
     use_setuptools()
     from setuptools import setup, find_packages
 
-testpkgs=['WebTest >= 1.2.3',
-               'nose',
-               'coverage',
-               'gearbox'
-               ]
+testpkgs = [
+    'WebTest >= 1.2.3',
+    'nose',
+    'coverage',
+    'gearbox'
+]
 
-install_requires=[
+install_requires = [
     "TurboGears2 >= 2.3.4",
     {{if PY3 == False}}
     "Babel",
@@ -65,11 +67,11 @@ install_requires=[
     {{if not skip_tw and database}}
     "tgext.admin >= 0.6.1",
     {{endif}}
-    ]
+]
 
 {{if jinja}}
 if py_version == (3, 2):
-    #jinja2 2.7 is incompatible with Python 3.2
+    # jinja2 2.7 is incompatible with Python 3.2
     install_requires.append('jinja2 < 2.7')
 else:
     install_requires.append('jinja2')
@@ -81,24 +83,26 @@ setup(
     description='',
     author='',
     author_email='',
-    #url='',
+    url='',
     packages=find_packages(exclude=['ez_setup']),
     install_requires=install_requires,
     include_package_data=True,
     test_suite='nose.collector',
     tests_require=testpkgs,
-    package_data={'{{package}}': ['i18n/*/LC_MESSAGES/*.mo',
-                                 'templates/*/*',
-                                 'public/*/*']},
+    package_data={'{{package}}': [
+        'i18n/*/LC_MESSAGES/*.mo',
+        'templates/*/*',
+        'public/*/*'
+    ]},
     message_extractors={'{{package}}': [
-            ('**.py', 'python', None),
-            {{if mako}}
-            ('templates/**.mako', 'mako', None),
-            {{else}}
-            ('templates/**.html', 'genshi', None),
-            {{endif}}
-            {{babel_templates_extractor}}('public/**', 'ignore', None)]},
-
+        ('**.py', 'python', None),
+        {{if mako}}
+        ('templates/**.mako', 'mako', None),
+        {{else}}
+        ('templates/**.html', 'genshi', None),
+        {{endif}}
+        {{babel_templates_extractor}}('public/**', 'ignore', None)
+    ]},
     entry_points={
         'paste.app_factory': [
             'main = {{package}}.config.middleware:make_app'

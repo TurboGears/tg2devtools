@@ -32,7 +32,7 @@ class TestRootController(TestController):
         # and then uncomment the next two lines)
 
         # links = response.html.findAll('a')
-        # print links
+        # print(links)
         # ok_(links, "Mummy, there are no links here!")
 
     def test_environ(self):
@@ -49,7 +49,10 @@ class TestRootController(TestController):
     def test_data_json(self):
         """The data display demo works with JSON"""
         resp = self.app.get('/data.json?a=1&b=2')
-        ok_(dict(page='data', params={'a':'1', 'b':'2'}) == resp.json, resp.json)
+        ok_(
+            dict(page='data', params={'a': '1', 'b': '2'}) == resp.json,
+            resp.json
+        )
 
 
 {{if auth}}

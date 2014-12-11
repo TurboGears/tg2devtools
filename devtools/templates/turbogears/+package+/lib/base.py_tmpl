@@ -1,17 +1,11 @@
 # -*- coding: utf-8 -*-
-
 """The base Controller API."""
 
 from tg import TGController, tmpl_context
-from tg.render import render
 {{if auth}}
 from tg import request
 {{endif}}
-from tg.i18n import ugettext as _, ungettext
 
-{{if sqlalchemy}}
-import {{package}}.model as model
-{{endif}}
 
 __all__ = ['BaseController']
 
@@ -34,4 +28,5 @@ class BaseController(TGController):
         request.identity = request.environ.get('repoze.who.identity')
         tmpl_context.identity = request.identity
         {{endif}}
+
         return TGController.__call__(self, environ, context)

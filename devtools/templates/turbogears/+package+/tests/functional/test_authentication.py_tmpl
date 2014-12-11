@@ -34,7 +34,7 @@ class TestAuthentication(TestController):
         """
         # Requesting a protected area
         resp = self.app.get('/secc/', status=302)
-        ok_( resp.location.startswith('http://localhost/login'))
+        ok_(resp.location.startswith('http://localhost/login'))
         # Getting the login form:
         resp = resp.follow(status=200)
         form = resp.form

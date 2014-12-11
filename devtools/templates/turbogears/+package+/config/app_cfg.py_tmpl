@@ -5,23 +5,24 @@ Global configuration file for TG2-specific settings in {{project}}.
 This file complements development/deployment.ini.
 
 """
-
 from tg.configuration import AppConfig
 
 import {{package}}
 from {{package}} import model
-from {{package}}.lib import app_globals, helpers 
 
 base_config = AppConfig()
 base_config.renderers = []
 
 # True to prevent dispatcher from striping extensions
-# For example /socket.io would be served by "socket_io" method instead of "socket"
+# For example /socket.io would be served by "socket_io"
+# method instead of "socket".
 base_config.disable_request_extensions = False
 
-# Set None to disable escaping punctuation characters to "_" when dispatching methods.
+# Set None to disable escaping punctuation characters to "_"
+# when dispatching methods.
 # Set to a function to provide custom escaping.
-base_config.dispatch_path_translator = True 
+base_config.dispatch_path_translator = True
+
 
 {{if not tw1 and not skip_tw}}
 base_config.prefer_toscawidgets2 = True
@@ -33,16 +34,17 @@ base_config.use_toscawidgets2 = False
 
 base_config.package = {{package}}
 
-#Enable json in expose
+# Enable json in expose
 base_config.renderers.append('json')
 
 {{if not skip_genshi}}
-#Enable genshi in expose to have a lingua franca for extensions and pluggable apps
-#you can remove this if you don't plan to use it.
+# Enable genshi in expose to have a lingua franca
+# for extensions and pluggable apps.
+# You can remove this if you don't plan to use it.
 base_config.renderers.append('genshi')
 {{endif}}
 
-#Set the default renderer
+# Set the default renderer
 {{if mako or template_engine == 'mako'}}
 base_config.default_renderer = 'mako'
 base_config.renderers.append('mako')
@@ -55,59 +57,61 @@ base_config.default_renderer = 'kajiki'
 base_config.renderers.append('kajiki')
 {{elif template_engine == 'genshi'}}
 base_config.default_renderer = 'genshi'
-# if you want raw speed and have installed chameleon.genshi
-# you should try to use this renderer instead.
-# warning: for the moment chameleon does not handle i18n translations
-#base_config.renderers.append('chameleon_genshi')
 {{endif}}
 
 {{if sqlalchemy}}
-#Configure the base SQLALchemy Setup
+# Configure the base SQLALchemy Setup
 base_config.use_sqlalchemy = True
 base_config.model = {{package}}.model
 base_config.DBSession = {{package}}.model.DBSession
 {{elif ming}}
-#Configure the base Ming Setup
-base_config.use_sqlalchemy=False
-base_config.use_transaction_manager=False
+# Configure the base Ming Setup
+base_config.use_sqlalchemy = False
+base_config.use_transaction_manager = False
 
 base_config.use_ming = True
 base_config.model = {{package}}.model
 base_config.DBSession = {{package}}.model.DBSession
 {{else}}
-base_config.use_sqlalchemy=False
-base_config.use_ming=False
-base_config.use_transaction_manager=False
-base_config.auth_backend=None
-base_config.use_toscawidgets=False
+base_config.use_sqlalchemy = False
+base_config.use_ming = False
+base_config.use_transaction_manager = False
+base_config.auth_backend = None
+base_config.use_toscawidgets = False
 {{endif}}
 
 {{if auth}}
 # Configure the authentication backend
-
-# YOU MUST CHANGE THIS VALUE IN PRODUCTION TO SECURE YOUR APP 
-base_config.sa_auth.cookie_secret = "{{cookiesecret}}"
-
 base_config.auth_backend = '{{auth}}'
-
+# YOU MUST CHANGE THIS VALUE IN PRODUCTION TO SECURE YOUR APP
+base_config.sa_auth.cookie_secret = "{{cookiesecret}}"
 # what is the class you want to use to search for users in the database
 base_config.sa_auth.user_class = model.User
 
 from tg.configuration.auth import TGAuthMetadata
 
-#This tells to TurboGears how to retrieve the data for your user
+
+# This tells to TurboGears how to retrieve the data for your user
 {{if auth == "sqlalchemy"}}
 class ApplicationAuthMetadata(TGAuthMetadata):
     def __init__(self, sa_auth):
         self.sa_auth = sa_auth
+
     def authenticate(self, environ, identity):
-        user = self.sa_auth.dbsession.query(self.sa_auth.user_class).filter_by(user_name=identity['login']).first()
+        user = self.sa_auth.dbsession.query(self.sa_auth.user_class).filter_by(
+            user_name=identity['login']
+        ).first()
         if user and user.validate_password(identity['password']):
             return identity['login']
+
     def get_user(self, identity, userid):
-        return self.sa_auth.dbsession.query(self.sa_auth.user_class).filter_by(user_name=userid).first()
+        return self.sa_auth.dbsession.query(self.sa_auth.user_class).filter_by(
+            user_name=userid
+        ).first()
+
     def get_groups(self, identity, userid):
         return [g.group_name for g in identity['user'].groups]
+
     def get_permissions(self, identity, userid):
         return [p.permission_name for p in identity['user'].permissions]
 
@@ -116,14 +120,18 @@ base_config.sa_auth.dbsession = model.DBSession
 class ApplicationAuthMetadata(TGAuthMetadata):
     def __init__(self, sa_auth):
         self.sa_auth = sa_auth
+
     def authenticate(self, environ, identity):
         user = self.sa_auth.user_class.query.get(user_name=identity['login'])
         if user and user.validate_password(identity['password']):
             return identity['login']
+
     def get_user(self, identity, userid):
         return self.sa_auth.user_class.query.get(user_name=userid)
+
     def get_groups(self, identity, userid):
         return [g.group_name for g in identity['user'].groups]
+
     def get_permissions(self, identity, userid):
         return [p.permission_name for p in identity['user'].permissions]
 {{endif}}
@@ -132,13 +140,13 @@ base_config.sa_auth.authmetadata = ApplicationAuthMetadata(base_config.sa_auth)
 
 # You can use a different repoze.who Authenticator if you want to
 # change the way users can login
-#base_config.sa_auth.authenticators = [('myauth', SomeAuthenticator()]
+# base_config.sa_auth.authenticators = [('myauth', SomeAuthenticator()]
 
 # You can add more repoze.who metadata providers to fetch
 # user metadata.
 # Remember to set base_config.sa_auth.authmetadata to None
 # to disable authmetadata and use only your own metadata providers
-#base_config.sa_auth.mdproviders = [('myprovider', SomeMDProvider()]
+# base_config.sa_auth.mdproviders = [('myprovider', SomeMDProvider()]
 
 # override this if you would like to provide a different who plugin for
 # managing login and logout of your application

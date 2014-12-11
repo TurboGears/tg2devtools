@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 """Error controller"""
-
 from tg import request, expose
 
 __all__ = ['ErrorController']
@@ -15,7 +14,7 @@ class ErrorController(object):
 
     This behaviour can be altered by changing the parameters to the
     ErrorDocuments middleware in your config/middleware.py file.
-    
+
     """
 
     @expose('{{package}}.templates.error')
