@@ -75,7 +75,6 @@ class BaseTestQuickStart(object):
 
         # Reinstall gearbox to force it being installed inside the
         # virtualenv using supported PBR version
-        subprocess.call([cls.pip_cmd, '-q', 'install', '--pre', '-I', 'pbr==0.5.21'])
         subprocess.call([cls.pip_cmd, '-q', 'install', '--pre', '-I', 'gearbox'])
         for p in cls.preinstall:
             subprocess.call([cls.pip_cmd, '-q', 'install', '--pre', '-I', p])
