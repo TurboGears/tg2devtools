@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
-import helpers
+from . import helpers
+from . import app_globals
 
-__all__ = ('helpers', )
+__all__ = ('helpers', 'app_globals')

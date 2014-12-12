@@ -8,7 +8,7 @@ This file complements development/deployment.ini.
 from tg.configuration import AppConfig
 
 import {{package}}
-from {{package}} import model
+from {{package}} import model, lib
 
 base_config = AppConfig()
 base_config.renderers = []
