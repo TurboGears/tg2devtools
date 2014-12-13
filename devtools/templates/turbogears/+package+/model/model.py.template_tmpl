@@ -1,0 +1,26 @@
+# -*- coding: utf-8 -*-
+"""{{start_braces}}target.capitalize(){{end_braces}} model module."""
+
+{{if sqlalchemy}}
+from sqlalchemy import *
+from sqlalchemy import Table, ForeignKey, Column
+from sqlalchemy.types import Integer, Unicode, DateTime, LargeBinary
+from sqlalchemy.orm import relation, backref
+
+from {{package}}.model import DeclarativeBase, metadata, DBSession
+
+
+class {{start_braces}}target.capitalize(){{end_braces}}(DeclarativeBase):
+    __tablename__ = '{{start_braces}}target.lower(){{end_braces}}s'
+
+    uid = Column(Integer, primary_key=True)
+    data = Column(Unicode(255), nullable=False)
+
+    user_id = Column(Integer, ForeignKey('User.user_id'), index=True)
+    user = relationship('User', uselist=False,
+                        backref=backref('{{start_braces}}target.lower(){{end_braces}}s',
+                                        cascade='all, delete-orphan'))
+
+{{else}}
+# Model Template is currently only available for SQLAlchemy
+{{endif}}

@@ -1,0 +1,25 @@
+{{if not skip_genshi}}
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:py="http://genshi.edgewall.org/"
+      xmlns:xi="http://www.w3.org/2001/XInclude">
+
+  <xi:include href="master.html" />
+
+<head>
+  <title>{{start_braces}}target.capitalize(){{end_braces}}</title>
+</head>
+
+<body>
+  <div class="row">
+    <div class="col-md-12">
+      <h2>{{start_braces}}target.capitalize(){{end_braces}}</h2>
+      <p>
+        Template page for {{start_braces}}target.capitalize(){{end_braces}}
+      </p>
+    </div>
+  </div>
+</body>
+</html>
+{{else}}
+<!-- Template is only available for Genshi -->
+{{endif}}
