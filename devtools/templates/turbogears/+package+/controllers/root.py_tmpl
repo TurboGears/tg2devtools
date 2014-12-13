@@ -98,13 +98,20 @@ class RootController(BaseController):
         return dict(page='editor stuff')
 
     @expose('{{package}}.templates.login')
-    def login(self, came_from=lurl('/')):
+    def login(self, came_from=lurl('/'), failure=None, login=''):
         """Start the user login."""
+        if failure is not None:
+            if failure == 'user-not-found':
+                flash(_('User not found'), 'error')
+            elif failure == 'invalid-password':
+                flash(_('Invalid Password'), 'error')
+
         login_counter = request.environ.get('repoze.who.logins', 0)
-        if login_counter > 0:
+        if failure is None and login_counter > 0:
             flash(_('Wrong credentials'), 'warning')
+
         return dict(page='login', login_counter=str(login_counter),
-                    came_from=came_from)
+                    came_from=came_from, login=login)
 
     @expose()
     def post_login(self, came_from=lurl('/')):
