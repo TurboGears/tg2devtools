@@ -1,6 +1,9 @@
-[egg_info]
-tag_build = dev
-tag_svn_revision = true
+[nosetests]
+verbosity = 2
+detailed-errors = 1
+with-coverage = false
+cover-erase = true
+cover-package = {{package}}
 
 # Babel configuration
 [compile_catalog]
