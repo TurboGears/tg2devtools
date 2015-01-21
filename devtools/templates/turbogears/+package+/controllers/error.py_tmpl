@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 """Error controller"""
 from tg import request, expose
+from {{package}}.lib.base import BaseController
 
 __all__ = ['ErrorController']
 
 
-class ErrorController(object):
+class ErrorController(BaseController):
     """
     Generates error documents as and when they are required.
 
