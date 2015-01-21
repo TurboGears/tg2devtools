@@ -10,7 +10,7 @@ test_requirements = ['nose',
 install_requirements = [
                         'TurboGears2 >= 2.3.4',
                         'gearbox',
-                        'backlash > 0.0.5',
+                        'backlash >= 0.0.7',
                         'WebTest<2.0'
                         ]
 
