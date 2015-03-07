@@ -34,7 +34,7 @@ testpkgs = [
 ]
 
 install_requires = [
-    "TurboGears2 >= 2.3.4",
+    "TurboGears2 >= 2.3.5",
     {{if PY3 == False}}
     "Babel",
     {{endif}}

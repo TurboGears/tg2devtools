@@ -50,20 +50,20 @@ use = egg:{{project}}
 #lang = en
 
 cache_dir = %(here)s/data
-beaker.session.key = {{package}}
-beaker.session.secret = {{cookiesecret}}
+session.key = {{package}}
+session.secret = {{cookiesecret}}
 
 #By default session is store in cookies to avoid the overhead
 #of having to manage a session storage. On production you might
 #want to switch to a better session storage.
-beaker.session.type = cookie
-beaker.session.validate_key = {{cookiesecret}}
+session.type = cookie
+session.validate_key = {{cookiesecret}}
 
 # If you'd like to fine-tune the individual locations of the cache data dirs
 # for the Cache data, or the Session saves, un-comment the desired settings
 # here:
-#beaker.cache.data_dir = %(here)s/data/cache
-#beaker.session.data_dir = %(here)s/data/sessions
+#cache.data_dir = %(here)s/data/cache
+#session.data_dir = %(here)s/data/sessions
 
 # Disable template autoreload to boost performances in production
 # WARNING: if you want to deploy your application using a zipped egg
