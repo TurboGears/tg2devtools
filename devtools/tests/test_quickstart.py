@@ -238,13 +238,9 @@ class TestDefaultQuickStart(CommonTestQuickStart):
 
     @classmethod
     def setUpClass(cls):
-        if not PY2:
-            return
         super(TestDefaultQuickStart, cls).setUpClass()
 
     def setUp(self):
-        if not PY2:
-            raise SkipTest('Skipping Test, admin not available on Py3')
         super(TestDefaultQuickStart, self).setUp()
 
 
@@ -309,13 +305,9 @@ class TestNoAuthQuickStart(CommonTestQuickStart):
 
     @classmethod
     def setUpClass(cls):
-        if not PY2:
-            return
         super(TestNoAuthQuickStart, cls).setUpClass()
 
     def setUp(self):
-        if not PY2:
-            raise SkipTest('Skipping Test, admin not available on Py3')
         super(TestNoAuthQuickStart, self).setUp()
 
     def test_login(self):
@@ -332,13 +324,9 @@ class TestMingBQuickStart(CommonTestQuickStart):
 
     @classmethod
     def setUpClass(cls):
-        if not PY2:
-            return
         super(TestMingBQuickStart, cls).setUpClass()
 
     def setUp(self):
-        if not PY2:
-            raise SkipTest('Skipping Test, admin not available on Py3')
         super(TestMingBQuickStart, self).setUp()
 
 
