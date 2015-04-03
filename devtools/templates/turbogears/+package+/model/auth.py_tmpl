@@ -202,7 +202,7 @@ from ming import schema as s
 from ming.odm import FieldProperty, ForeignIdProperty, RelationProperty
 from ming.odm import Mapper
 from ming.odm.declarative import MappedClass
-from session import DBSession
+from {{package}}.model import DBSession
 
 
 class Group(MappedClass):
@@ -265,9 +265,11 @@ class User(MappedClass):
 
             password = salt + hash
 
+            {{if PY3 == False}}
             # Make sure the hashed password is a unicode object at the end of the
             # process because SQLAlchemy _wants_ unicode objects for Unicode cols
             password = password.decode('utf-8')
+            {{endif}}
 
             return password
 

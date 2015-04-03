@@ -41,7 +41,7 @@ metadata = DeclarativeBase.metadata
 """The application's model objects"""
 
 import ming.odm
-from session import mainsession, DBSession
+from .session import mainsession, DBSession
 {{endif}}
 
 
