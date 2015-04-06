@@ -320,7 +320,7 @@ class TestNoAuthQuickStart(CommonTestQuickStart):
 class TestMingBQuickStart(CommonTestQuickStart):
 
     args = '--ming'
-    preinstall = ['Paste', 'PasteScript']
+    # preinstall = ['Paste', 'PasteScript']  # Ming doesn't require those anymore
 
     @classmethod
     def setUpClass(cls):
