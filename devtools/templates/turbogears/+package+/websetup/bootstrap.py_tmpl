@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """Setup the {{project}} application"""
-from __future__ import print_function
+from __future__ import print_function, unicode_literals
 
 {{if sqlalchemy}}
 import transaction

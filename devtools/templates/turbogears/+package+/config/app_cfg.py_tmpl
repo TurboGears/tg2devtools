@@ -67,7 +67,7 @@ base_config.DBSession = {{package}}.model.DBSession
 {{elif ming}}
 # Configure the base Ming Setup
 base_config.use_sqlalchemy = False
-base_config.use_transaction_manager = False
+base_config['tm.enabled'] = False
 
 base_config.use_ming = True
 base_config.model = {{package}}.model
@@ -75,7 +75,7 @@ base_config.DBSession = {{package}}.model.DBSession
 {{else}}
 base_config.use_sqlalchemy = False
 base_config.use_ming = False
-base_config.use_transaction_manager = False
+base_config['tm.enabled'] = False
 base_config.auth_backend = None
 base_config.use_toscawidgets = False
 {{endif}}
