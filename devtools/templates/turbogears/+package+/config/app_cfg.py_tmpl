@@ -192,6 +192,10 @@ class ApplicationAuthMetadata(TGAuthMetadata):
 
 base_config.sa_auth.authmetadata = ApplicationAuthMetadata(base_config.sa_auth)
 
+# In case ApplicationAuthMetadata didn't find the user discard the whole identity.
+# This might happen if logged-in users are deleted.
+base_config['identity.allow_missing_user'] = False
+
 # You can use a different repoze.who Authenticator if you want to
 # change the way users can login
 # base_config.sa_auth.authenticators = [('myauth', SomeAuthenticator()]
