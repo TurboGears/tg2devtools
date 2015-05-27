@@ -36,6 +36,7 @@ trace_errors.smtp_server = localhost
 # REPORT SLOW REQUESTS
 #trace_slowreqs.enable = true
 #trace_slowreqs.interval = 25
+#trace_slowreqs.exclude = /tw2/resources
 
 [server:main]
 use = egg:gearbox#wsgiref
