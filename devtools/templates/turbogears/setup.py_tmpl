@@ -35,9 +35,8 @@ testpkgs = [
 
 install_requires = [
     "TurboGears2 >= 2.3.5",
-    {{if PY3 == False}}
     "Babel",
-    {{endif}}
+    "Beaker",
     {{if not skip_genshi}}
     "Genshi",
     {{endif}}
@@ -67,6 +66,7 @@ install_requires = [
     {{if not skip_tw and database}}
     "tgext.admin >= 0.6.1",
     {{endif}}
+    "WebHelpers2"
 ]
 
 {{if jinja}}
