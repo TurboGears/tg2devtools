@@ -35,7 +35,6 @@ testpkgs = [
 
 install_requires = [
     "TurboGears2 >= 2.3.5",
-    "Babel",
     "Beaker",
     {{if not skip_genshi}}
     "Genshi",
@@ -68,6 +67,10 @@ install_requires = [
     {{endif}}
     "WebHelpers2"
 ]
+
+if py_version != (3, 2):
+    # Babel not available on 3.2
+    install_requires.append("Babel")
 
 {{if jinja}}
 if py_version == (3, 2):
