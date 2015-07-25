@@ -82,7 +82,7 @@ class BaseTestQuickStart(object):
         # Install TurboGears from development branch to test future compatibility
         subprocess.call([cls.pip_cmd, '-q', 'install', '-I', 'git+git://github.com/TurboGears/crank.git'])
         subprocess.call([cls.pip_cmd, '-q', 'install', '-I', 'git+git://github.com/TurboGears/backlash.git'])
-        subprocess.call([cls.pip_cmd, '-q', 'install', '-I', 'git+git://github.com/TurboGears/tg2.git@next'])
+        subprocess.call([cls.pip_cmd, '-q', 'install', '-I', 'git+git://github.com/TurboGears/tg2.git@development'])
 
         # Install tg.devtools inside the virtualenv
         subprocess.call([cls.pip_cmd, '-q', 'install', '--pre', '-e', cls.base_dir])
