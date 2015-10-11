@@ -22,5 +22,28 @@ class {{start_braces}}target.capitalize(){{end_braces}}(DeclarativeBase):
                                         cascade='all, delete-orphan'))
 
 {{else}}
-# Model Template is currently only available for SQLAlchemy
+from ming import schema as s
+from ming.odm import FieldProperty, ForeignIdProperty, RelationProperty
+from ming.odm.declarative import MappedClass
+
+from {{package}}.model import DBSession
+
+
+class {{start_braces}}target.capitalize(){{end_braces}}(MappedClass):
+    class __mongometa__:
+        session = DBSession
+        name = '{{start_braces}}target.lower(){{end_braces}}s'
+        indexes = [
+            ('_user',),
+        ]
+
+    _id = FieldProperty(s.ObjectId)
+
+    name = FieldProperty(s.String, required=False)
+
+    _user = ForeignIdProperty('User')
+    user = RelationProperty('User')
 {{endif}}
+
+
+__all__ = ['{{start_braces}}target.capitalize(){{end_braces}}']
