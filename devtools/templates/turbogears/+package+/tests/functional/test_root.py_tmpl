@@ -43,8 +43,8 @@ class TestRootController(TestController):
     def test_data(self):
         """The data display demo works with HTML"""
         response = self.app.get('/data.html?a=1&b=2')
-        response.mustcontain("<td>a</td>", "<td>1</td>",
-                             "<td>b</td>", "<td>2</td>")
+        response.mustcontain("<td>a", "<td>1",
+                             "<td>b", "<td>2")
 
     def test_data_json(self):
         """The data display demo works with JSON"""
