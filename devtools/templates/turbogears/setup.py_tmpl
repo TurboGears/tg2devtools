@@ -100,8 +100,15 @@ setup(
     message_extractors={'{{package}}': [
         ('**.py', 'python', None),
         {{if mako}}
-        ('templates/**.mako', 'mako', None),
-        {{else}}
+        ('templates/**.mak', 'mako', None),
+        {{endif}}
+        {{if kajiki}}
+        ('templates/**.xhtml', 'kajiki', None),
+        {{endif}}
+        {{if jinja}}
+        ('templates/**.jinja', 'jinja2', None),
+        {{endif}}
+        {{if not skip_genshi}}
         ('templates/**.html', 'genshi', None),
         {{endif}}
         {{babel_templates_extractor}}('public/**', 'ignore', None)
