@@ -61,10 +61,8 @@ session.type = cookie
 session.validate_key = {{cookiesecret}}
 
 # If you'd like to fine-tune the individual locations of the cache data dirs
-# for the Cache data, or the Session saves, un-comment the desired settings
-# here:
+# un-comment the desired settings here:
 #cache.data_dir = %(here)s/data/cache
-#session.data_dir = %(here)s/data/sessions
 
 # Disable template autoreload to boost performances in production
 # WARNING: if you want to deploy your application using a zipped egg

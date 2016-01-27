@@ -59,6 +59,10 @@ base_config.renderers.append('kajiki')
 base_config.default_renderer = 'genshi'
 {{endif}}
 
+# Configure Sessions, store data as JSON to avoid pickle security issues
+base_config['session.enabled'] = True
+base_config['session.data_serializer'] = 'json'
+
 {{if sqlalchemy}}
 # Configure the base SQLALchemy Setup
 base_config.use_sqlalchemy = True
