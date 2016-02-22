@@ -336,3 +336,11 @@ class TestNoTWQuickStart(CommonTestQuickStart):
 
     def test_unauthenticated_admin(self):
         self.app.get('/admin', status=404)
+
+
+class TestMinimalQuickStart(CommonTestQuickStart):
+
+    args = '--minimal-quickstart'
+
+    def test_secc_is_removed(self):
+        self.app.get('/secc', status=404)

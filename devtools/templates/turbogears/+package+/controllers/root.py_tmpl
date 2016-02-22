@@ -9,7 +9,9 @@ from tg.exceptions import HTTPFound
 {{if auth}}
 from tg import predicates
 from {{package}} import model
+{{if not minimal_quickstart}}
 from {{package}}.controllers.secure import SecureController
+{{endif}}
 {{endif}}
 
 {{if sqlalchemy}}
@@ -44,7 +46,7 @@ class RootController(BaseController):
     must be wrapped around with :class:`tg.controllers.WSGIAppController`.
 
     """
-{{if auth == "sqlalchemy" or auth == "ming"}}
+{{if not minimal_quickstart and (auth == "sqlalchemy" or auth == "ming")}}
     secc = SecureController()
 {{endif}}
 
@@ -64,6 +66,7 @@ class RootController(BaseController):
         """Handle the front-page."""
         return dict(page='index')
 
+{{if not minimal_quickstart}}
     @expose('{{package}}.templates.about')
     def about(self):
         """Handle the 'about' page."""
@@ -82,7 +85,7 @@ class RootController(BaseController):
         for a data page and a display page.
         """
         return dict(page='data', params=kw)
-
+{{endif}}
 
 {{if auth == "sqlalchemy" or auth == "ming"}}
     @expose('{{package}}.templates.index')

@@ -5,6 +5,7 @@ import pkg_resources
 import os
 import shutil
 import sys
+import glob
 
 from gearbox.template import GearBoxTemplate
 from gearbox.command import Command
@@ -107,6 +108,10 @@ class QuickstartCommand(Command):
             help="Disables Genshi default template",
             action="store_true", dest="skip_genshi", default=False)
 
+        parser.add_argument("--minimal-quickstart",
+            help="Throw away example boilerplate from quickstart project",
+            action="store_true", dest="minimal_quickstart", default=False)
+
         return parser
 
     def take_action(self, opts):
@@ -190,13 +195,15 @@ class QuickstartCommand(Command):
         #        template_vars[key] = 'True'
 
         template_vars['PY3'] = PY3
-        QuickstartTemplate().run(os.path.join(devtools_path,
-            'templates', 'turbogears'), opts.name, template_vars)
+        QuickstartTemplate().run(os.path.join(devtools_path, 'templates', 'turbogears'),
+                                 opts.name, template_vars)
 
         os.chdir(opts.name)
 
         sys.argv = ['setup.py', 'egg_info']
         imp.load_module('setup', *imp.find_module('setup', ['.']))
+
+        print("")
 
         # dirty hack to allow "empty" dirs
         for base, _path, files in os.walk('./'):
@@ -206,8 +213,7 @@ class QuickstartCommand(Command):
 
         if opts.skip_genshi or opts.mako or opts.kajiki or opts.jinja:
             # remove existing template files
-            package_template_dir = os.path.abspath(os.path.join(opts.package,
-                'templates'))
+            package_template_dir = os.path.abspath(os.path.join(opts.package, 'templates'))
             shutil.rmtree(package_template_dir, ignore_errors=True)
 
         # copy over the alternative templates if appropriate
@@ -227,11 +233,20 @@ class QuickstartCommand(Command):
             elif opts.kajiki:
                 overwrite_templates('kajiki')
 
+        if opts.minimal_quickstart:
+            print('Minimal Quickstart requested, throwing away example parts')
+            package_controllers_dir = os.path.abspath(os.path.join(opts.package, 'controllers'))
+            os.unlink(next(glob.iglob(os.path.join(package_controllers_dir, 'secure.py'))))
+
+            package_template_dir = os.path.abspath(os.path.join(opts.package, 'templates'))
+            os.unlink(next(glob.iglob(os.path.join(package_template_dir, 'data.*'))))
+            os.unlink(next(glob.iglob(os.path.join(package_template_dir, 'environ.*'))))
+            os.unlink(next(glob.iglob(os.path.join(package_template_dir, 'about.*'))))
+
         if opts.ming:
             print('Writing Ming model files to ./%s' % os.path.join(
                 opts.package, 'model'))
-            package_model_dir = os.path.abspath(os.path.join(opts.package,
-                'model'))
+            package_model_dir = os.path.abspath(os.path.join(opts.package, 'model'))
             ming_model_dir = os.path.join(devtools_path,
                 'commands', 'model_ming')
             shutil.copy(os.path.join(ming_model_dir, 'session.py'),
