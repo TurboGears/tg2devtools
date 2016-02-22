@@ -144,9 +144,8 @@ handlers =
 qualname = {{package_logger}}
 
 {{if sqlalchemy}}
-
 [logger_sqlalchemy]
-level = INFO
+level = WARN
 handlers =
 qualname = sqlalchemy.engine
 # "level = INFO" logs SQL queries.
@@ -154,8 +153,7 @@ qualname = sqlalchemy.engine
 # "level = WARN" logs neither.  (Recommended for production systems.)
 {{endif}}
 
-{{if auth == "sqlalchemy"}}
-
+{{if auth}}
 # A logger for authentication, identification and authorization
 # this is repoze.who:
 [logger_auth]
