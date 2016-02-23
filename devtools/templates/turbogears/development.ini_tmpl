@@ -125,7 +125,7 @@ templating.mako.compiled_templates_dir = %(here)s/data/templates
 # Uses python's logging config file format
 # http://docs.python.org/lib/logging-config-fileformat.html
 [loggers]
-keys = root, {{package_logger}}{{if sqlalchemy}}, sqlalchemy{{endif}}{{if auth == "sqlalchemy"}}, auth{{endif}}
+keys = root, {{package_logger}}{{if sqlalchemy}}, sqlalchemy{{endif}}{{if auth}}, auth{{endif}}
 
 [handlers]
 keys = console
