@@ -2,9 +2,10 @@ from __future__ import print_function
 
 import os, sys, tg
 
-from cliff.command import Command
+from gearbox.command import Command
 from paste.deploy import loadapp
 from webtest import TestApp
+
 
 class ShellCommand(Command):
     """Opens an interactive shell with a PasteDeploy loadable app loaded
