@@ -34,7 +34,7 @@ testpkgs = [
 ]
 
 install_requires = [
-    "TurboGears2 >= 2.3.7",
+    "TurboGears2 >= 2.3.8",
     "Beaker >= 1.8.0",
     {{if not skip_genshi}}
     "Genshi",
