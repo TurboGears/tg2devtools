@@ -14,11 +14,11 @@ class ShellCommand(Command):
     the interactive shell. CONFIG_FILE defaults to 'development.ini'.
 
     This allows you to test your mapper, models, and simulate web requests
-    using ``paste.fixture``.
+    using ``WebTest``.
 
     Example::
 
-        $ gearbox shell my-development.ini
+        $ gearbox shell -c my-development.ini
 
     """
     def get_description(self):
@@ -35,6 +35,10 @@ class ShellCommand(Command):
         parser.add_argument("-c", "--config",
             help='application config file to read (default: development.ini)',
             dest='config_file', default="development.ini")
+
+        parser.add_argument('script',
+            nargs='?',
+            help='script to run, if omitted will open an interactive session')
 
         return parser
 
@@ -85,17 +89,30 @@ class ShellCommand(Command):
         if mapper:
             locs['mapper'] = mapper
 
+        if opts.script:
+            self._run_script(opts.script, locs)
+        else:
+            self._run_shell(base_module, locs, opts.disable_ipython)
+
+    def _run_script(self, script, locs):
+        script_path = os.path.abspath(script)
+        if not os.path.exists(script_path):
+            raise IOError('Unable to open %s script' % script_path)
+
+        import code
+        i = code.InteractiveInterpreter(locals=locs)
+        i.runsource(open(script_path).read(), script_path, 'exec')
+
+    def _run_shell(self, base_module, locs, disable_ipython):
         banner = "  All objects from %s are available\n" % base_module
         banner += "  Additional Objects:\n"
-        if mapper:
-            banner += "  %-10s -  %s\n" % ('mapper', 'Routes mapper object')
         banner += "  %-10s -  %s\n" % ('wsgiapp',
                                        "This project's WSGI App instance")
         banner += "  %-10s -  %s\n" % ('app',
                                        'WebTest.TestApp wrapped around wsgiapp')
 
         try:
-            if opts.disable_ipython:
+            if disable_ipython:
                 raise ImportError()
 
             # try to use IPython if possible
@@ -113,7 +130,7 @@ class ShellCommand(Command):
         except ImportError:
             import code
             py_prefix = sys.platform.startswith('java') and 'J' or 'P'
-            newbanner = "TurboGears2 Interactive Shell\n%sython %s\n\n" %\
+            newbanner = "TurboGears2 Interactive Shell\n%sython %s\n\n" % \
                         (py_prefix, sys.version)
             banner = newbanner + banner
             shell = code.InteractiveConsole(locals=locs)
@@ -121,7 +138,7 @@ class ShellCommand(Command):
                 import readline
             except ImportError:
                 pass
-            
+
             shell.interact(banner)
 
     def _can_import(self, name):
