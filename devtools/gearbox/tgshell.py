@@ -18,7 +18,7 @@ class ShellCommand(Command):
 
     Example::
 
-        $ gearbox shell -c my-development.ini
+        $ gearbox tgshell -c my-development.ini
 
     """
     def get_description(self):
