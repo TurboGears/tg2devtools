@@ -36,13 +36,14 @@ testpkgs = [
 install_requires = [
     "TurboGears2 >= 2.3.8",
     "Beaker >= 1.8.0",
-    {{if not skip_genshi}}
+    {{if kajiki}}
+    "Kajiki >= 0.3.5",
+    {{endif}}
+    {{if genshi}}
     "Genshi",
     {{endif}}
     {{if mako}}
     "Mako",
-    {{elif kajiki}}
-    "Kajiki >= 0.3.5",
     {{endif}}
     {{if sqlalchemy}}
     "zope.sqlalchemy >= 0.4",
@@ -108,7 +109,7 @@ setup(
         {{if jinja}}
         ('templates/**.jinja', 'jinja2', None),
         {{endif}}
-        {{if not skip_genshi}}
+        {{if genshi}}
         ('templates/**.html', 'genshi', None),
         {{endif}}
         {{babel_templates_extractor}}('public/**', 'ignore', None)

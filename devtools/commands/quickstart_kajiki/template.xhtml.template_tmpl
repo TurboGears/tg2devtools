@@ -1,0 +1,16 @@
+<html py:extends="master.xhtml" py:strip="True">
+    <head py:block="head" py:strip="True">
+        <title>{{start_braces}}target.capitalize(){{end_braces}}</title>
+    </head>
+
+    <body py:block="body" py:strip="True">
+      <div class="row">
+        <div class="col-md-12">
+          <h2>{{start_braces}}target.capitalize(){{end_braces}}</h2>
+          <p>
+            Template page for {{start_braces}}target.capitalize(){{end_braces}}
+          </p>
+        </div>
+      </div>
+    </body>
+</html>

@@ -37,27 +37,23 @@ base_config.package = {{package}}
 # Enable json in expose
 base_config.renderers.append('json')
 
-{{if not skip_genshi}}
-# Enable genshi in expose to have a lingua franca
-# for extensions and pluggable apps.
-# You can remove this if you don't plan to use it.
+# Set the default renderer
+{{if mako}}
+base_config.renderers.append('mako')
+{{endif}}
+{{if jinja}}
+base_config.renderers.append('jinja')
+base_config.jinja_extensions = ['jinja2.ext.with_']
+{{endif}}
+{{if kajiki}}
+base_config.renderers.append('kajiki')
+{{endif}}
+{{if genshi}}
 base_config.renderers.append('genshi')
 {{endif}}
 
-# Set the default renderer
-{{if mako or template_engine == 'mako'}}
-base_config.default_renderer = 'mako'
-base_config.renderers.append('mako')
-{{elif jinja or template_engine == 'jinja'}}
-base_config.default_renderer = 'jinja'
-base_config.renderers.append('jinja')
-base_config.jinja_extensions = ['jinja2.ext.with_']
-{{elif kajiki or template_engine == 'kajiki'}}
-base_config.default_renderer = 'kajiki'
-base_config.renderers.append('kajiki')
-{{elif template_engine == 'genshi'}}
-base_config.default_renderer = 'genshi'
-{{endif}}
+base_config.default_renderer = '{{template_engine}}'
+
 
 # Configure Sessions, store data as JSON to avoid pickle security issues
 base_config['session.enabled'] = True
@@ -224,7 +220,7 @@ base_config.sa_auth.post_logout_url = '/post_logout'
 
 {{endif}}
 
-{{if not skip_genshi}}
+{{if kajiki or genshi}}
 try:
     # Enable DebugBar if available, install tgext.debugbar to turn it on
     from tgext.debugbar import enable_debugbar

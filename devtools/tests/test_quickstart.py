@@ -98,6 +98,7 @@ class BaseTestQuickStart(object):
         subprocess.call([cls.pip_cmd, '-q', 'install', '--pre', jinja_version])
         subprocess.call([cls.pip_cmd, '-q', 'install', '--pre', 'Genshi'])
         subprocess.call([cls.pip_cmd, '-q', 'install', '--pre', 'mako'])
+        subprocess.call([cls.pip_cmd, '-q', 'install', '--pre', 'kajiki'])
 
         # This is to avoid the TGTest package to be detected as
         # being already installed.
@@ -247,6 +248,22 @@ class TestDefaultQuickStart(CommonTestQuickStart):
 
 class TestMakoQuickStart(CommonTestQuickStart):
     args = '--mako --nosa --noauth --skip-tw'
+
+    pass_tests = ['.tests.functional.test_root.']
+    skip_tests = [
+        '.tests.functional.test_root.test_secc',
+        '.tests.functional.test_authentication.',
+        '.tests.models.test_auth.']
+
+    def test_login(self):
+        self.app.get('/login', status=404)
+
+    def test_unauthenticated_admin(self):
+        self.app.get('/admin', status=404)
+
+
+class TestGenshiQuickStart(CommonTestQuickStart):
+    args = '--genshi --nosa --noauth --skip-tw'
 
     pass_tests = ['.tests.functional.test_root.']
     skip_tests = [

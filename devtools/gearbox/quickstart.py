@@ -25,7 +25,16 @@ class QuickstartTemplate(GearBoxTemplate):
             package_logger = 'app'
         vars['package_logger'] = package_logger
 
-        template_engine = vars.setdefault('template_engine', 'genshi')
+        if vars['genshi']:
+            vars['template_engine'] = 'genshi'
+        elif vars['jinja']:
+            vars['template_engine'] = 'jinja'
+        elif vars['mako']:
+            vars['template_engine'] = 'mako'
+        elif vars['kajiki']:
+            vars['template_engine'] = 'kajiki'
+
+        template_engine = vars.setdefault('template_engine', 'kajiki')
 
         if template_engine == 'mako':
             # Support a Babel extractor default for Mako
@@ -33,10 +42,6 @@ class QuickstartTemplate(GearBoxTemplate):
                 " 'mako', None),\n%s#%s") % (' ' * 4, ' ' * 8)
         else:
             vars['babel_templates_extractor'] = ''
-
-        if vars['geo'] == 'True':
-            # Add tgext.geo as paster plugin
-            vars['egg_plugins'].append('tgext.geo')
 
         if vars['migrations'] == 'True':
             vars['egg_plugins'].append('tg.devtools')
@@ -70,11 +75,12 @@ class QuickstartCommand(Command):
 
         parser.add_argument("-k", "--kajiki",
             help="default templates kajiki",
-            action="store_true", dest="kajiki")
+            action="store_true", dest="kajiki",
+            default=True)
 
-        parser.add_argument("-g", "--geo",
-            help="add GIS support",
-            action="store_true", dest="geo")
+        parser.add_argument("-g", "--genshi",
+            help="default templates genshi",
+            action="store_true", dest="genshi")
 
         parser.add_argument("-p", "--package",
             help="package name for the code",
@@ -104,9 +110,9 @@ class QuickstartCommand(Command):
             help="Disables ToscaWidgets",
             action="store_true", dest="skip_tw", default=False)
 
-        parser.add_argument("--skip-genshi",
-            help="Disables Genshi default template",
-            action="store_true", dest="skip_genshi", default=False)
+        parser.add_argument("--skip-default-template",
+            help="Disables Kajiki default templates",
+            action="store_true", dest="skip_default_tmpl", default=False)
 
         parser.add_argument("--minimal-quickstart",
             help="Throw away example boilerplate from quickstart project",
@@ -126,6 +132,9 @@ class QuickstartCommand(Command):
 
         if opts.no_auth:
             opts.auth = False
+
+        if opts.skip_default_tmpl:
+            opts.kajiki = False
 
         if not opts.package:
             package = opts.name.lower()
@@ -211,27 +220,34 @@ class QuickstartCommand(Command):
                 if filename == 'empty':
                     os.remove(os.path.join(base, filename))
 
-        if opts.skip_genshi or opts.mako or opts.kajiki or opts.jinja:
-            # remove existing template files
+        if opts.mako or opts.genshi or opts.jinja or opts.kajiki:
             package_template_dir = os.path.abspath(os.path.join(opts.package, 'templates'))
-            shutil.rmtree(package_template_dir, ignore_errors=True)
-
-        # copy over the alternative templates if appropriate
-        if opts.mako or opts.kajiki or opts.jinja:
             def overwrite_templates(template_type):
                 print('Writing %s template files to ./%s' % (
-                    template_type, os.path.join(opts.package, 'templates')))
+                    template_type, os.path.join(opts.package, 'templates')
+                ))
                 # replace template files with alternative ones
-                alt_template_dir = os.path.join(devtools_path,
-                    'commands', 'quickstart_%s' % template_type)
+                alt_template_dir = os.path.join(devtools_path, 'commands',
+                                                'quickstart_%s' % template_type)
+                shutil.rmtree(package_template_dir)
                 shutil.copytree(alt_template_dir, package_template_dir)
 
-            if opts.mako:
-                overwrite_templates('mako')
+            if opts.genshi:
+                overwrite_templates('genshi')
             elif opts.jinja:
                 overwrite_templates('jinja')
+            elif opts.mako:
+                overwrite_templates('mako')
             elif opts.kajiki:
                 overwrite_templates('kajiki')
+
+        if opts.kajiki:
+            # Provide Kajiki as a lingua franca for pluggable apps.
+            print('Adding Kajiki master for pluggable apps')
+            package_template_dir = os.path.abspath(os.path.join(opts.package, 'templates'))
+            alt_template_dir = os.path.join(devtools_path, 'commands', 'quickstart_kajiki')
+            shutil.copy(os.path.join(alt_template_dir, 'master.xhtml'),
+                        package_template_dir)
 
         if opts.minimal_quickstart:
             print('Minimal Quickstart requested, throwing away example parts')
