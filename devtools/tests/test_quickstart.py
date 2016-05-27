@@ -275,6 +275,7 @@ class TestGenshiQuickStart(CommonTestQuickStart):
     def setUpClass(cls):
         if PY_VERSION >= (3, 5):
             raise SkipTest('Genshi not supported on Python 3.5')
+        super(TestGenshiQuickStart, cls).setUpClass()
 
     def test_login(self):
         self.app.get('/login', status=404)
