@@ -50,6 +50,9 @@ base_config.renderers.append('kajiki')
 {{endif}}
 {{if genshi}}
 base_config.renderers.append('genshi')
+{{if PYVERSION >= (3, 4)}}
+base_config['templating.genshi.name_constant_patch'] = True
+{{endif}}
 {{endif}}
 
 base_config.default_renderer = '{{template_engine}}'
