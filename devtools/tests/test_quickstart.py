@@ -271,6 +271,11 @@ class TestGenshiQuickStart(CommonTestQuickStart):
         '.tests.functional.test_authentication.',
         '.tests.models.test_auth.']
 
+    @classmethod
+    def setUpClass(cls):
+        if PY_VERSION >= (3, 5):
+            raise SkipTest('Genshi not supported on Python 3.5')
+
     def test_login(self):
         self.app.get('/login', status=404)
 
