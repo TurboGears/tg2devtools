@@ -17,9 +17,9 @@
       </div>
     </div>
     <div class="col-md-4 hidden-xs hidden-sm">
-      <a class="btn btn-info btn-sm active" href="http://turbogears.readthedocs.org/en/latest">${h.icon('book')} TG2 Documentation</a> <span class="label label-success">new</span><em> Get Started</em><br/>
+      <a class="btn btn-info btn-sm active" href="http://turbogears.readthedocs.io/en/latest">${h.icon('book')} TG2 Documentation</a> <span class="label label-success">new</span><em> Get Started</em><br/>
         <br/>
-      <a class="btn btn-info btn-sm active" href="http://turbogears.readthedocs.org/en/latest/cookbook/cookbook.html">${h.icon('book')} TG2 CookBook</a><em> Read the Cookbook</em> <br/>
+      <a class="btn btn-info btn-sm active" href="http://turbogears.readthedocs.io/en/latest/cookbook/cookbook.html">${h.icon('book')} TG2 CookBook</a><em> Read the Cookbook</em> <br/>
         <br/>
       <a class="btn btn-info btn-sm active" href="http://groups.google.com/group/turbogears">${h.icon('comment')} Join the Mail List</a> <em>for help/discussion</em><br/>
         <br/>
