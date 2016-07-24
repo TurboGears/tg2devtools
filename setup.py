@@ -3,16 +3,18 @@
 from setuptools import setup, find_packages
 import sys, os
 
-test_requirements = ['nose',
-                     'virtualenv == 1.10',
-                    ]
+test_requirements = [
+    'nose',
+    'virtualenv == 1.10',
+]
 
 install_requirements = [
-                        'TurboGears2 >= 2.3.8',
-                        'gearbox >= 0.1.1',
-                        'backlash >= 0.0.7',
-                        'WebTest<2.0'
-                        ]
+    'TurboGears2 >= 2.3.8',
+    'gearbox >= 0.1.1',
+    'backlash >= 0.0.7',
+    'WebTest<2.0',
+    'tgext.debugbar'
+]
 
 setup(
     name='tg.devtools',
