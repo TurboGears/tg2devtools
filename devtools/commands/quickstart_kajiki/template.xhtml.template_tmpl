@@ -1,6 +1,6 @@
 <html py:extends="master.xhtml" py:strip="True">
     <head py:block="head" py:strip="True">
-        <title>{{start_braces}}target.capitalize(){{end_braces}}</title>
+        <title py:block="master_title">{{start_braces}}target.capitalize(){{end_braces}}</title>
     </head>
 
     <body py:block="body" py:strip="True">
