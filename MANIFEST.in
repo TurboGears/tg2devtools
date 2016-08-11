@@ -1,6 +1,7 @@
 recursive-include devtools/commands/quickstart_mako *
 recursive-include devtools/commands/quickstart_jinja *
 recursive-include devtools/commands/quickstart_kajiki *
+recursive-include devtools/commands/quickstart_genshi *
 recursive-include devtools/commands/model_ming *
 recursive-include devtools/templates *
 recursive-include devtools/gearbox/*/template *

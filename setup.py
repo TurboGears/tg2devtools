@@ -25,7 +25,7 @@ setup(
     keywords='turbogears',
     author="TurboGears Team 2008-2015",
     author_email="turbogears@groups.google.com",
-    url="www.turbogears.org",
+    url="http://www.turbogears.org",
     license="MIT",
     packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
     include_package_data=True,
