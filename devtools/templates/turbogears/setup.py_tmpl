@@ -34,7 +34,7 @@ testpkgs = [
 ]
 
 install_requires = [
-    "TurboGears2 >= 2.3.8",
+    "TurboGears2 >= 2.3.9",
     "Beaker >= 1.8.0",
     {{if kajiki}}
     "Kajiki >= 0.3.5",
