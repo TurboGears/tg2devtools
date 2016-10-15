@@ -5,15 +5,15 @@
   <xi:include href="master.html" />
 
 <head>
-  <title>{{start_braces}}target.capitalize(){{end_braces}}</title>
+  <title>{{target.capitalize()}}</title>
 </head>
 
 <body>
   <div class="row">
     <div class="col-md-12">
-      <h2>{{start_braces}}target.capitalize(){{end_braces}}</h2>
+      <h2>{{target.capitalize()}}</h2>
       <p>
-        Template page for {{start_braces}}target.capitalize(){{end_braces}}
+        Template page for {{target.capitalize()}}
       </p>
     </div>
   </div>
