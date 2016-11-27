@@ -47,6 +47,7 @@ base_config.jinja_extensions = ['jinja2.ext.with_']
 {{endif}}
 {{if kajiki}}
 base_config.renderers.append('kajiki')
+base_config['templating.kajiki.strip_text'] = False  # Change this in setup.py too for i18n to work.
 {{endif}}
 {{if genshi}}
 base_config.renderers.append('genshi')
