@@ -25,7 +25,7 @@ setup(
     include_package_data=True,
     zip_safe=False,
     install_requires=[
-        "TurboGears2 >= 2.3.9",
+        "TurboGears2 >= 2.3.10",
     ],
     entry_points="""
     # -*- Entry points: -*-
