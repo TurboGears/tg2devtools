@@ -269,8 +269,9 @@ class CommonTestQuickStartWithAuth(CommonTestQuickStart):
         resp = self.app.post('/prefix/login_handler?came_from=%2Fprefix%2Fadmin%2F',
                              params={'login': 'WRONG', 'password': 'WRONG'},
                              extra_environ={'SCRIPT_NAME': '/prefix'})
-        ok_(resp.headers['Location'] == 'http://localhost/prefix/login?failure=user-not-found&came_from=%2Fprefix%2Fadmin%2F',
-            resp.headers['Location'])
+        location = resp.headers['Location']
+        ok_('http://localhost/prefix/login' in location, location)
+        ok_('came_from=%2Fprefix%2Fadmin%2F' in location, location)
 
 
 class TestDefaultQuickStart(CommonTestQuickStartWithAuth):
