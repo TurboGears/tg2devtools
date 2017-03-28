@@ -130,7 +130,7 @@ class ApplicationAuthMetadata(TGAuthMetadata):
 
             # When authentication fails send user to login page.
             environ['repoze.who.application'] = HTTPFound(
-                location='?'.join(('/login', urlencode(params, True)))
+                location=environ['SCRIPT_NAME'] + '?'.join(('/login', urlencode(params, True)))
             )
 
         return login
@@ -179,7 +179,7 @@ class ApplicationAuthMetadata(TGAuthMetadata):
 
             # When authentication fails send user to login page.
             environ['repoze.who.application'] = HTTPFound(
-                location='?'.join(('/login', urlencode(params, True)))
+                location=environ['SCRIPT_NAME'] + '?'.join(('/login', urlencode(params, True)))
             )
 
         return login

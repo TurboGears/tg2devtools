@@ -2,15 +2,19 @@ import os
 import shutil
 import subprocess
 import sys
-from nose.tools import ok_
+import site
 import pkg_resources
+
+from nose.tools import ok_
 from webtest import TestApp
 from itertools import count
 from nose import SkipTest
 from virtualenv import create_environment
-import site
+from tg.util import Bunch
 
 from devtools.gearbox.quickstart import QuickstartCommand
+from gearbox.commands.setup_app import SetupAppCommand
+
 
 PY_VERSION = sys.version_info[:2]
 PY2 = sys.version_info[0] == 2
@@ -123,10 +127,18 @@ class BaseTestQuickStart(object):
 
     def setUp(self):
         os.chdir(self.proj_dir)
-
         from paste.deploy import loadapp
         self.app = loadapp('config:test.ini', relative_to=self.proj_dir)
         self.app = TestApp(self.app)
+
+    def init_database(self):
+        os.chdir(self.proj_dir)
+        cmd = SetupAppCommand(Bunch(options=Bunch(verbose_level=1)), Bunch())
+        try:
+            cmd.run(Bunch(config_file='config:test.ini', section_name=None))
+        except:
+            # DB already initialised, ignore it.
+            pass
 
     @classmethod
     def tearDownClass(cls):
@@ -166,7 +178,7 @@ class BaseTestQuickStart(object):
                 sys.path.remove(item)
         sys.path[:0] = new_sys_path
 
-        return  (os.path.join(cls.bin_dir, 'pip'),
+        return (os.path.join(cls.bin_dir, 'pip'),
                 os.path.join(cls.bin_dir, 'python'),
                 os.path.join(cls.bin_dir, 'activate'),
                 site_packages)
@@ -236,7 +248,35 @@ class CommonTestQuickStart(BaseTestQuickStart):
                     ok_(False, 'Did not skip %s' % must_skip)
 
 
-class TestDefaultQuickStart(CommonTestQuickStart):
+class CommonTestQuickStartWithAuth(CommonTestQuickStart):
+    def test_unauthenticated_admin_with_prefix(self):
+        resp1 = self.app.get('/prefix/admin/', extra_environ={'SCRIPT_NAME': '/prefix'}, status=302)
+        ok_(resp1.headers['Location'] == 'http://localhost/prefix/login?came_from=%2Fprefix%2Fadmin%2F',
+            resp1.headers['Location'])
+        resp2 = resp1.follow(extra_environ={'SCRIPT_NAME': '/prefix'})
+        ok_('/prefix/login_handler' in resp2, resp2)
+
+    def test_login_with_prefix(self):
+        self.init_database()
+        resp1 = self.app.post('/prefix/login_handler?came_from=%2Fprefix%2Fadmin%2F',
+                              params={'login': 'editor', 'password': 'editpass'},
+                              extra_environ={'SCRIPT_NAME': '/prefix'})
+        ok_(resp1.headers['Location'] == 'http://localhost/prefix/post_login?came_from=%2Fprefix%2Fadmin%2F',
+            resp1.headers['Location'])
+        resp2 = resp1.follow(extra_environ={'SCRIPT_NAME': '/prefix'})
+        ok_(resp2.headers['Location'] == 'http://localhost/prefix/admin/',
+            resp2.headers['Location'])
+
+    def test_login_failure_with_prefix(self):
+        self.init_database()
+        resp = self.app.post('/prefix/login_handler?came_from=%2Fprefix%2Fadmin%2F',
+                             params={'login': 'WRONG', 'password': 'WRONG'},
+                             extra_environ={'SCRIPT_NAME': '/prefix'})
+        ok_(resp.headers['Location'] == 'http://localhost/prefix/login?failure=user-not-found&came_from=%2Fprefix%2Fadmin%2F',
+            resp.headers['Location'])
+
+
+class TestDefaultQuickStart(CommonTestQuickStartWithAuth):
     args = ''
 
     @classmethod
@@ -342,7 +382,7 @@ class TestNoAuthQuickStart(CommonTestQuickStart):
         self.app.get('/admin', status=404)
 
 
-class TestMingBQuickStart(CommonTestQuickStart):
+class TestMingBQuickStart(CommonTestQuickStartWithAuth):
 
     args = '--ming'
     # preinstall = ['Paste', 'PasteScript']  # Ming doesn't require those anymore
