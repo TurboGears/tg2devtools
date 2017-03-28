@@ -8,7 +8,8 @@ test_requirements = [
     'virtualenv == 1.10',
     'kajiki',
     'genshi',
-    'jinja2'
+    'jinja2',
+    'mako'
 ]
 
 install_requirements = [
