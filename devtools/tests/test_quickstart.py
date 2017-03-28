@@ -22,6 +22,7 @@ PROJECT_NAME = 'TGTest-%02d'
 ENV_NAME = 'TESTENV'
 CLEANUP = True
 COUNTER = count()
+QUIET = '-q'  # Set this to -v to enable installed packages logging, or to -q to disable it
 
 
 def get_passed_and_failed(env_cmd, python_cmd, testpath):
@@ -79,31 +80,27 @@ class BaseTestQuickStart(object):
 
         # Reinstall gearbox to force it being installed inside the
         # virtualenv using supported PBR version
-        subprocess.call([cls.pip_cmd, '-q', 'install', '-U', 'setuptools'])
-        subprocess.call([cls.pip_cmd, '-q', 'install', '--pre', '-I', 'gearbox'])
+        subprocess.call([cls.pip_cmd, QUIET, 'install', '-U', 'setuptools==18.0.1'])
+        subprocess.call([cls.pip_cmd, QUIET, 'install', '--pre', '-I', 'gearbox'])
         for p in cls.preinstall:
-            subprocess.call([cls.pip_cmd, '-q', 'install', '--pre', '-I', p])
+            subprocess.call([cls.pip_cmd, QUIET, 'install', '--pre', '-I', p])
 
         # Install TurboGears from development branch to test future compatibility
-        subprocess.call([cls.pip_cmd, '-q', 'install', '-I', 'git+git://github.com/TurboGears/crank.git'])
-        subprocess.call([cls.pip_cmd, '-q', 'install', '-I', 'git+git://github.com/TurboGears/backlash.git'])
-        subprocess.call([cls.pip_cmd, '-q', 'install', '-I', 'git+git://github.com/TurboGears/tgext.debugbar.git'])
-        subprocess.call([cls.pip_cmd, '-q', 'install', '-I', 'git+git://github.com/TurboGears/tg2.git@development'])
+        subprocess.call([cls.pip_cmd, QUIET, 'install', '-I', 'git+git://github.com/TurboGears/crank.git'])
+        subprocess.call([cls.pip_cmd, QUIET, 'install', '-I', 'git+git://github.com/TurboGears/backlash.git'])
+        subprocess.call([cls.pip_cmd, QUIET, 'install', '-I', 'git+git://github.com/TurboGears/tgext.debugbar.git'])
+        subprocess.call([cls.pip_cmd, QUIET, 'install', '-I', 'git+git://github.com/TurboGears/tg2.git@development'])
 
         # Install tg.devtools inside the virtualenv
-        subprocess.call([cls.pip_cmd, '-q', 'install', '--pre', '-e', cls.base_dir])
+        subprocess.call([cls.pip_cmd, QUIET, 'install', '--pre', '-e', cls.base_dir])
 
         # Install All Template Engines inside the virtualenv so that
         # They all get configured as we share a single python process
         # for all configurations.
-        if PY_VERSION == (3, 2):
-            jinja_version = 'Jinja2 < 2.7'
-        else:
-            jinja_version = 'Jinja2'
-        subprocess.call([cls.pip_cmd, '-q', 'install', '--pre', jinja_version])
-        subprocess.call([cls.pip_cmd, '-q', 'install', '--pre', 'Genshi'])
-        subprocess.call([cls.pip_cmd, '-q', 'install', '--pre', 'mako'])
-        subprocess.call([cls.pip_cmd, '-q', 'install', '--pre', 'kajiki'])
+        subprocess.call([cls.pip_cmd, QUIET, 'install', '--upgrade', '--no-deps', '--force-reinstall', '--pre', 'Jinja2'])
+        subprocess.call([cls.pip_cmd, QUIET, 'install', '--upgrade', '--no-deps', '--force-reinstall', '--pre', 'Genshi'])
+        subprocess.call([cls.pip_cmd, QUIET, 'install', '--upgrade', '--no-deps', '--force-reinstall', '--pre', 'mako'])
+        subprocess.call([cls.pip_cmd, QUIET, 'install', '--upgrade', '--no-deps', '--force-reinstall', '--pre', 'kajiki'])
 
         # This is to avoid the TGTest package to be detected as
         # being already installed.
@@ -115,7 +112,7 @@ class BaseTestQuickStart(object):
         cls.command.run(opts)
 
         # Install quickstarted project dependencies
-        subprocess.call([cls.pip_cmd, '-q', 'install', '--pre', '-e', cls.proj_dir])
+        subprocess.call([cls.pip_cmd, QUIET, 'install', '--pre', '-e', cls.proj_dir])
 
         # Mark the packages as installed even outside the virtualenv
         # so we can load app in tests which are not executed inside

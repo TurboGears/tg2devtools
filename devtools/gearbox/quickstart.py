@@ -211,8 +211,11 @@ class QuickstartCommand(Command):
 
         os.chdir(opts.name)
 
-        sys.argv = ['setup.py', 'egg_info']
-        imp.load_module('setup', *imp.find_module('setup', ['.']))
+        try:
+            sys.argv = ['setup.py', 'egg_info']
+            imp.load_module('setup', *imp.find_module('setup', ['.']))
+        except:
+            print('Unable to run egg_info for newly created package! Continuing anyway...')
 
         print("")
 

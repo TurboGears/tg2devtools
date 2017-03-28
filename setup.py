@@ -6,6 +6,9 @@ import sys, os
 test_requirements = [
     'nose',
     'virtualenv == 1.10',
+    'kajiki',
+    'genshi',
+    'jinja2'
 ]
 
 install_requirements = [
