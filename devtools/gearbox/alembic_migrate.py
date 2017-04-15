@@ -50,6 +50,10 @@ Downgrade version::
             help='application config file to read (default: development.ini)',
             dest='config', default="development.ini")
 
+        parser.add_argument("-l", "--location",
+            help='migrations location, the directory containing the migrations (default: migration)',
+            dest='location', default='migration')
+
         subparser = parser.add_subparsers(dest='command')
 
         create_parser = subparser.add_parser('create', add_help=False)
@@ -76,7 +80,7 @@ Downgrade version::
 
         self.alembic_commands = alembic_commands
         self.alembic_cfg = Config(opts.config, ini_section='app:main')
-        self.alembic_cfg.set_main_option('script_location', 'migration')
+        self.alembic_cfg.set_main_option('script_location', opts.location)
 
         command = getattr(self, 'command_%s' % opts.command)
         command(opts)
