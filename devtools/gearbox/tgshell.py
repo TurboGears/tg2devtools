@@ -130,7 +130,7 @@ class ShellCommand(Command):
                 shell = IPShellEmbed()
                 shell.set_banner(shell.IP.BANNER + '\n\n' + banner)
 
-            shell(local_ns=locs, global_ns={})
+            shell(local_ns=locs)
         except ImportError:
             import code
             py_prefix = sys.platform.startswith('java') and 'J' or 'P'
