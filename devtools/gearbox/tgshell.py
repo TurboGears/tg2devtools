@@ -117,8 +117,12 @@ class ShellCommand(Command):
 
             # try to use IPython if possible
             try:
-                # ipython >= 0.11
-                from IPython.frontend.terminal.embed import InteractiveShellEmbed
+                try:
+                    # ipython >= 1.0
+                    from IPython.terminal.embed import InteractiveShellEmbed
+                except ImportError:
+                    # ipython >= 0.11
+                    from IPython.frontend.terminal.embed import InteractiveShellEmbed
                 shell = InteractiveShellEmbed(banner2=banner)
             except ImportError:
                 # ipython < 0.11
