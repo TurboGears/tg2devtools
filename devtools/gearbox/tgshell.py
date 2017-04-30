@@ -123,7 +123,7 @@ class ShellCommand(Command):
                 except ImportError:
                     # ipython >= 0.11
                     from IPython.frontend.terminal.embed import InteractiveShellEmbed
-                shell = InteractiveShellEmbed(banner2=banner)
+                shell = InteractiveShellEmbed.instance(banner2=banner)
             except ImportError:
                 # ipython < 0.11
                 from IPython.Shell import IPShellEmbed
