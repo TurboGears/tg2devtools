@@ -13,7 +13,7 @@ test_requirements = [
 ]
 
 install_requirements = [
-    'TurboGears2 >= 2.3.10',
+    'TurboGears2 >= 2.3.11',
     'gearbox >= 0.1.1',
     'backlash >= 0.0.7',
     'WebTest<2.0',
