@@ -29,9 +29,9 @@
         <div class="collapse navbar-collapse" id="navbar-content">
           <ul class="nav navbar-nav">
             <li class="{% if page == 'index' %}active{% endif %}"><a href="{{ tg.url('/') }}">Welcome</a></li>
-            <li><a href="{{ tg.url('/about') }}" class="{% if page == 'about' %}active{% endif %}">About</a></li>
-            <li><a href="{{ tg.url('/data') }}" class="{% if page == 'data' %}active{% endif %}">Serving Data</a></li>
-            <li><a href="{{ tg.url('/environ') }}" class="{% if page == 'environ' %}active{% endif %}">WSGI Environment</a></li>
+            <li class="{% if page == 'about' %}active{% endif %}"><a href="{{ tg.url('/about') }}">About</a></li>
+            <li class="{% if page == 'data' %}active{% endif %}"><a href="{{ tg.url('/data') }}">Serving Data</a></li>
+            <li class="{% if page == 'environ' %}active{% endif %}"><a href="{{ tg.url('/environ') }}">WSGI Environment</a></li>
           </ul>
 
         {% if tg.auth_stack_enabled %}
