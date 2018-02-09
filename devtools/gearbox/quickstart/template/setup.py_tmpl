@@ -34,7 +34,7 @@ testpkgs = [
 ]
 
 install_requires = [
-    "TurboGears2 >= 2.3.11",
+    "TurboGears2 >= 2.4.0",
     "Beaker >= 1.8.0",
     {{if kajiki}}
     "Kajiki >= 0.6.3",
@@ -116,7 +116,7 @@ setup(
     ]},
     entry_points={
         'paste.app_factory': [
-            'main = {{package}}.config.middleware:make_app'
+            'main = {{package}}.config.application:make_app'
         ],
         'gearbox.plugins': [
             'turbogears-devtools = tg.devtools'

@@ -3,7 +3,7 @@
 
 import logging
 
-from {{package}}.config.environment import load_environment
+from {{package}}.config.app_cfg import base_config
 
 __all__ = ['setup_app']
 
@@ -15,6 +15,8 @@ from .bootstrap import bootstrap
 
 def setup_app(command, conf, vars):
     """Place any commands to setup {{package}} here"""
-    load_environment(conf.global_conf, conf.local_conf)
+    conf = base_config.configure(conf.global_conf, conf.local_conf)
+    base_config.setup(conf)
+
     setup_schema(command, conf, vars)
     bootstrap(command, conf, vars)
