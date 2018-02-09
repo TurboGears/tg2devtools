@@ -194,8 +194,7 @@ class QuickstartCommand(Command):
                 [struct.pack('i', random.randrange(2 ** 31))
                     for _n in range(6)])).strip()
 
-        devtools_path = os.path.dirname(os.path.os.path.abspath(
-            os.path.dirname(__file__)))
+        quickstart_path = os.path.os.path.abspath(os.path.dirname(__file__))
 
         # Workaround for templates ported from Paste
         # which check for 'True' instead of True
@@ -206,7 +205,7 @@ class QuickstartCommand(Command):
 
         template_vars['PY3'] = PY3
         template_vars['PYVERSION'] = PYVERSION
-        QuickstartTemplate().run(os.path.join(devtools_path, 'templates', 'turbogears'),
+        QuickstartTemplate().run(os.path.join(quickstart_path, 'template'),
                                  opts.name, template_vars)
 
         os.chdir(opts.name)
@@ -232,7 +231,7 @@ class QuickstartCommand(Command):
                     template_type, os.path.join(opts.package, 'templates')
                 ))
                 # replace template files with alternative ones
-                alt_template_dir = os.path.join(devtools_path, 'commands',
+                alt_template_dir = os.path.join(quickstart_path, 'patches',
                                                 'quickstart_%s' % template_type)
                 shutil.rmtree(package_template_dir)
                 shutil.copytree(alt_template_dir, package_template_dir)
@@ -250,7 +249,7 @@ class QuickstartCommand(Command):
             # Provide Kajiki as a lingua franca for pluggable apps.
             print('Adding Kajiki master for pluggable apps')
             package_template_dir = os.path.abspath(os.path.join(opts.package, 'templates'))
-            alt_template_dir = os.path.join(devtools_path, 'commands', 'quickstart_kajiki')
+            alt_template_dir = os.path.join(quickstart_path, 'patches', 'quickstart_kajiki')
             shutil.copy(os.path.join(alt_template_dir, 'master.xhtml'),
                         package_template_dir)
 
@@ -268,8 +267,7 @@ class QuickstartCommand(Command):
             print('Writing Ming model files to ./%s' % os.path.join(
                 opts.package, 'model'))
             package_model_dir = os.path.abspath(os.path.join(opts.package, 'model'))
-            ming_model_dir = os.path.join(devtools_path,
-                'commands', 'model_ming')
+            ming_model_dir = os.path.join(quickstart_path, 'patches', 'model_ming')
             shutil.copy(os.path.join(ming_model_dir, 'session.py'),
                 package_model_dir)
 
