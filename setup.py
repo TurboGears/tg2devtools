@@ -27,7 +27,7 @@ setup(
     long_description="""""",
     classifiers=[],
     keywords='turbogears',
-    author="TurboGears Team 2008-2015",
+    author="TurboGears Team 2008-2018",
     author_email="turbogears@groups.google.com",
     url="http://www.turbogears.org",
     license="MIT",
