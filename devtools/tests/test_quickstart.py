@@ -89,7 +89,7 @@ class BaseTestQuickStart(object):
         subprocess.call([cls.pip_cmd, QUIET, 'install', '-I', 'git+git://github.com/TurboGears/crank.git'])
         subprocess.call([cls.pip_cmd, QUIET, 'install', '-I', 'git+git://github.com/TurboGears/backlash.git'])
         subprocess.call([cls.pip_cmd, QUIET, 'install', '-I', 'git+git://github.com/TurboGears/tgext.debugbar.git'])
-        subprocess.call([cls.pip_cmd, QUIET, 'install', '-I', 'git+git://github.com/TurboGears/tg2.git@next'])
+        subprocess.call([cls.pip_cmd, QUIET, 'install', '-I', 'git+git://github.com/TurboGears/tg2.git@master'])
 
         # Install tg.devtools inside the virtualenv
         subprocess.call([cls.pip_cmd, QUIET, 'install', '--pre', '-e', cls.base_dir])
