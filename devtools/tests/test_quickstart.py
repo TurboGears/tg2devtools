@@ -34,7 +34,8 @@ def get_passed_and_failed(env_cmd, python_cmd, testpath):
             shell=True).communicate()[1]
     passed, failed = [], []
     test = None
-    for line in out.splitlines():
+    lines = out.splitlines()
+    for line in lines:
         line = line.decode('utf-8').split(' ... ', 1)
         if line[0].startswith('tgtest'):
             test = line[0]
@@ -45,7 +46,7 @@ def get_passed_and_failed(env_cmd, python_cmd, testpath):
             elif line[1] in ('ERROR', 'FAIL'):
                 failed.append(test)
                 test = None
-    return passed, failed
+    return passed, failed, lines
 
 
 class BaseTestQuickStart(object):
@@ -81,6 +82,7 @@ class BaseTestQuickStart(object):
         # Reinstall gearbox to force it being installed inside the
         # virtualenv using supported PBR version
         subprocess.call([cls.pip_cmd, QUIET, 'install', '-U', 'setuptools==18.0.1'])
+        subprocess.call([cls.pip_cmd, QUIET, 'install', '-U', 'pip'])
         subprocess.call([cls.pip_cmd, QUIET, 'install', '--pre', '-I', 'gearbox'])
         for p in cls.preinstall:
             subprocess.call([cls.pip_cmd, QUIET, 'install', '--pre', '-I', p])
@@ -217,20 +219,22 @@ class CommonTestQuickStart(BaseTestQuickStart):
             in self.app.get('/admin/', status=302).follow())
 
     def test_subtests(self):
-        passed, failed = get_passed_and_failed(self.env_cmd, self.python_cmd, os.path.join(self.proj_dir))
+        passed, failed, lines = get_passed_and_failed(self.env_cmd,
+                                                      self.python_cmd,
+                                                      os.path.join(self.proj_dir))
         for has_failed in failed:
             for must_fail in self.fail_tests:
                 if must_fail in has_failed:
                     break
             else:
-                ok_(False, 'Failed %s' % has_failed)
+                ok_(False, 'Failed %s\n\n%s' % (has_failed, lines))
         for must_pass in self.pass_tests:
             for has_passed in passed:
                 if must_pass in has_passed:
                     break
             else:
                 print("Passed:\n" + '\n'.join(passed))
-                ok_(False, 'Did not pass %s' % must_pass)
+                ok_(False, 'Did not pass %s\n\n%s' % (must_pass, lines))
         for must_fail in self.fail_tests:
             for has_failed in failed:
                 if must_fail in has_failed:
