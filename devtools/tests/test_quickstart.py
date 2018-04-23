@@ -84,6 +84,15 @@ class BaseTestQuickStart(object):
         subprocess.call([cls.pip_cmd, QUIET, 'install', '-U', 'setuptools==18.0.1'])
         subprocess.call([cls.pip_cmd, QUIET, 'install', '-U', 'pip'])
         subprocess.call([cls.pip_cmd, QUIET, 'install', '--pre', '-I', 'gearbox'])
+
+        # Dependencies required to run tests of a TGApp, as
+        # we run them with python setup.py test that is unable
+        # download dependencies on systems without TLS1.2 support.
+        subprocess.call([cls.pip_cmd, QUIET, 'install', '--pre', '-I', 'coverage'])
+        subprocess.call([cls.pip_cmd, QUIET, 'install', '--pre', '-I', 'nose'])
+        subprocess.call([cls.pip_cmd, QUIET, 'install', '--pre', '-I', 'webtest'])
+
+        # Then install specific requirements
         for p in cls.preinstall:
             subprocess.call([cls.pip_cmd, QUIET, 'install', '--pre', '-I', p])
 
@@ -91,6 +100,8 @@ class BaseTestQuickStart(object):
         subprocess.call([cls.pip_cmd, QUIET, 'install', '-I', 'git+git://github.com/TurboGears/crank.git'])
         subprocess.call([cls.pip_cmd, QUIET, 'install', '-I', 'git+git://github.com/TurboGears/backlash.git'])
         subprocess.call([cls.pip_cmd, QUIET, 'install', '-I', 'git+git://github.com/TurboGears/tgext.debugbar.git'])
+        # Ensure new TG is installed.
+        subprocess.call([cls.pip_cmd, 'uninstall', '-y', 'TurboGears2'])
         subprocess.call([cls.pip_cmd, QUIET, 'install', '-I', 'git+git://github.com/TurboGears/tg2.git@development'])
 
         # Install tg.devtools inside the virtualenv
