@@ -96,13 +96,14 @@ class BaseTestQuickStart(object):
         for p in cls.preinstall:
             subprocess.call([cls.pip_cmd, QUIET, 'install', '--pre', '-I', p])
 
-        # Install TurboGears from development branch to test future compatibility
-        subprocess.call([cls.pip_cmd, 'uninstall', '-y', 'TurboGears2'])
-        subprocess.call([cls.pip_cmd, 'uninstall', '-y', 'WebOb'])
-        subprocess.call([cls.pip_cmd, 'install', '--pre', '-I', 'git+git://github.com/TurboGears/tg2.git@development'])
         subprocess.call([cls.pip_cmd, QUIET, 'install', '-I', 'git+git://github.com/TurboGears/crank.git'])
         subprocess.call([cls.pip_cmd, QUIET, 'install', '-I', 'git+git://github.com/TurboGears/backlash.git'])
         subprocess.call([cls.pip_cmd, QUIET, 'install', '-I', 'git+git://github.com/TurboGears/tgext.debugbar.git'])
+
+        # Install TurboGears from development branch to test future compatibility
+        cls.venv_uninstall('WebOb')
+        cls.venv_uninstall('TurboGears2')
+        subprocess.call([cls.pip_cmd, QUIET, 'install', '--pre', '-I', 'git+git://github.com/TurboGears/tg2.git@development'])
 
         # Install tg.devtools inside the virtualenv
         subprocess.call([cls.pip_cmd, QUIET, 'install', '--pre', '-e', cls.base_dir])
@@ -203,6 +204,14 @@ class BaseTestQuickStart(object):
             sys.real_prefix = cls.past_real_prefix
         else:
             delattr(sys, 'real_prefix')
+
+    @classmethod
+    def venv_uninstall(cls, package):
+        # Do it 5 times to ensure it was uninstalled for real.
+        # Due to the -I used in other commands,
+        # multiple versions of the same package might be installed concurrently.
+        for i in range(5):
+            subprocess.call([cls.pip_cmd, 'uninstall', '-y', package])
 
 
 class CommonTestQuickStart(BaseTestQuickStart):
