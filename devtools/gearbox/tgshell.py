@@ -1,10 +1,10 @@
 from __future__ import print_function
 
-import os, sys, tg
+import os, sys
+import tg
 
 from gearbox.command import Command
 from paste.deploy import loadapp
-from webtest import TestApp
 
 
 class ShellCommand(Command):
@@ -53,10 +53,10 @@ class ShellCommand(Command):
 
         # Load the wsgi app first so that everything is initialized right
         wsgiapp = loadapp(config_name, relative_to=here_dir)
-        test_app = TestApp(wsgiapp)
 
         # Make available the tg.request and other global variables
-        tresponse = test_app.get('/_test_vars')
+        req = tg.Request.blank('/_test_vars', environ={'paste.testing_variables': {}})
+        tresponse = req.send(wsgiapp)
 
         pkg_name = tg.config['package_name']
 
@@ -83,11 +83,14 @@ class ShellCommand(Command):
         base_public = [__name for __name in dir(base) if not\
                                                          __name.startswith('_') or __name == '_']
         locs.update((name, getattr(base, name)) for name in base_public)
-        locs.update(dict(wsgiapp=wsgiapp, app=test_app))
-
-        mapper = tresponse.config.get('routes.map')
-        if mapper:
-            locs['mapper'] = mapper
+        locs.update(dict(wsgiapp=wsgiapp))
+        try:
+            from webtest import TestApp
+        except ImportError:
+            pass
+        else:
+            # As WebTest is available, provide the webtest wrapped app.
+            locs.update(dict(app=TestApp(wsgiapp)))
 
         if opts.script:
             self._run_script(opts.script, locs)
@@ -108,8 +111,10 @@ class ShellCommand(Command):
         banner += "  Additional Objects:\n"
         banner += "  %-10s -  %s\n" % ('wsgiapp',
                                        "This project's WSGI App instance")
-        banner += "  %-10s -  %s\n" % ('app',
-                                       'WebTest.TestApp wrapped around wsgiapp')
+
+        if 'app' in locs:
+            banner += "  %-10s -  %s\n" % ('app',
+                                           'WebTest.TestApp wrapped around wsgiapp')
 
         try:
             if disable_ipython:
