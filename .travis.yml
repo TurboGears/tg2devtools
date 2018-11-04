@@ -14,6 +14,6 @@ install:
   - "travis_retry pip install git+git://github.com/TurboGears/crank.git"
   - "travis_retry pip install git+git://github.com/TurboGears/backlash.git"
   - "travis_retry pip install git+git://github.com/TurboGears/tg2.git@development"
-  - "pip install -e ."
+  - "pip install -e .[testing]"
 
 script: "python setup.py nosetests"

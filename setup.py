@@ -51,4 +51,7 @@ setup(
     },
     test_suite='nose.collector',
     tests_require = test_requirements,
+    extras_require={
+        'testing': test_requirements,
+    },
 )
