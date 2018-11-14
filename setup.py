@@ -18,9 +18,6 @@ install_requirements = [
     'gearbox >= 0.1.1',
     'backlash >= 0.0.7',
     'tgext.debugbar',
-
-    # Add at both begin and end to ensure it's first dependency installed.
-    'TurboGears2 >= 2.4.0a1',
 ]
 
 setup(
