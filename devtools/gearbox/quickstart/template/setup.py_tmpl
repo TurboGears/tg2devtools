@@ -93,6 +93,9 @@ setup(
     include_package_data=True,
     test_suite='nose.collector',
     tests_require=testpkgs,
+    extras_require={
+        'testing': testpkgs
+    },
     package_data={'{{package}}': [
         'i18n/*/LC_MESSAGES/*.mo',
         'templates/*/*',
