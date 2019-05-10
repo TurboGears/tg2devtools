@@ -1,12 +1,12 @@
 <%inherit file="local:templates.master"/>
 
 <%def name="title()">
-  Welcome to TurboGears 2.3, standing on the shoulders of giants, since 2007
+  Welcome to TurboGears 2.4, standing on the shoulders of giants, since 2007
 </%def>
   <div class="row">
     <div class="col-md-8">
       <div class="jumbotron">
-        <h1>Welcome to TurboGears 2.3</h1>
+        <h1>Welcome to TurboGears 2.4</h1>
         <p>If you see this page it means your installation was successful!</p>
         <p>TurboGears 2 is rapid web application development toolkit designed to make your life easier.</p>
         <p>
