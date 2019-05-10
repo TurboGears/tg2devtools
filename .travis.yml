@@ -9,7 +9,7 @@ branches:
     - master
 
 install:
-  - "pip install --upgrade setuptools==18.0.1"
+  - "pip install setuptools==18.0.1"
   - "pip install nose"
   - "travis_retry pip install git+git://github.com/TurboGears/crank.git"
   - "travis_retry pip install git+git://github.com/TurboGears/backlash.git"
