@@ -33,6 +33,6 @@ class ErrorController(BaseController):
                        " this request.")
 
         values = dict(prefix=request.environ.get('SCRIPT_NAME', ''),
-                      code=request.params.get('code', resp.status_int),
+                      code=request.params.get('code', resp.status_int if resp else 400),
                       message=request.params.get('message', message))
         return values
