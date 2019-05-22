@@ -17,6 +17,6 @@ mf = re.compile(r'(</?)script', re.IGNORECASE)
 def fixmessage(message):
     return mf.sub(r'\1noscript', message)
 ?>
-  <div>${Markup(fixmessage(message))}</div>
+  <div><p>${Markup(fixmessage(message))}</p></div>
 </body>
 </html>
