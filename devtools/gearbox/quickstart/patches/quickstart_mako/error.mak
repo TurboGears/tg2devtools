@@ -17,6 +17,6 @@ def fixmessage(message):
     return mf.sub(r'\1noscript', message)
 %>
 
-<div>${fixmessage(message) | n}</div>
+<div><p>${fixmessage(message) | n}</p></div>
 </body>
 </html>

@@ -29,8 +29,8 @@ class ErrorController(BaseController):
             message = None
 
         if not message:
-            message = ("<p>We're sorry but we weren't able to process "
-                       " this request.</p>")
+            message = ("We're sorry but we weren't able to process "
+                       " this request.")
 
         values = dict(prefix=request.environ.get('SCRIPT_NAME', ''),
                       code=request.params.get('code', resp.status_int),
