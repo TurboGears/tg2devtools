@@ -34,7 +34,7 @@ testpkgs = [
 ]
 
 install_requires = [
-    "TurboGears2 >= 2.4.0a1",
+    "TurboGears2 >= 2.4.0",
     "Beaker >= 1.8.0",
     {{if kajiki}}
     "Kajiki >= 0.6.3",
@@ -93,6 +93,9 @@ setup(
     include_package_data=True,
     test_suite='nose.collector',
     tests_require=testpkgs,
+    extras_require={
+        'testing': testpkgs
+    },
     package_data={'{{package}}': [
         'i18n/*/LC_MESSAGES/*.mo',
         'templates/*/*',
