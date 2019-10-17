@@ -46,7 +46,7 @@ install_requires = [
     "Mako",
     {{endif}}
     {{if sqlalchemy}}
-    "zope.sqlalchemy >= 0.4",
+    "zope.sqlalchemy >= 1.2",
     "sqlalchemy",
     {{endif}}
     {{if sqlalchemy and migrations}}
