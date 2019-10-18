@@ -4,10 +4,6 @@ python:
   - "3.4"
   - "3.5"
 
-branches:
-  except:
-    - master
-
 install:
   - "pip install --upgrade setuptools"
   - "pip install nose"
