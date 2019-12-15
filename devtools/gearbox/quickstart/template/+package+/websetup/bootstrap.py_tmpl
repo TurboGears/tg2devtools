@@ -15,6 +15,7 @@ def bootstrap(command, conf, vars):
     {{if auth == "sqlalchemy"}}
     from sqlalchemy.exc import IntegrityError
     try:
+        transaction.begin()
         u = model.User()
         u.user_name = 'manager'
         u.display_name = 'Example manager'
