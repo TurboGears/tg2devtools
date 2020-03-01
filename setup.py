@@ -14,7 +14,7 @@ test_requirements = [
 ]
 
 install_requirements = [
-    'TurboGears2 >= 2.4.1',
+    'TurboGears2 >= 2.4.3',
     'gearbox >= 0.1.1',
     'backlash >= 0.0.7',
     'tgext.debugbar',
@@ -22,7 +22,7 @@ install_requirements = [
 
 setup(
     name='tg.devtools',
-    version="2.4.2",
+    version="2.4.3",
     description="",
     long_description="""""",
     classifiers=[],
