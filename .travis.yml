@@ -1,8 +1,11 @@
 language: python
+dist: xenial
 python:
   - "2.7"
-  - "3.4"
   - "3.5"
+  - "3.6"
+  - "3.7"
+  - "3.8"
 
 install:
   - "pip install --upgrade setuptools"
@@ -12,4 +15,4 @@ install:
   - "travis_retry pip install git+git://github.com/TurboGears/tg2.git@development"
   - "pip install -e .[testing]"
 
-script: "python setup.py nosetests"
+script: "nosetests -v"
