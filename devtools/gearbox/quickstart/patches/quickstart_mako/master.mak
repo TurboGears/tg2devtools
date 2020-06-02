@@ -13,7 +13,7 @@
     ${self.content_wrapper()}
   </div>
     ${self.footer()}
-  <script src="http://code.jquery.com/jquery.js"></script>
+  <script src="//code.jquery.com/jquery.js"></script>
   <script src="${tg.url('/javascript/bootstrap.min.js')}"></script>
 </body>
 
