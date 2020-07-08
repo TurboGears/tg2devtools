@@ -1,0 +1,73 @@
+syntax: glob
+
+# Turbogears files
+devdata.db
+
+# tgext.webassets (if plugged)
+.webassets-cache
+assets/
+
+# depot (if udes)
+{{project}}/depot
+
+# python files
+__pycache__/
+*.egg-info/
+*.pyc
+*.pyo
+*.pyd
+.env
+.venv
+env/
+venv/
+
+# tests
+.coverage
+.coverage.*
+coverage.xml
+cover/
+htmlcov/
+.pytest_cache/
+.tox/
+geckodriver.log
+
+
+# i18n Translations
+*.mo
+*.pot
+
+
+### editors, ide
+
+# emacs files
+\#*\#
+.\#*
+
+# intellij
+.idea
+
+# vscode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+.history/
+
+
+### other tools
+
+# vagrant files
+.vagrant/
+*.log
+
+# ansible files
+*.retry
+
+# type checkers
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
