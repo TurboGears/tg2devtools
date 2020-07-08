@@ -1,9 +1,13 @@
+[flake8]
+max-line-length = 120
+
 [nosetests]
 verbosity = 2
 detailed-errors = 1
 with-coverage = false
 cover-erase = true
 cover-package = {{package}}
+cover-min-percentage=100
 
 # Babel configuration
 [compile_catalog]
