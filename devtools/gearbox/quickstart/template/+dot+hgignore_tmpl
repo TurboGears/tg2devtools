@@ -7,7 +7,7 @@ devdata.db
 .webassets-cache
 assets/
 
-# depot (if udes)
+# depot (if used)
 {{project}}/depot
 
 # python files
@@ -42,6 +42,9 @@ geckodriver.log
 # emacs files
 \#*\#
 .\#*
+*_flymake.*
+flycheck_*.el
+.dir-locals.el
 
 # intellij
 .idea
