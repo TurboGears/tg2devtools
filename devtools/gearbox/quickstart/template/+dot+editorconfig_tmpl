@@ -1,0 +1,21 @@
+# https://editorconfig.org/
+# EditorConfig helps maintain consistent coding styles for multiple developers working on the same project across various editors and IDEs.
+
+root = true
+
+[*]
+end_of_line = lf
+insert_final_newline = true
+charset = utf-8
+
+[*.py]
+indent_style = space
+trim_trailing_whitespace = true
+indent_size = 4
+
+[*.{js,xhtml,html,mako,mak,j2,jinja2,jinja,json,yml}]
+indent_style = space
+indent_size = 2
+
+[*.{js,json,yml}]
+trim_trailing_whitespace = true
