@@ -4,6 +4,7 @@ detailed-errors = 1
 with-coverage = false
 cover-erase = true
 cover-package = {{package}}
+#cover-min-percentage=100
 
 # Babel configuration
 [compile_catalog]
