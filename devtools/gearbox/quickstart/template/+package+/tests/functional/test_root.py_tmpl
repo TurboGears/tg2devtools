@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Functional test suite for the root controller.
 
@@ -10,68 +9,73 @@ functional tests exercise the whole application and its WSGI stack.
 Please read https://webtest.readthedocs.io/ for more information.
 
 """
-
-from nose.tools import ok_
-
-from {{package}}.tests import TestController
+import pytest
 
 
-class TestRootController(TestController):
-    """Tests for the method in the root controller."""
+def test_index(app):
+    """The front page is working properly"""
+    response = app.get('/')
+    msg = 'TurboGears 2 is rapid web application development toolkit '\
+        'designed to make your life easier.'
+    # You can look for specific strings:
+    assert msg in response
 
-    def test_index(self):
-        """The front page is working properly"""
-        response = self.app.get('/')
-        msg = 'TurboGears 2 is rapid web application development toolkit '\
-              'designed to make your life easier.'
-        # You can look for specific strings:
-        ok_(msg in response)
+    # You can also access a BeautifulSoup'ed response in your tests
+    # (First run $ pip install BeautifulSoup
+    # and then uncomment the next two lines)
 
-        # You can also access a BeautifulSoup'ed response in your tests
-        # (First run $ easy_install BeautifulSoup
-        # and then uncomment the next two lines)
+    # links = response.html.findAll('a')
+    # print(links)
+    # ok_(links, "Mummy, there are no links here!")
+    # ## otherwise give pyquery a try
 
-        # links = response.html.findAll('a')
-        # print(links)
-        # ok_(links, "Mummy, there are no links here!")
 
 {{if not minimal_quickstart}}
-    def test_environ(self):
-        """Displaying the wsgi environ works"""
-        response = self.app.get('/environ.html')
-        ok_('The keys in the environment are:' in response)
+def test_environ(app):
+    """Displaying the wsgi environ works"""
+    response = app.get('/environ.html')
+    assert 'The keys in the environment are:' in response.body.decode('utf-8')
 
-    def test_data(self):
-        """The data display demo works with HTML"""
-        response = self.app.get('/data.html?a=1&b=2')
-        response.mustcontain("<td>a", "<td>1",
-                             "<td>b", "<td>2")
 
-    def test_data_json(self):
-        """The data display demo works with JSON"""
-        resp = self.app.get('/data.json?a=1&b=2')
-        ok_(
-            dict(page='data', params={'a': '1', 'b': '2'}) == resp.json,
-            resp.json
-        )
+def test_data(app):
+    """The data display demo works with HTML"""
+    response = app.get('/data.html?a=1&b=2')
+    response.mustcontain("<td>a", "<td>1",
+                         "<td>b", "<td>2")
 
-{{if auth}}
-    def test_secc_with_manager(self):
-        """The manager can access the secure controller"""
-        # Note how authentication is forged:
-        environ = {'REMOTE_USER': 'manager'}
-        resp = self.app.get('/secc', extra_environ=environ, status=200)
-        ok_('Secure Controller here' in resp.text, resp.text)
 
-    def test_secc_with_editor(self):
-        """The editor cannot access the secure controller"""
-        environ = {'REMOTE_USER': 'editor'}
-        self.app.get('/secc', extra_environ=environ, status=403)
-        # It's enough to know that authorization was denied with a 403 status
+def test_data_json(app):
+    """The data display demo works with JSON"""
+    resp = app.get('/data.json?a=1&b=2')
+    assert dict(page='data', params={'a': '1', 'b': '2'}) == resp.json
 
-    def test_secc_with_anonymous(self):
-        """Anonymous users must not access the secure controller"""
-        self.app.get('/secc', status=401)
-        # It's enough to know that authorization was denied with a 401 status
+
+{{if auth == "sqlalchemy" or auth == "ming"}}
+@pytest.mark.parametrize('url,user,status', (
+    ('/secc', None, 401),
+    ('/secc', 'manager', 200),
+    ('/secc', 'editor', 403),
+    ('/secc/some_where', 'manager', 200),
+    ('/secc/some_where', 'editor', 403),
+))
+def test_secc_access(app, env, url, user, status):
+    app.get(url, extra_environ=env(user), status=status)
+
 {{endif}}
 {{endif}}
+
+{{if auth == "sqlalchemy" or auth == "ming"}}
+@pytest.mark.parametrize('url,user,status', (
+    {{if not minimal_quickstart}}('/about', None, 200),{{endif}}
+    ('/manage_permission_only', 'manager', 200),
+    ('/manage_permission_only', 'editor', 403),
+    ('/editor_user_only', 'manager', 403),
+    ('/editor_user_only', 'editor', 200),
+))
+def test_page_access(app, env, url, user, status):
+    app.get(url, extra_environ=env(user), status=status)
+{{endif}}
+
+def test_error_document_500(app):
+    resp = app.get('/error/document', expect_errors=True)
+    assert "We're sorry but we weren't able to process this request" in resp

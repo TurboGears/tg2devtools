@@ -1,62 +1,101 @@
-# -*- coding: utf-8 -*-
-"""Test suite for the TG app's models"""
-from __future__ import unicode_literals
-from nose.tools import eq_
-
+import pytest
 from {{package}} import model
-from {{package}}.tests.models import ModelTest
-
 
 
 {{if auth}}
-class TestGroup(ModelTest):
-    """Unit test case for the ``Group`` model."""
+default_user = (model.User, dict(
+    user_name="ignucius",
+    email_address="ignucius@example.org",
+))
 
-    klass = model.Group
-    attrs = dict(
-        group_name="test_group",
-        display_name="Test Group"
-    )
+default_permission = (model.Permission, dict(
+    permission_name="test_permission",
+    description="This is a test Description",
+))
 
-
-class TestUser(ModelTest):
-    """Unit test case for the ``User`` model."""
-
-    klass = model.User
-    attrs = dict(
-        user_name="ignucius",
-        email_address="ignucius@example.org"
-    )
-
-    def test_obj_creation_username(self):
-        """The obj constructor must set the user name right"""
-        eq_(self.obj.user_name, "ignucius")
-
-    def test_obj_creation_email(self):
-        """The obj constructor must set the email right"""
-        eq_(self.obj.email_address, "ignucius@example.org")
-
-    def test_no_permissions_by_default(self):
-        """User objects should have no permission by default."""
-        eq_(len(self.obj.permissions), 0)
-
-    def test_getting_by_email(self):
-        """Users should be fetcheable by their email addresses"""
-        him = model.User.by_email_address("ignucius@example.org")
-        {{if auth == "ming"}}
-        eq_(him._id, self.obj._id)
-        {{elif auth == "sqlalchemy"}}
-        eq_(him, self.obj)
-        {{endif}}
+default_group = (model.Group, dict(
+    group_name="test_group",
+    display_name="Test Group",
+))
 
 
-class TestPermission(ModelTest):
-    """Unit test case for the ``Permission`` model."""
+@pytest.mark.parametrize('klass, attrs', (
+    default_user,
+    default_permission,
+    default_group,
+))
+def test_create_obj(app, klass, attrs, obj):
+    """This test ensures auth objects can be created"""
+    obj = obj(klass, attrs)
+    assert isinstance(obj, klass)
+    for k, v in attrs.items():
+        if isinstance(v, (str, int, float, bool)):
+            assert v == obj.__getattribute__(k)
 
-    klass = model.Permission
-    attrs = dict(
-        permission_name="test_permission",
-        description="This is a test Description"
-    )
+@pytest.mark.parametrize('klass, attrs', (
+    default_user,
+    default_permission,
+    default_group,
+))
+def test_repr_and_str_obj(app, klass, attrs, obj):
+    obj = obj(klass, attrs)
+    {{if sqlalchemy}}
+    assert repr(obj).startswith('<%s: ' % klass.__name__)
+    {{elif ming}}
+    assert repr(obj).startswith('<%s ' % klass.__name__)
+    {{endif}}
+    assert str(obj)
 
+
+def test_query_user_by_mail(app, obj):
+    """tests by_email_address works properly"""
+    obj = obj(*default_user)
+    assert model.User.by_email_address("ignucius@example.org") == obj
+
+
+def test_query_user_by_username(app, obj):
+    """tests by_email_address works properly"""
+    obj = obj(*default_user)
+    assert model.User.by_user_name("ignucius") == obj
+
+
+def test_assert_no_permission_by_default(app, obj):
+    """User objects should have no permission by default."""
+    obj = obj(*default_user)
+    assert len(obj.permissions) == 0
+
+
+def test_assign_permission_to_user(app, obj):
+    """it should be possible to assign a permission to a user""" 
+    u = obj(*default_user)
+    p = obj(*default_permission)
+    g = obj(*default_group)
+    {{if sqlalchemy}}
+    g.permissions.append(p)
+    g.users.append(u)
+    {{elif ming}}
+    p.groups = [g]
+    u.groups = [g]
+    model.DBSession.save(p)
+    model.DBSession.save(g)
+    model.DBSession.save(u)
+    model.DBSession.flush()
+    u = model.DBSession.refresh(u)
+    {{endif}}
+    assert len(u.groups) == 1
+    assert len(u.permissions) == 1
 {{endif}}
+
+
+def test_bootstap_again(app, capsys, obj):
+    from {{package}}.websetup import bootstrap
+    u = obj(*default_user)
+    bootstrap(None, {}, {})
+    assert 'there was a problem adding your auth data' in capsys.readouterr().out
+    {{if sqlalchemy}}
+    # the user just created should be rolled back
+    assert model.User.by_email_address("ignucius@example.org") is None
+    {{elif ming}}
+    # the user should be there anyway
+    assert model.User.by_email_address("ignucius@example.org") is not None
+    {{endif}}

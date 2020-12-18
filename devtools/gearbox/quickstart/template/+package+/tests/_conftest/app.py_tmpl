@@ -1,0 +1,67 @@
+import pytest
+from webtest import TestApp as WebTestApp  # rename due to pytest warning
+from paste.deploy import loadapp, appconfig
+from tg import config
+from {{package}} import websetup
+{{if database}}from {{package}} import model{{endif}}
+from os import getcwd
+{{if sqlalchemy}}import transaction{{endif}}
+
+
+{{if database}}
+def teardown_db():
+    {{if sqlalchemy}}
+    model.DBSession.remove()
+    engine = config['tg.app_globals'].sa_engine
+    model.metadata.drop_all(engine)
+    transaction.abort()
+    {{elif ming}}
+    datastore = config['tg.app_globals'].ming_datastore
+    model.DBSession.clear()  # before dropping flush is performed
+    try:
+        # On MIM drop all data
+        datastore.conn.drop_all()
+    except TypeError:  # pragma: no cover
+        # On MongoDB drop database
+        datastore.conn.drop_database(datastore.db)
+    {{endif}}
+{{endif}}
+
+
+@pytest.fixture(scope='function')
+def _app():
+    """This fixture allows you to reconfigure the application configuration.
+    Also, you can omit setup_app command"""
+    def __app(name='main_without_authn', reconfig=None, setup_app=True):
+        paste_config = 'config:test.ini#%s' % name
+        app = WebTestApp(loadapp(
+            paste_config,
+            relative_to=getcwd(),
+            global_conf=reconfig or {},
+        ))
+        if setup_app:
+            _config = appconfig(paste_config, relative_to=getcwd(), global_conf=reconfig or {})
+            websetup.setup_app(None, _config, {})
+        return app
+    yield __app
+    {{if database}}teardown_db(){{endif}}
+
+
+@pytest.fixture(scope='function')
+def app(_app):
+    """This fixture is the default application"""
+    return _app()
+
+
+{{if auth}}
+@pytest.fixture()
+def env():
+    """this is just a shorthand intended to be passed to extra_environ in webtest calls,
+    remote_user got as parameter will go into REMOTE_USER key,
+    other kwarguments are included in the returned dictionary"""
+    def _environ(remote_user, **kwargs):
+        r = {'REMOTE_USER': remote_user} if remote_user else {}
+        r.update(kwargs)
+        return r
+    return _environ
+{{endif}}

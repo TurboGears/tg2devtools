@@ -74,7 +74,7 @@ class Group(DeclarativeBase):
     def __repr__(self):
         return '<Group: name=%s>' % repr(self.group_name)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.group_name
 
 
@@ -102,7 +102,7 @@ class User(DeclarativeBase):
             repr(self.display_name)
         )
 
-    def __unicode__(self):
+    def __str__(self):
         return self.display_name or self.user_name
 
     @property
@@ -110,7 +110,7 @@ class User(DeclarativeBase):
         """Return a set with all permissions granted to the user."""
         perms = set()
         for g in self.groups:
-            perms = perms | set(g.permissions)
+            perms.update(g.permissions)
         return perms
 
     @classmethod
@@ -192,7 +192,7 @@ class Permission(DeclarativeBase):
     def __repr__(self):
         return '<Permission: name=%s>' % repr(self.permission_name)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.permission_name
 
 {{elif auth == 'ming'}}
@@ -293,6 +293,11 @@ class User(MappedClass):
         return Permission.query.find(dict(_groups={'$in':self._groups})).all()
 
     @classmethod
+    def by_user_name(cls, user_name):
+        """Return the user object whose user name is ``user_name``."""
+        return cls.query.get(user_name=user_name)
+
+    @classmethod
     def by_email_address(cls, email):
         """Return the user object whose email address is ``email``."""
         return cls.query.get(email_address=email)
@@ -312,5 +317,8 @@ class User(MappedClass):
         hash = sha256()
         hash.update((password + self.password[:64]).encode('utf-8'))
         return self.password[64:] == hash.hexdigest()
+
+    def __eq__(self, other):
+    	return self._id == other._id
 
 {{endif}}

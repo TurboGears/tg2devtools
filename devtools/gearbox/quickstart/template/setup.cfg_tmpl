@@ -1,9 +1,5 @@
-[nosetests]
-verbosity = 2
-detailed-errors = 1
-with-coverage = false
-cover-erase = true
-cover-package = {{package}}
+[tool:pytest]
+addopts = --cov=.
 
 # Babel configuration
 [compile_catalog]

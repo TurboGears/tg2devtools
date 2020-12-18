@@ -1,0 +1,19 @@
+# refer to https://coverage.readthedocs.io/en/latest/config.html
+[run]
+source = {{package}}
+
+[report]
+show_missing = True
+
+# if you don't omit tests directory you have more chances of seeing two tests with same name
+omit =
+    setup.py
+    migration/*
+    # tests/*
+
+# fail test suite if coverage drops below 100% (if you uncomment it)
+# this does not work for nosetests, set it in setup.cfg (min-cover-percentage)
+# fail_under = 100
+
+# Don’t include files in the report that are 100% covered files
+skip_covered = True

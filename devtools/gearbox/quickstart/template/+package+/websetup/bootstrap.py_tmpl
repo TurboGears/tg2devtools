@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 """Setup the {{project}} application"""
 from __future__ import print_function, unicode_literals
+{{if auth == 'sqlalchemy'}}import transaction{{endif}}
 
-{{if sqlalchemy}}
-import transaction
-{{endif}}
 from {{package}} import model
 
 
@@ -55,30 +53,37 @@ def bootstrap(command, conf, vars):
         transaction.abort()
         print('Continuing with bootstrapping...')
     {{elif auth == "ming"}}
-    g = model.Group()
-    g.group_name = 'managers'
-    g.display_name = 'Managers Group'
+    from pymongo.errors import DuplicateKeyError
+    try:
+        g = model.Group()
+        g.group_name = 'managers'
+        g.display_name = 'Managers Group'
 
-    p = model.Permission()
-    p.permission_name = 'manage'
-    p.description = 'This permission gives an administrative right'
-    p.groups = [g]
+        p = model.Permission()
+        p.permission_name = 'manage'
+        p.description = 'This permission gives an administrative right'
+        p.groups = [g]
 
-    u = model.User()
-    u.user_name = 'manager'
-    u.display_name = 'Example manager'
-    u.email_address = 'manager@somedomain.com'
-    u.groups = [g]
-    u.password = 'managepass'
+        u = model.User()
+        u.user_name = 'manager'
+        u.display_name = 'Example manager'
+        u.email_address = 'manager@somedomain.com'
+        u.groups = [g]
+        u.password = 'managepass'
 
-    u1 = model.User()
-    u1.user_name = 'editor'
-    u1.display_name = 'Example editor'
-    u1.email_address = 'editor@somedomain.com'
-    u1.password = 'editpass'
+        u1 = model.User()
+        u1.user_name = 'editor'
+        u1.display_name = 'Example editor'
+        u1.email_address = 'editor@somedomain.com'
+        u1.password = 'editpass'
 
-    model.DBSession.flush()
-    model.DBSession.clear()
+        model.DBSession.flush()
+        model.DBSession.clear()
+    except DuplicateKeyError as e:
+        print('Warning, there was a problem adding your auth data, '
+              'it may have already been added:')
+        import traceback
+        print(traceback.format_exc())
+        print('Continuing with bootstrapping...')
     {{endif}}
-
     # <websetup.bootstrap.after.auth>
