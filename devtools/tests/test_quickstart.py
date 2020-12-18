@@ -4,6 +4,7 @@ import subprocess
 import sys
 import site
 import pkg_resources
+import re
 
 from nose.tools import ok_
 from webtest import TestApp
@@ -25,28 +26,48 @@ COUNTER = count()
 QUIET = '-q'  # Set this to -v to enable installed packages logging, or to -q to disable it
 
 
-def get_passed_and_failed(env_cmd, python_cmd, testpath):
+def run_pytest(env_cmd, testpath):
     """Run test suite under testpath, return set of passed tests."""
+    result = {'errors': 0, 'failed': 0, 'out': b'', 'coverage': {'passed': 0, 'missing': 0, 'cover': 0}}
     os.chdir(testpath)
-    args = '. %s; %s -W ignore setup.py test' % (env_cmd, python_cmd)
-    out = subprocess.Popen(args, stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            shell=True).communicate()[1]
-    passed, failed = [], []
-    test = None
-    lines = out.splitlines()
+    args = '. %s; pytest' % env_cmd
+    print('running tests %s' % testpath)
+    out = subprocess.Popen(
+        args,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        shell=True,
+    ).communicate()[0]
+    result['out'] = out = out.decode('utf-8')
+    assert out[0]  # faster than calculating len of out that should be > 0
+    # print('pytest output:')
+    # print(out)
+
+    cov_pattern = re.compile(r'TOTAL\W*(\d*)\W*(\d*)\W*(\d*)')
+    for line in out.splitlines()[::-1]:
+        match = cov_pattern.match(line)
+        if match:
+            break
+    else:
+        raise Exception('no coverage output found. output: %s' % out)
+    result['coverage']['line'] = match.group(0)
+    result['coverage']['passed'] = match.group(1)
+    result['coverage']['missing'] = match.group(2)
+    result['coverage']['cover'] = match.group(3)
+
+    # detecting number of errors and failed tests from short summary
+    try:
+        summary = out[out.index('short test summary info'):]
+    except ValueError:
+        summary = ''
+    lines = summary.splitlines()
     for line in lines:
-        line = line.decode('utf-8').split(' ... ', 1)
-        if line[0].startswith('tgtest'):
-            test = line[0]
-        if test and len(line) == 2:
-            if line[1] in ('ok', 'OK'):
-                passed.append(test)
-                test = None
-            elif line[1] in ('ERROR', 'FAIL'):
-                failed.append(test)
-                test = None
-    return passed, failed, lines
+        if 'ERROR' in line:
+            result['errors'] += 1
+        elif 'FAIL' in line:
+            result['failed'] += 1
+
+    return result
 
 
 class BaseTestQuickStart(object):
@@ -74,6 +95,8 @@ class BaseTestQuickStart(object):
         shutil.rmtree(cls.env_dir, ignore_errors=True)
 
         # Create virtualenv for current fixture
+        print('creating virtual environment in %s' % cls.env_dir)
+        # if you get errors about setuptools, maybe you made an error in command.py
         create_environment(cls.env_dir)
 
         # Enable the newly created virtualenv
@@ -89,7 +112,8 @@ class BaseTestQuickStart(object):
         # we run them with python setup.py test that is unable
         # download dependencies on systems without TLS1.2 support.
         subprocess.call([cls.pip_cmd, QUIET, 'install', '--pre', '-I', 'coverage'])
-        subprocess.call([cls.pip_cmd, QUIET, 'install', '--pre', '-I', 'nose'])
+        subprocess.call([cls.pip_cmd, QUIET, 'install', '--pre', '-I', 'pytest'])
+        subprocess.call([cls.pip_cmd, QUIET, 'install', '--pre', '-I', 'pytest-cov'])
         subprocess.call([cls.pip_cmd, QUIET, 'install', '--pre', '-I', 'webtest'])
 
         # Then install specific requirements
@@ -106,7 +130,7 @@ class BaseTestQuickStart(object):
         subprocess.call([cls.pip_cmd, QUIET, 'install', '--pre', '-I', 'git+git://github.com/TurboGears/tg2.git@development'])
 
         # Install tg.devtools inside the virtualenv
-        subprocess.call([cls.pip_cmd, QUIET, 'install', '--pre', '-e', cls.base_dir])
+        subprocess.call([cls.pip_cmd, QUIET, 'install', '--pre', '-e', cls.base_dir + '[testing]'])
 
         # Install All Template Engines inside the virtualenv so that
         # They all get configured as we share a single python process
@@ -135,21 +159,6 @@ class BaseTestQuickStart(object):
         cls.past_working_set_state = pkg_resources.working_set.__getstate__()
         pkg_resources.working_set.add_entry(site_packages)
         pkg_resources.working_set.add_entry(cls.proj_dir)
-
-    def setUp(self):
-        os.chdir(self.proj_dir)
-        from paste.deploy import loadapp
-        self.app = loadapp('config:test.ini', relative_to=self.proj_dir)
-        self.app = TestApp(self.app)
-
-    def init_database(self):
-        os.chdir(self.proj_dir)
-        cmd = SetupAppCommand(Bunch(options=Bunch(verbose_level=1)), Bunch())
-        try:
-            cmd.run(Bunch(config_file='config:test.ini', section_name=None))
-        except:
-            # DB already initialised, ignore it.
-            pass
 
     @classmethod
     def tearDownClass(cls):
@@ -215,219 +224,51 @@ class BaseTestQuickStart(object):
 
 
 class CommonTestQuickStart(BaseTestQuickStart):
-
-    # tests that must be passed
-    pass_tests = [
-        '.tests.functional.test_authentication.',
-        '.tests.functional.test_root.',
-        '.tests.models.test_auth.']
-    # tests that must fail (should not exist)
-    fail_tests = []
-    # tests that must not be run
-    skip_tests = []
-
-    def test_index(self):
-        resp = self.app.get('/')
-        ok_('Welcome to TurboGears' in resp, resp)
-
-    def test_login(self):
-        resp = self.app.get('/login')
-        ok_('<h1>Login</h1>' in resp)
-
-    def test_unauthenticated_admin(self):
-        ok_('<h1>Login</h1>'
-            in self.app.get('/admin/', status=302).follow())
-
-    def test_subtests(self):
-        passed, failed, lines = get_passed_and_failed(self.env_cmd,
-                                                      self.python_cmd,
-                                                      os.path.join(self.proj_dir))
-        for has_failed in failed:
-            for must_fail in self.fail_tests:
-                if must_fail in has_failed:
-                    break
-            else:
-                ok_(False, 'Failed %s\n\n%s' % (has_failed, lines))
-        for must_pass in self.pass_tests:
-            for has_passed in passed:
-                if must_pass in has_passed:
-                    break
-            else:
-                print("Passed:\n" + '\n'.join(passed))
-                ok_(False, 'Did not pass %s\n\n%s' % (must_pass, lines))
-        for must_fail in self.fail_tests:
-            for has_failed in failed:
-                if must_fail in has_failed:
-                    break
-            else:
-                print("Failed:\n" + '\n'.join(failed))
-                ok_(False, 'Did not fail %s' % must_fail)
-        for must_skip in self.skip_tests:
-            for has_run in passed + failed:
-                if must_skip in has_run:
-                    print("Run:\n" + '\n'.join(passed + failed))
-                    ok_(False, 'Did not skip %s' % must_skip)
+    def test_quickstarted_tests(self):
+        result = run_pytest(
+            self.env_cmd, os.path.join(self.proj_dir)
+        )
+        if result['failed'] + result['errors'] != 0:
+            print(result['out'])
+            assert False, (result['failed'], result['errors'])
+        if result['coverage']['passed'] == 0:
+            assert False, result['coverage']
+        if result['coverage']['missing'] == 0:
+            assert False, result['coverage']
+        if result['coverage']['cover'] == 100:
+            assert False, result['coverage']
 
 
-class CommonTestQuickStartWithAuth(CommonTestQuickStart):
-    def test_unauthenticated_admin_with_prefix(self):
-        resp1 = self.app.get('/prefix/admin/', extra_environ={'SCRIPT_NAME': '/prefix'}, status=302)
-        ok_(resp1.headers['Location'] == 'http://localhost/prefix/login?came_from=%2Fprefix%2Fadmin%2F',
-            resp1.headers['Location'])
-        resp2 = resp1.follow(extra_environ={'SCRIPT_NAME': '/prefix'})
-        ok_('/prefix/login_handler' in resp2, resp2)
-
-    def test_login_with_prefix(self):
-        self.init_database()
-        resp1 = self.app.post('/prefix/login_handler?came_from=%2Fprefix%2Fadmin%2F',
-                              params={'login': 'editor', 'password': 'editpass'},
-                              extra_environ={'SCRIPT_NAME': '/prefix'})
-        ok_(resp1.headers['Location'] == 'http://localhost/prefix/post_login?came_from=%2Fprefix%2Fadmin%2F',
-            resp1.headers['Location'])
-        resp2 = resp1.follow(extra_environ={'SCRIPT_NAME': '/prefix'})
-        ok_(resp2.headers['Location'] == 'http://localhost/prefix/admin/',
-            resp2.headers['Location'])
-
-    def test_login_failure_with_prefix(self):
-        self.init_database()
-        resp = self.app.post('/prefix/login_handler?came_from=%2Fprefix%2Fadmin%2F',
-                             params={'login': 'WRONG', 'password': 'WRONG'},
-                             extra_environ={'SCRIPT_NAME': '/prefix'})
-        location = resp.headers['Location']
-        ok_('http://localhost/prefix/login' in location, location)
-        ok_('came_from=%2Fprefix%2Fadmin%2F' in location, location)
-
-
-class TestDefaultQuickStart(CommonTestQuickStartWithAuth):
+class TestDefaultQuickStart(CommonTestQuickStart):
     args = ''
-
-    @classmethod
-    def setUpClass(cls):
-        super(TestDefaultQuickStart, cls).setUpClass()
-
-    def setUp(self):
-        super(TestDefaultQuickStart, self).setUp()
 
 
 class TestMakoQuickStart(CommonTestQuickStart):
     args = '--mako --nosa --noauth --skip-tw'
 
-    pass_tests = ['.tests.functional.test_root.']
-    skip_tests = [
-        '.tests.functional.test_root.test_secc',
-        '.tests.functional.test_authentication.',
-        '.tests.models.test_auth.']
-
-    def test_login(self):
-        self.app.get('/login', status=404)
-
-    def test_unauthenticated_admin(self):
-        self.app.get('/admin', status=404)
-
 
 class TestGenshiQuickStart(CommonTestQuickStart):
     args = '--genshi --nosa --noauth --skip-tw'
 
-    pass_tests = ['.tests.functional.test_root.']
-    skip_tests = [
-        '.tests.functional.test_root.test_secc',
-        '.tests.functional.test_authentication.',
-        '.tests.models.test_auth.']
-
-    @classmethod
-    def setUpClass(cls):
-        if PY_VERSION >= (3, 5):
-            raise SkipTest('Genshi not supported on Python 3.5')
-        super(TestGenshiQuickStart, cls).setUpClass()
-
-    def test_login(self):
-        self.app.get('/login', status=404)
-
-    def test_unauthenticated_admin(self):
-        self.app.get('/admin', status=404)
-
-
 class TestJinjaQuickStart(CommonTestQuickStart):
     args = '--jinja --nosa --noauth --skip-tw'
 
-    pass_tests = ['.tests.functional.test_root.']
-    skip_tests = [
-        '.tests.functional.test_root.test_secc',
-        '.tests.functional.test_authentication.',
-        '.tests.models.test_auth.']
-
-    def test_login(self):
-        self.app.get('/login', status=404)
-
-    def test_unauthenticated_admin(self):
-        self.app.get('/admin', status=404)
-
 
 class TestNoDBQuickStart(CommonTestQuickStart):
-
-    pass_tests = ['.tests.functional.test_root.']
-    skip_tests = [
-        '.tests.functional.test_root.test_secc',
-        '.tests.functional.test_authentication.',
-        '.tests.models.test_auth.']
-
     args = '--nosa --noauth --skip-tw'
-
-    def test_login(self):
-        self.app.get('/login', status=404)
-
-    def test_unauthenticated_admin(self):
-        self.app.get('/admin', status=404)
 
 
 class TestNoAuthQuickStart(CommonTestQuickStart):
-
-    pass_tests = ['.tests.functional.test_root.']
-    skip_tests = [
-        '.tests.functional.test_root.test_secc',
-        '.tests.functional.test_authentication.',
-        '.tests.models.test_auth.']
-
     args = '--noauth'
 
-    @classmethod
-    def setUpClass(cls):
-        super(TestNoAuthQuickStart, cls).setUpClass()
 
-    def setUp(self):
-        super(TestNoAuthQuickStart, self).setUp()
-
-    def test_login(self):
-        self.app.get('/login', status=404)
-
-    def test_unauthenticated_admin(self):
-        self.app.get('/admin', status=404)
-
-
-class TestMingBQuickStart(CommonTestQuickStartWithAuth):
-
+class TestMingBQuickStart(CommonTestQuickStart):
     args = '--ming'
-    # preinstall = ['Paste', 'PasteScript']  # Ming doesn't require those anymore
-
-    @classmethod
-    def setUpClass(cls):
-        super(TestMingBQuickStart, cls).setUpClass()
-
-    def setUp(self):
-        super(TestMingBQuickStart, self).setUp()
 
 
 class TestNoTWQuickStart(CommonTestQuickStart):
-
     args = '--skip-tw'
-
-    def test_unauthenticated_admin(self):
-        self.app.get('/admin', status=404)
 
 
 class TestMinimalQuickStart(CommonTestQuickStart):
-
     args = '--minimal-quickstart'
-
-    def test_secc_is_removed(self):
-        self.app.get('/secc', status=404)
