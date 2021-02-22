@@ -4,6 +4,8 @@
 from nose.tools import eq_
 
 {{if sqlalchemy}}
+import transaction
+
 from {{package}}.model import DBSession
 {{elif ming}}
 from tg import config
@@ -64,7 +66,7 @@ class ModelTest(object):
                 # On MongoDB drop database
                 datastore.conn.drop_database(datastore.db)
             {{elif sqlalchemy}}
-            DBSession.rollback()
+            transaction.abort()
             {{endif}}
             raise
 
@@ -79,7 +81,7 @@ class ModelTest(object):
             # On MongoDB drop database
             datastore.conn.drop_database(datastore.db)
         {{elif sqlalchemy}}
-        DBSession.rollback()
+        transaction.abort()
         {{endif}}
 
     def do_get_dependencies(self):
