@@ -1,5 +1,5 @@
 {{if database}}from {{package}}.tests._conftest.models import obj{{endif}}
-from {{package}}.tests._conftest.app import app, _app{{if auth}}, env{{endif}}
+from {{package}}.tests._conftest.app import app, _app
 
 # Fixtures defined in _conftest came from turbogears2, change them if you wish
 

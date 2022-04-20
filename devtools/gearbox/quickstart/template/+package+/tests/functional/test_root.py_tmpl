@@ -58,8 +58,8 @@ def test_data_json(app):
     ('/secc/some_where', 'manager', 200),
     ('/secc/some_where', 'editor', 403),
 ))
-def test_secc_access(app, env, url, user, status):
-    app.get(url, extra_environ=env(user), status=status)
+def test_secc_access(app, url, user, status):
+    app.get(url, extra_environ={'REMOTE_USER': user}), status=status)
 
 {{endif}}
 {{endif}}
@@ -72,8 +72,8 @@ def test_secc_access(app, env, url, user, status):
     ('/editor_user_only', 'manager', 403),
     ('/editor_user_only', 'editor', 200),
 ))
-def test_page_access(app, env, url, user, status):
-    app.get(url, extra_environ=env(user), status=status)
+def test_page_access(app, url, user, status):
+    app.get(url, extra_environ={'REMOTE_USER': user}, status=status)
 {{endif}}
 
 def test_error_document_500(app):

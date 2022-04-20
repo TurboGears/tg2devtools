@@ -51,17 +51,3 @@ def _app():
 def app(_app):
     """This fixture is the default application"""
     return _app()
-
-
-{{if auth}}
-@pytest.fixture()
-def env():
-    """this is just a shorthand intended to be passed to extra_environ in webtest calls,
-    remote_user got as parameter will go into REMOTE_USER key,
-    other kwarguments are included in the returned dictionary"""
-    def _environ(remote_user, **kwargs):
-        r = {'REMOTE_USER': remote_user} if remote_user else {}
-        r.update(kwargs)
-        return r
-    return _environ
-{{endif}}
