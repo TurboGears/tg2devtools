@@ -1,0 +1,21 @@
+import pytest
+from {{package}}.model import DBSession
+from {{package}}.tests._conftest.app import teardown_db
+
+
+@pytest.fixture()
+def obj():
+    def _obj(klass, attrs):
+        new_attrs = {}
+        new_attrs.update(attrs)
+        created = klass(**new_attrs)
+	{{if sqlalchemy}}
+        DBSession.add(created)
+        DBSession.flush()
+	{{elif ming}}
+        created.__mongometa__.session.flush()
+        created.__mongometa__.session.clear()
+        {{endif}}
+        return created
+    yield _obj
+    teardown_db()

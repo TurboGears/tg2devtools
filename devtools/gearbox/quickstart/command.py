@@ -276,3 +276,14 @@ class QuickstartCommand(Command):
             # remove existing migrations directory
             package_migrations_dir = os.path.abspath('migration')
             shutil.rmtree(package_migrations_dir, ignore_errors=True)
+
+        tests_dir = os.path.abspath(os.path.join(opts.package, 'tests'))
+        if not opts.database:
+            print('database support disabled, stripping away model tests')
+            os.remove(os.path.abspath(tests_dir + '/_conftest/models.py'))
+            shutil.rmtree(os.path.abspath(tests_dir + '/models'))
+        if not opts.auth:
+            print('auth disabled, removing relative tests')
+            os.remove(os.path.abspath(tests_dir + '/functional/test_authentication.py'))
+            if opts.database:
+                os.remove(os.path.abspath(tests_dir + '/models/test_auth.py'))
