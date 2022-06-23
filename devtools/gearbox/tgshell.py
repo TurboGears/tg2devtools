@@ -128,6 +128,7 @@ class ShellCommand(Command):
                     config = load_default_config()
                     config.TerminalInteractiveShell.banner1 = banner
                     start_ipython(argv=[], user_ns=locs, config=config)
+                    return
 
                 except ImportError:
                     # ipython >= 0.11
