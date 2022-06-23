@@ -123,12 +123,16 @@ class ShellCommand(Command):
             # try to use IPython if possible
             try:
                 try:
-                    # ipython >= 1.0
-                    from IPython.terminal.embed import InteractiveShellEmbed
+                    from IPython import start_ipython
+                    from IPython.terminal.ipapp import load_default_config
+                    config = load_default_config()
+                    config.TerminalInteractiveShell.banner1 = banner
+                    start_ipython(argv=[], user_ns=locs, config=config)
+
                 except ImportError:
                     # ipython >= 0.11
                     from IPython.frontend.terminal.embed import InteractiveShellEmbed
-                shell = InteractiveShellEmbed.instance(banner2=banner)
+                    shell = InteractiveShellEmbed.instance(banner2=banner)
             except ImportError:
                 # ipython < 0.11
                 from IPython.Shell import IPShellEmbed
