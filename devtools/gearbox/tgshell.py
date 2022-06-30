@@ -120,27 +120,13 @@ class ShellCommand(Command):
             if disable_ipython:
                 raise ImportError()
 
-            # try to use IPython if possible
-            try:
-                try:
-                    from IPython import start_ipython
-                    from IPython.terminal.ipapp import load_default_config
-                    config = load_default_config()
-                    config.TerminalInteractiveShell.banner1 = banner
-                    start_ipython(argv=[], user_ns=locs, config=config)
-                    return
+	    from IPython import start_ipython
+	    from IPython.terminal.ipapp import load_default_config
+	    config = load_default_config()
+	    config.TerminalInteractiveShell.banner1 = banner
+	    start_ipython(argv=[], user_ns=locs, config=config)
+	    return
 
-                except ImportError:
-                    # ipython >= 0.11
-                    from IPython.frontend.terminal.embed import InteractiveShellEmbed
-                    shell = InteractiveShellEmbed.instance(banner2=banner)
-            except ImportError:
-                # ipython < 0.11
-                from IPython.Shell import IPShellEmbed
-                shell = IPShellEmbed()
-                shell.set_banner(shell.IP.BANNER + '\n\n' + banner)
-
-            shell(local_ns=locs)
         except ImportError:
             import code
             py_prefix = sys.platform.startswith('java') and 'J' or 'P'
