@@ -120,12 +120,12 @@ class ShellCommand(Command):
             if disable_ipython:
                 raise ImportError()
 
-	    from IPython import start_ipython
-	    from IPython.terminal.ipapp import load_default_config
-	    config = load_default_config()
-	    config.TerminalInteractiveShell.banner1 = banner
-	    start_ipython(argv=[], user_ns=locs, config=config)
-	    return
+            from IPython import start_ipython
+            from IPython.terminal.ipapp import load_default_config
+            config = load_default_config()
+            config.TerminalInteractiveShell.banner1 = banner
+            start_ipython(argv=[], user_ns=locs, config=config)
+            return
 
         except ImportError:
             import code
