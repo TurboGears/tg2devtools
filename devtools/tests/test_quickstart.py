@@ -4,12 +4,11 @@ import subprocess
 import sys
 import site
 import pkg_resources
+import unittest
 
-from nose.tools import ok_
 from webtest import TestApp
 from itertools import count
-from nose import SkipTest
-from virtualenv import create_environment
+from venv import EnvBuilder
 from tg.util import Bunch
 
 from devtools.gearbox.quickstart import QuickstartCommand
@@ -22,7 +21,7 @@ PROJECT_NAME = 'TGTest-%02d'
 ENV_NAME = 'TESTENV'
 CLEANUP = True
 COUNTER = count()
-QUIET = '-q'  # Set this to -v to enable installed packages logging, or to -q to disable it
+QUIET = '-v'  # Set this to -v to enable installed packages logging, or to -q to disable it
 
 
 def get_passed_and_failed(env_cmd, python_cmd, testpath):
@@ -74,47 +73,47 @@ class BaseTestQuickStart(object):
         shutil.rmtree(cls.env_dir, ignore_errors=True)
 
         # Create virtualenv for current fixture
-        create_environment(cls.env_dir)
+        EnvBuilder(with_pip=True, symlinks=True).create(cls.env_dir)
 
         # Enable the newly created virtualenv
         cls.pip_cmd, cls.python_cmd, cls.env_cmd, site_packages = cls.enter_virtualenv()
 
         # Reinstall gearbox to force it being installed inside the
         # virtualenv using supported PBR version
-        subprocess.call([cls.pip_cmd, QUIET, 'install', '-U', 'setuptools==18.0.1'])
-        subprocess.call([cls.pip_cmd, QUIET, 'install', '-U', 'pip'])
-        subprocess.call([cls.pip_cmd, QUIET, 'install', '--pre', '-I', 'gearbox'])
+        cls.run_pip(['install', '-U', 'setuptools==18.0.1'])
+        cls.run_pip(['install', '-U', 'pip'])
+        cls.run_pip(['install', '--pre', '-I', 'gearbox'])
 
         # Dependencies required to run tests of a TGApp, as
         # we run them with python setup.py test that is unable
         # download dependencies on systems without TLS1.2 support.
-        subprocess.call([cls.pip_cmd, QUIET, 'install', '--pre', '-I', 'coverage'])
-        subprocess.call([cls.pip_cmd, QUIET, 'install', '--pre', '-I', 'nose'])
-        subprocess.call([cls.pip_cmd, QUIET, 'install', '--pre', '-I', 'webtest'])
+        cls.run_pip(['install', '--pre', '-I', 'coverage'])
+        cls.run_pip(['install', '--pre', '-I', 'nose'])
+        cls.run_pip(['install', '--pre', '-I', 'webtest'])
 
         # Then install specific requirements
         for p in cls.preinstall:
-            subprocess.call([cls.pip_cmd, QUIET, 'install', '--pre', '-I', p])
+            cls.run_pip(['install', '--pre', '-I', p])
 
-        subprocess.call([cls.pip_cmd, QUIET, 'install', '-I', 'git+git://github.com/TurboGears/crank.git'])
-        subprocess.call([cls.pip_cmd, QUIET, 'install', '-I', 'git+git://github.com/TurboGears/backlash.git'])
-        subprocess.call([cls.pip_cmd, QUIET, 'install', '-I', 'git+git://github.com/TurboGears/tgext.debugbar.git'])
+        cls.run_pip(['install', '-I', 'git+git://github.com/TurboGears/crank.git'])
+        cls.run_pip(['install', '-I', 'git+git://github.com/TurboGears/backlash.git'])
+        cls.run_pip(['install', '-I', 'git+git://github.com/TurboGears/tgext.debugbar.git'])
 
         # Install TurboGears from development branch to test future compatibility
         cls.venv_uninstall('WebOb')
         cls.venv_uninstall('TurboGears2')
-        subprocess.call([cls.pip_cmd, QUIET, 'install', '--pre', '-I', 'git+git://github.com/TurboGears/tg2.git@development'])
+        cls.run_pip(['install', '--pre', '-I', 'git+git://github.com/TurboGears/tg2.git@development'])
 
         # Install tg.devtools inside the virtualenv
-        subprocess.call([cls.pip_cmd, QUIET, 'install', '--pre', '-e', cls.base_dir])
+        cls.run_pip(['install', '--pre', '-e', cls.base_dir])
 
         # Install All Template Engines inside the virtualenv so that
         # They all get configured as we share a single python process
         # for all configurations.
-        subprocess.call([cls.pip_cmd, QUIET, 'install', '--upgrade', '--no-deps', '--force-reinstall', '--pre', 'Jinja2'])
-        subprocess.call([cls.pip_cmd, QUIET, 'install', '--upgrade', '--no-deps', '--force-reinstall', '--pre', 'Genshi'])
-        subprocess.call([cls.pip_cmd, QUIET, 'install', '--upgrade', '--no-deps', '--force-reinstall', '--pre', 'mako'])
-        subprocess.call([cls.pip_cmd, QUIET, 'install', '--upgrade', '--no-deps', '--force-reinstall', '--pre', 'kajiki'])
+        cls.run_pip(['install', '--upgrade', '--no-deps', '--force-reinstall', '--pre', 'Jinja2'])
+        cls.run_pip(['install', '--upgrade', '--no-deps', '--force-reinstall', '--pre', 'Genshi'])
+        cls.run_pip(['install', '--upgrade', '--no-deps', '--force-reinstall', '--pre', 'mako'])
+        cls.run_pip(['install', '--upgrade', '--no-deps', '--force-reinstall', '--pre', 'kajiki'])
 
         # This is to avoid the TGTest package to be detected as
         # being already installed.
@@ -126,7 +125,7 @@ class BaseTestQuickStart(object):
         cls.command.run(opts)
 
         # Install quickstarted project dependencies
-        subprocess.call([cls.pip_cmd, QUIET, 'install', '--pre', '-e', cls.proj_dir])
+        cls.run_pip(['install', '--pre', '-e', cls.proj_dir])
 
         # Mark the packages as installed even outside the virtualenv
         # so we can load app in tests which are not executed inside
@@ -206,15 +205,19 @@ class BaseTestQuickStart(object):
             delattr(sys, 'real_prefix')
 
     @classmethod
+    def run_pip(cls, opt):
+        return subprocess.call([cls.python_cmd, '-mpip', QUIET] + opt)
+
+    @classmethod
     def venv_uninstall(cls, package):
         # Do it 5 times to ensure it was uninstalled for real.
         # Due to the -I used in other commands,
         # multiple versions of the same package might be installed concurrently.
         for i in range(5):
-            subprocess.call([cls.pip_cmd, 'uninstall', '-y', package])
+            cls.run_pip(['uninstall', '-y', package])
 
 
-class CommonTestQuickStart(BaseTestQuickStart):
+class CommonTestQuickStart(BaseTestQuickStart, unittest.TestCase):
 
     # tests that must be passed
     pass_tests = [
@@ -228,15 +231,16 @@ class CommonTestQuickStart(BaseTestQuickStart):
 
     def test_index(self):
         resp = self.app.get('/')
-        ok_('Welcome to TurboGears' in resp, resp)
+        assert 'Welcome to TurboGears' in resp, resp
 
     def test_login(self):
         resp = self.app.get('/login')
-        ok_('<h1>Login</h1>' in resp)
+        assert '<h1>Login</h1>' in resp
 
     def test_unauthenticated_admin(self):
-        ok_('<h1>Login</h1>'
-            in self.app.get('/admin/', status=302).follow())
+        assert (
+            '<h1>Login</h1>' in self.app.get('/admin/', status=302).follow()
+        )
 
     def test_subtests(self):
         passed, failed, lines = get_passed_and_failed(self.env_cmd,
@@ -247,46 +251,52 @@ class CommonTestQuickStart(BaseTestQuickStart):
                 if must_fail in has_failed:
                     break
             else:
-                ok_(False, 'Failed %s\n\n%s' % (has_failed, lines))
+                assert False, 'Failed %s\n\n%s' % (has_failed, lines)
         for must_pass in self.pass_tests:
             for has_passed in passed:
                 if must_pass in has_passed:
                     break
             else:
                 print("Passed:\n" + '\n'.join(passed))
-                ok_(False, 'Did not pass %s\n\n%s' % (must_pass, lines))
+                assert False, 'Did not pass %s\n\n%s' % (must_pass, lines)
         for must_fail in self.fail_tests:
             for has_failed in failed:
                 if must_fail in has_failed:
                     break
             else:
                 print("Failed:\n" + '\n'.join(failed))
-                ok_(False, 'Did not fail %s' % must_fail)
+                assert False, 'Did not fail %s' % must_fail
         for must_skip in self.skip_tests:
             for has_run in passed + failed:
                 if must_skip in has_run:
                     print("Run:\n" + '\n'.join(passed + failed))
-                    ok_(False, 'Did not skip %s' % must_skip)
+                    assert False, 'Did not skip %s' % must_skip
 
 
 class CommonTestQuickStartWithAuth(CommonTestQuickStart):
     def test_unauthenticated_admin_with_prefix(self):
         resp1 = self.app.get('/prefix/admin/', extra_environ={'SCRIPT_NAME': '/prefix'}, status=302)
-        ok_(resp1.headers['Location'] == 'http://localhost/prefix/login?came_from=%2Fprefix%2Fadmin%2F',
-            resp1.headers['Location'])
+        assert (
+            resp1.headers['Location'] == 'http://localhost/prefix/login?came_from=%2Fprefix%2Fadmin%2F',
+            resp1.headers['Location']
+        )
         resp2 = resp1.follow(extra_environ={'SCRIPT_NAME': '/prefix'})
-        ok_('/prefix/login_handler' in resp2, resp2)
+        assert '/prefix/login_handler' in resp2, resp2
 
     def test_login_with_prefix(self):
         self.init_database()
         resp1 = self.app.post('/prefix/login_handler?came_from=%2Fprefix%2Fadmin%2F',
                               params={'login': 'editor', 'password': 'editpass'},
                               extra_environ={'SCRIPT_NAME': '/prefix'})
-        ok_(resp1.headers['Location'] == 'http://localhost/prefix/post_login?came_from=%2Fprefix%2Fadmin%2F',
-            resp1.headers['Location'])
+        assert (
+            resp1.headers['Location'] == 'http://localhost/prefix/post_login?came_from=%2Fprefix%2Fadmin%2F',
+            resp1.headers['Location']
+        )
         resp2 = resp1.follow(extra_environ={'SCRIPT_NAME': '/prefix'})
-        ok_(resp2.headers['Location'] == 'http://localhost/prefix/admin/',
-            resp2.headers['Location'])
+        assert (
+            resp2.headers['Location'] == 'http://localhost/prefix/admin/',
+            resp2.headers['Location']
+        )
 
     def test_login_failure_with_prefix(self):
         self.init_database()
@@ -294,8 +304,8 @@ class CommonTestQuickStartWithAuth(CommonTestQuickStart):
                              params={'login': 'WRONG', 'password': 'WRONG'},
                              extra_environ={'SCRIPT_NAME': '/prefix'})
         location = resp.headers['Location']
-        ok_('http://localhost/prefix/login' in location, location)
-        ok_('came_from=%2Fprefix%2Fadmin%2F' in location, location)
+        assert 'http://localhost/prefix/login' in location, location
+        assert 'came_from=%2Fprefix%2Fadmin%2F' in location, location
 
 
 class TestDefaultQuickStart(CommonTestQuickStartWithAuth):
@@ -336,8 +346,6 @@ class TestGenshiQuickStart(CommonTestQuickStart):
 
     @classmethod
     def setUpClass(cls):
-        if PY_VERSION >= (3, 5):
-            raise SkipTest('Genshi not supported on Python 3.5')
         super(TestGenshiQuickStart, cls).setUpClass()
 
     def test_login(self):
