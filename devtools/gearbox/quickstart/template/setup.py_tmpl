@@ -47,7 +47,7 @@ install_requires = [
     {{endif}}
     {{if sqlalchemy}}
     "zope.sqlalchemy >= 1.2",
-    "sqlalchemy",
+    "sqlalchemy < 2.0",
     {{endif}}
     {{if sqlalchemy and migrations}}
     "alembic",

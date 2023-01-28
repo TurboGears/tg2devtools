@@ -80,7 +80,7 @@ class BaseTestQuickStart(object):
 
         # Reinstall gearbox to force it being installed inside the
         # virtualenv using supported PBR version
-        cls.run_pip(['install', '-U', 'setuptools==18.0.1'])
+        cls.run_pip(['install', '-U', 'setuptools'])
         cls.run_pip(['install', '-U', 'pip'])
         cls.run_pip(['install', '-I', 'git+https://github.com/TurboGears/tempita'])
         cls.run_pip(['install', '--pre', '-I', 'gearbox'])

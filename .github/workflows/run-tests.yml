@@ -21,7 +21,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install git+https://github.com/TurboGears/tempita
           pip install -U --upgrade-strategy=eager --pre -e .[testing]
-          pip install coverage
       - name: Test with unittest
         run: |
           python -m unittest discover -v devtools/tests
