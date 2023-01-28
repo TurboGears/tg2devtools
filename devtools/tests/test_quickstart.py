@@ -95,10 +95,10 @@ class BaseTestQuickStart(object):
         for p in cls.preinstall:
             cls.run_pip(['install', '--pre', '-I', p])
 
-        cls.run_pip(['install', '-I', 'git+git://github.com/TurboGears/tempita.git'])
-        cls.run_pip(['install', '-I', 'git+git://github.com/TurboGears/crank.git'])
-        cls.run_pip(['install', '-I', 'git+git://github.com/TurboGears/backlash.git'])
-        cls.run_pip(['install', '-I', 'git+git://github.com/TurboGears/tgext.debugbar.git'])
+        cls.run_pip(['install', '-I', 'git+https://github.com/TurboGears/tempita'])
+        cls.run_pip(['install', '-I', 'git+https://github.com/TurboGears/crank'])
+        cls.run_pip(['install', '-I', 'git+https://github.com/TurboGears/backlash'])
+        cls.run_pip(['install', '-I', 'git+https://github.com/TurboGears/tgext.debugbar'])
 
         # Install TurboGears from development branch to test future compatibility
         cls.venv_uninstall('WebOb')
@@ -278,9 +278,8 @@ class CommonTestQuickStartWithAuth(CommonTestQuickStart):
     def test_unauthenticated_admin_with_prefix(self):
         resp1 = self.app.get('/prefix/admin/', extra_environ={'SCRIPT_NAME': '/prefix'}, status=302)
         assert (
-            resp1.headers['Location'] == 'http://localhost/prefix/login?came_from=%2Fprefix%2Fadmin%2F',
-            resp1.headers['Location']
-        )
+            resp1.headers['Location'] == 'http://localhost/prefix/login?came_from=%2Fprefix%2Fadmin%2F'
+        ), resp1.headers['Location']
         resp2 = resp1.follow(extra_environ={'SCRIPT_NAME': '/prefix'})
         assert '/prefix/login_handler' in resp2, resp2
 
@@ -290,14 +289,12 @@ class CommonTestQuickStartWithAuth(CommonTestQuickStart):
                               params={'login': 'editor', 'password': 'editpass'},
                               extra_environ={'SCRIPT_NAME': '/prefix'})
         assert (
-            resp1.headers['Location'] == 'http://localhost/prefix/post_login?came_from=%2Fprefix%2Fadmin%2F',
-            resp1.headers['Location']
-        )
+            resp1.headers['Location'] == 'http://localhost/prefix/post_login?came_from=%2Fprefix%2Fadmin%2F'
+        ), resp1.headers['Location']
         resp2 = resp1.follow(extra_environ={'SCRIPT_NAME': '/prefix'})
         assert (
-            resp2.headers['Location'] == 'http://localhost/prefix/admin/',
-            resp2.headers['Location']
-        )
+            resp2.headers['Location'] == 'http://localhost/prefix/admin/'
+        ), resp2.headers['Location']
 
     def test_login_failure_with_prefix(self):
         self.init_database()

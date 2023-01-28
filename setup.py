@@ -4,8 +4,6 @@ from setuptools import setup, find_packages
 import sys, os
 
 test_requirements = [
-    'nose',
-    'virtualenv == 16.7.10',
     'kajiki',
     'genshi',
     'jinja2',
