@@ -82,20 +82,19 @@ class BaseTestQuickStart(object):
         # virtualenv using supported PBR version
         cls.run_pip(['install', '-U', 'setuptools==18.0.1'])
         cls.run_pip(['install', '-U', 'pip'])
+        cls.run_pip(['install', '-I', 'git+https://github.com/TurboGears/tempita'])
         cls.run_pip(['install', '--pre', '-I', 'gearbox'])
 
         # Dependencies required to run tests of a TGApp, as
         # we run them with python setup.py test that is unable
         # download dependencies on systems without TLS1.2 support.
         cls.run_pip(['install', '--pre', '-I', 'coverage'])
-        cls.run_pip(['install', '--pre', '-I', 'nose'])
         cls.run_pip(['install', '--pre', '-I', 'webtest'])
 
         # Then install specific requirements
         for p in cls.preinstall:
             cls.run_pip(['install', '--pre', '-I', p])
 
-        cls.run_pip(['install', '-I', 'git+https://github.com/TurboGears/tempita'])
         cls.run_pip(['install', '-I', 'git+https://github.com/TurboGears/crank'])
         cls.run_pip(['install', '-I', 'git+https://github.com/TurboGears/backlash'])
         cls.run_pip(['install', '-I', 'git+https://github.com/TurboGears/tgext.debugbar'])
@@ -103,7 +102,7 @@ class BaseTestQuickStart(object):
         # Install TurboGears from development branch to test future compatibility
         cls.venv_uninstall('WebOb')
         cls.venv_uninstall('TurboGears2')
-        cls.run_pip(['install', '--pre', '-I', 'git+git://github.com/TurboGears/tg2.git@development'])
+        cls.run_pip(['install', '--pre', '-I', 'git+https://github.com/TurboGears/tg2.git@development'])
 
         # Install tg.devtools inside the virtualenv
         cls.run_pip(['install', '--pre', '-e', cls.base_dir])
