@@ -95,6 +95,7 @@ class BaseTestQuickStart(object):
         for p in cls.preinstall:
             cls.run_pip(['install', '--pre', '-I', p])
 
+        cls.run_pip(['install', '-I', 'git+git://github.com/TurboGears/tempita.git'])
         cls.run_pip(['install', '-I', 'git+git://github.com/TurboGears/crank.git'])
         cls.run_pip(['install', '-I', 'git+git://github.com/TurboGears/backlash.git'])
         cls.run_pip(['install', '-I', 'git+git://github.com/TurboGears/tgext.debugbar.git'])
