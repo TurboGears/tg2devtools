@@ -21,7 +21,7 @@ PROJECT_NAME = 'TGTest-%02d'
 ENV_NAME = 'TESTENV'
 CLEANUP = True
 COUNTER = count()
-QUIET = '-v'  # Set this to -v to enable installed packages logging, or to -q to disable it
+QUIET = '-q'  # Set this to -v to enable installed packages logging, or to -q to disable it
 
 
 def get_passed_and_failed(env_cmd, python_cmd, testpath):
@@ -85,12 +85,6 @@ class BaseTestQuickStart(object):
         cls.run_pip(['install', '-U', 'setuptools', 'pip', 'wheel'])
         cls.run_pip(['install', '-I', 'git+https://github.com/TurboGears/tempita'])
         cls.run_pip(['install', '--pre', '-I', 'gearbox'])
-
-        # Dependencies required to run tests of a TGApp, as
-        # we run them with python setup.py test that is unable
-        # download dependencies on systems without TLS1.2 support.
-        # cls.run_pip(['install', '--pre', '-I', 'coverage'])
-        # cls.run_pip(['install', '--pre', '-I', 'webtest'])
 
         # Then install specific requirements
         for p in cls.preinstall:
