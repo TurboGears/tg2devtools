@@ -23,4 +23,4 @@ jobs:
           pip install -U --upgrade-strategy=eager --pre -e .[testing]
       - name: Test with unittest
         run: |
-          python -m unittest discover -v devtools/tests
+          python -m unittest discover -v devtools/tests -f
