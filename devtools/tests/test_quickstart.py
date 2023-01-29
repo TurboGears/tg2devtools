@@ -170,7 +170,9 @@ class BaseTestQuickStart(object):
         os.environ['PATH'] = cls.env_dir + os.pathsep + cls.old_os_path
 
         base = os.path.abspath(cls.env_dir)
-        site_packages = os.path.join(base, 'lib', 'python%s' % sys.version[:3], 'site-packages')
+        site_packages = os.path.join(
+            base, 'lib', 'python%s.%s' % sys.version_info[:2], 'site-packages'
+        )
         cls.prev_sys_path = list(sys.path)
 
         cls.past_prefix = sys.prefix
