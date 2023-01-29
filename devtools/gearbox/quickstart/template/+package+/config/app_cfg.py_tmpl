@@ -196,7 +196,7 @@ class ApplicationAuthMetadata(TGAuthMetadata):
 
 # Configure the authentication backend
 base_config.update_blueprint({
-    'auth_backend': '{{auth}}',
+    'sa_auth.enabled': True,
 
     # YOU MUST CHANGE THIS VALUE IN PRODUCTION TO SECURE YOUR APP
     'sa_auth.cookie_secret': "{{cookiesecret}}",
