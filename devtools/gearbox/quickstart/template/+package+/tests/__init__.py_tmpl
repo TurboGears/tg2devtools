@@ -69,18 +69,18 @@ class TestController(object):
     Check {{package}}.tests.functional.test_authentication for the repoze.who
     integration tests.
 
-    This is the officially supported way to test protected areas with
+    This was the officially supported way to test protected areas with
     repoze.who-testutil (http://code.gustavonarea.net/repoze.who-testutil/).
 
     """
     application_under_test = application_name
 
-    def setUp(self):
+    def setup_method(self, method):
         """Setup test fixture for each functional test method."""
         self.app = load_app(self.application_under_test)
         setup_app()
 
-    def tearDown(self):
+    def teardown_method(self, method):
         """Tear down test fixture for each functional test method."""
 {{if sqlalchemy}}
         model.DBSession.remove()

@@ -28,7 +28,7 @@ except ImportError:
 
 testpkgs = [
     'WebTest >= 1.2.3',
-    'nose',
+    'pytest',
     'coverage',
     'gearbox'
 ]
@@ -91,8 +91,6 @@ setup(
     packages=find_packages(exclude=['ez_setup']),
     install_requires=install_requires,
     include_package_data=True,
-    test_suite='nose.collector',
-    tests_require=testpkgs,
     extras_require={
         'testing': testpkgs
     },
