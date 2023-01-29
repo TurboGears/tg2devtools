@@ -45,7 +45,7 @@ rendering_config['renderers'].append('mako')
 {{endif}}
 {{if jinja}}
 rendering_config['renderers'].append('jinja')
-rendering_config['jinja_extensions'] = ['jinja2.ext.with_']
+rendering_config['jinja_extensions'] = []
 {{endif}}
 {{if kajiki}}
 rendering_config['renderers'].append('kajiki')

@@ -27,22 +27,24 @@ QUIET = '-v'  # Set this to -v to enable installed packages logging, or to -q to
 def get_passed_and_failed(env_cmd, python_cmd, testpath):
     """Run test suite under testpath, return set of passed tests."""
     os.chdir(testpath)
-    args = '. %s; %s -W ignore setup.py test' % (env_cmd, python_cmd)
-    out = subprocess.Popen(args, stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            shell=True).communicate()[1]
+    args = '. %s; %s -W ignore -mpytest -v --no-header --no-summary' % (env_cmd, python_cmd)
+    out = subprocess.Popen(args,
+                           stdout=subprocess.PIPE,
+                           stderr=subprocess.STDOUT,
+                           shell=True, encoding="utf-8").communicate()[0]
     passed, failed = [], []
-    test = None
     lines = out.splitlines()
     for line in lines:
-        line = line.decode('utf-8').split(' ... ', 1)
+        test = None
+        line = line.split(' ', 1)
         if line[0].startswith('tgtest'):
             test = line[0]
         if test and len(line) == 2:
-            if line[1] in ('ok', 'OK'):
+            line[1] = line[1].split()[0].strip()
+            if line[1] in ('passed', 'PASSED'):
                 passed.append(test)
                 test = None
-            elif line[1] in ('ERROR', 'FAIL'):
+            elif line[1] in ('ERROR', 'FAILED'):
                 failed.append(test)
                 test = None
     return passed, failed, lines
@@ -80,16 +82,15 @@ class BaseTestQuickStart(object):
 
         # Reinstall gearbox to force it being installed inside the
         # virtualenv using supported PBR version
-        cls.run_pip(['install', '-U', 'setuptools'])
-        cls.run_pip(['install', '-U', 'pip'])
+        cls.run_pip(['install', '-U', 'setuptools', 'pip', 'wheel'])
         cls.run_pip(['install', '-I', 'git+https://github.com/TurboGears/tempita'])
         cls.run_pip(['install', '--pre', '-I', 'gearbox'])
 
         # Dependencies required to run tests of a TGApp, as
         # we run them with python setup.py test that is unable
         # download dependencies on systems without TLS1.2 support.
-        cls.run_pip(['install', '--pre', '-I', 'coverage'])
-        cls.run_pip(['install', '--pre', '-I', 'webtest'])
+        # cls.run_pip(['install', '--pre', '-I', 'coverage'])
+        # cls.run_pip(['install', '--pre', '-I', 'webtest'])
 
         # Then install specific requirements
         for p in cls.preinstall:
@@ -110,10 +111,9 @@ class BaseTestQuickStart(object):
         # Install All Template Engines inside the virtualenv so that
         # They all get configured as we share a single python process
         # for all configurations.
-        cls.run_pip(['install', '--upgrade', '--no-deps', '--force-reinstall', '--pre', 'Jinja2'])
-        cls.run_pip(['install', '--upgrade', '--no-deps', '--force-reinstall', '--pre', 'Genshi'])
-        cls.run_pip(['install', '--upgrade', '--no-deps', '--force-reinstall', '--pre', 'mako'])
-        cls.run_pip(['install', '--upgrade', '--no-deps', '--force-reinstall', '--pre', 'kajiki'])
+        for engine in ("Jinja2", "Genshi", "make", "kajiki"):
+            cls.run_pip(['install', '--upgrade', '--no-deps', '--force-reinstall',
+                         '--pre', engine])
 
         # This is to avoid the TGTest package to be detected as
         # being already installed.
@@ -125,7 +125,7 @@ class BaseTestQuickStart(object):
         cls.command.run(opts)
 
         # Install quickstarted project dependencies
-        cls.run_pip(['install', '--pre', '-e', cls.proj_dir])
+        cls.run_pip(['install', '--pre', '-e', '%s[testing]' % cls.proj_dir])
 
         # Mark the packages as installed even outside the virtualenv
         # so we can load app in tests which are not executed inside
@@ -217,13 +217,13 @@ class BaseTestQuickStart(object):
             cls.run_pip(['uninstall', '-y', package])
 
 
-class CommonTestQuickStart(BaseTestQuickStart, unittest.TestCase):
+class CommonTestQuickStart(BaseTestQuickStart):
 
     # tests that must be passed
     pass_tests = [
-        '.tests.functional.test_authentication.',
-        '.tests.functional.test_root.',
-        '.tests.models.test_auth.']
+        '/tests/functional/test_authentication.',
+        '/tests/functional/test_root.',
+        '/tests/models/test_auth.']
     # tests that must fail (should not exist)
     fail_tests = []
     # tests that must not be run
@@ -251,14 +251,14 @@ class CommonTestQuickStart(BaseTestQuickStart, unittest.TestCase):
                 if must_fail in has_failed:
                     break
             else:
-                assert False, 'Failed %s\n\n%s' % (has_failed, lines)
+                assert False, 'Failed %s\n\n%s' % (has_failed, '\n'.join(lines))
         for must_pass in self.pass_tests:
             for has_passed in passed:
                 if must_pass in has_passed:
                     break
             else:
                 print("Passed:\n" + '\n'.join(passed))
-                assert False, 'Did not pass %s\n\n%s' % (must_pass, lines)
+                assert False, 'Did not pass %s\n\n%s' % (must_pass, '\n'.join(lines))
         for must_fail in self.fail_tests:
             for has_failed in failed:
                 if must_fail in has_failed:
@@ -305,7 +305,7 @@ class CommonTestQuickStartWithAuth(CommonTestQuickStart):
         assert 'came_from=%2Fprefix%2Fadmin%2F' in location, location
 
 
-class TestDefaultQuickStart(CommonTestQuickStartWithAuth):
+class TestDefaultQuickStart(CommonTestQuickStartWithAuth, unittest.TestCase):
     args = ''
 
     @classmethod
@@ -316,14 +316,14 @@ class TestDefaultQuickStart(CommonTestQuickStartWithAuth):
         super(TestDefaultQuickStart, self).setUp()
 
 
-class TestMakoQuickStart(CommonTestQuickStart):
+class TestMakoQuickStart(CommonTestQuickStart, unittest.TestCase):
     args = '--mako --nosa --noauth --skip-tw'
 
-    pass_tests = ['.tests.functional.test_root.']
+    pass_tests = ['/tests/functional/test_root.']
     skip_tests = [
-        '.tests.functional.test_root.test_secc',
-        '.tests.functional.test_authentication.',
-        '.tests.models.test_auth.']
+        'TestRootController::test_secc',
+        '/tests/functional/test_authentication.',
+        '/tests/models/test_auth.']
 
     def test_login(self):
         self.app.get('/login', status=404)
@@ -332,18 +332,14 @@ class TestMakoQuickStart(CommonTestQuickStart):
         self.app.get('/admin', status=404)
 
 
-class TestGenshiQuickStart(CommonTestQuickStart):
+class TestGenshiQuickStart(CommonTestQuickStart, unittest.TestCase):
     args = '--genshi --nosa --noauth --skip-tw'
 
-    pass_tests = ['.tests.functional.test_root.']
+    pass_tests = ['/tests/functional/test_root.']
     skip_tests = [
-        '.tests.functional.test_root.test_secc',
-        '.tests.functional.test_authentication.',
-        '.tests.models.test_auth.']
-
-    @classmethod
-    def setUpClass(cls):
-        super(TestGenshiQuickStart, cls).setUpClass()
+        'TestRootController::test_secc',
+        '/tests/functional/test_authentication.',
+        '/tests/models/test_auth.']
 
     def test_login(self):
         self.app.get('/login', status=404)
@@ -352,14 +348,14 @@ class TestGenshiQuickStart(CommonTestQuickStart):
         self.app.get('/admin', status=404)
 
 
-class TestJinjaQuickStart(CommonTestQuickStart):
+class TestJinjaQuickStart(CommonTestQuickStart, unittest.TestCase):
     args = '--jinja --nosa --noauth --skip-tw'
 
-    pass_tests = ['.tests.functional.test_root.']
+    pass_tests = ['/tests/functional/test_root.']
     skip_tests = [
-        '.tests.functional.test_root.test_secc',
-        '.tests.functional.test_authentication.',
-        '.tests.models.test_auth.']
+        'TestRootController::test_secc',
+        '/tests/functional/test_authentication.',
+        '/tests/models/test_auth.']
 
     def test_login(self):
         self.app.get('/login', status=404)
@@ -368,13 +364,13 @@ class TestJinjaQuickStart(CommonTestQuickStart):
         self.app.get('/admin', status=404)
 
 
-class TestNoDBQuickStart(CommonTestQuickStart):
+class TestNoDBQuickStart(CommonTestQuickStart, unittest.TestCase):
 
-    pass_tests = ['.tests.functional.test_root.']
+    pass_tests = ['/tests/functional/test_root.']
     skip_tests = [
-        '.tests.functional.test_root.test_secc',
-        '.tests.functional.test_authentication.',
-        '.tests.models.test_auth.']
+        'TestRootController::test_secc',
+        '/tests/functional/test_authentication.',
+        '/tests/models/test_auth.']
 
     args = '--nosa --noauth --skip-tw'
 
@@ -385,13 +381,13 @@ class TestNoDBQuickStart(CommonTestQuickStart):
         self.app.get('/admin', status=404)
 
 
-class TestNoAuthQuickStart(CommonTestQuickStart):
+class TestNoAuthQuickStart(CommonTestQuickStart, unittest.TestCase):
 
-    pass_tests = ['.tests.functional.test_root.']
+    pass_tests = ['/tests/functional/test_root.']
     skip_tests = [
-        '.tests.functional.test_root.test_secc',
-        '.tests.functional.test_authentication.',
-        '.tests.models.test_auth.']
+        'TestRootController::test_secc',
+        '/tests/functional/test_authentication.',
+        '/tests/models/test_auth.']
 
     args = '--noauth'
 
@@ -409,7 +405,7 @@ class TestNoAuthQuickStart(CommonTestQuickStart):
         self.app.get('/admin', status=404)
 
 
-class TestMingBQuickStart(CommonTestQuickStartWithAuth):
+class TestMingBQuickStart(CommonTestQuickStartWithAuth, unittest.TestCase):
 
     args = '--ming'
     # preinstall = ['Paste', 'PasteScript']  # Ming doesn't require those anymore
@@ -422,7 +418,7 @@ class TestMingBQuickStart(CommonTestQuickStartWithAuth):
         super(TestMingBQuickStart, self).setUp()
 
 
-class TestNoTWQuickStart(CommonTestQuickStart):
+class TestNoTWQuickStart(CommonTestQuickStart, unittest.TestCase):
 
     args = '--skip-tw'
 
@@ -430,7 +426,7 @@ class TestNoTWQuickStart(CommonTestQuickStart):
         self.app.get('/admin', status=404)
 
 
-class TestMinimalQuickStart(CommonTestQuickStart):
+class TestMinimalQuickStart(CommonTestQuickStart, unittest.TestCase):
 
     args = '--minimal-quickstart'
 
