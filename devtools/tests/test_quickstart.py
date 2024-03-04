@@ -233,11 +233,6 @@ class CommonTestQuickStart(BaseTestQuickStart):
         resp = self.app.get('/login')
         assert '<h1>Login</h1>' in resp
 
-    def test_unauthenticated_admin(self):
-        assert (
-            '<h1>Login</h1>' in self.app.get('/admin/', status=302).follow()
-        )
-
     def test_subtests(self):
         passed, failed, lines = get_passed_and_failed(self.env_cmd,
                                                       self.python_cmd,
@@ -270,35 +265,40 @@ class CommonTestQuickStart(BaseTestQuickStart):
 
 
 class CommonTestQuickStartWithAuth(CommonTestQuickStart):
-    def test_unauthenticated_admin_with_prefix(self):
-        resp1 = self.app.get('/prefix/admin/', extra_environ={'SCRIPT_NAME': '/prefix'}, status=302)
+    def test_secured_controller(self):
         assert (
-            resp1.headers['Location'] == 'http://localhost/prefix/login?came_from=%2Fprefix%2Fadmin%2F'
+            '<h1>Login</h1>' in self.app.get('/secc/', status=302).follow()
+        )
+
+    def test_secured_controller_with_prefix(self):
+        resp1 = self.app.get('/prefix/secc/', extra_environ={'SCRIPT_NAME': '/prefix'}, status=302)
+        assert (
+            resp1.headers['Location'] == 'http://localhost/prefix/login?came_from=%2Fprefix%2Fsecc%2F'
         ), resp1.headers['Location']
         resp2 = resp1.follow(extra_environ={'SCRIPT_NAME': '/prefix'})
         assert '/prefix/login_handler' in resp2, resp2
 
     def test_login_with_prefix(self):
         self.init_database()
-        resp1 = self.app.post('/prefix/login_handler?came_from=%2Fprefix%2Fadmin%2F',
+        resp1 = self.app.post('/prefix/login_handler?came_from=%2Fprefix%2Fsecc%2F',
                               params={'login': 'editor', 'password': 'editpass'},
                               extra_environ={'SCRIPT_NAME': '/prefix'})
         assert (
-            resp1.headers['Location'] == 'http://localhost/prefix/post_login?came_from=%2Fprefix%2Fadmin%2F'
+            resp1.headers['Location'] == 'http://localhost/prefix/post_login?came_from=%2Fprefix%2Fsecc%2F'
         ), resp1.headers['Location']
         resp2 = resp1.follow(extra_environ={'SCRIPT_NAME': '/prefix'})
         assert (
-            resp2.headers['Location'] == 'http://localhost/prefix/admin/'
+            resp2.headers['Location'] == 'http://localhost/prefix/secc/'
         ), resp2.headers['Location']
 
     def test_login_failure_with_prefix(self):
         self.init_database()
-        resp = self.app.post('/prefix/login_handler?came_from=%2Fprefix%2Fadmin%2F',
+        resp = self.app.post('/prefix/login_handler?came_from=%2Fprefix%2Fsecc%2F',
                              params={'login': 'WRONG', 'password': 'WRONG'},
                              extra_environ={'SCRIPT_NAME': '/prefix'})
         location = resp.headers['Location']
         assert 'http://localhost/prefix/login' in location, location
-        assert 'came_from=%2Fprefix%2Fadmin%2F' in location, location
+        assert 'came_from=%2Fprefix%2Fsecc%2F' in location, location
 
 
 class TestDefaultQuickStart(CommonTestQuickStartWithAuth, unittest.TestCase):
@@ -313,7 +313,7 @@ class TestDefaultQuickStart(CommonTestQuickStartWithAuth, unittest.TestCase):
 
 
 class TestMakoQuickStart(CommonTestQuickStart, unittest.TestCase):
-    args = '--mako --nosa --noauth --skip-tw'
+    args = '--mako --nosa --noauth'
 
     pass_tests = ['/tests/functional/test_root.']
     skip_tests = [
@@ -323,13 +323,10 @@ class TestMakoQuickStart(CommonTestQuickStart, unittest.TestCase):
 
     def test_login(self):
         self.app.get('/login', status=404)
-
-    def test_unauthenticated_admin(self):
-        self.app.get('/admin', status=404)
 
 
 class TestGenshiQuickStart(CommonTestQuickStart, unittest.TestCase):
-    args = '--genshi --nosa --noauth --skip-tw'
+    args = '--genshi --nosa --noauth'
 
     pass_tests = ['/tests/functional/test_root.']
     skip_tests = [
@@ -339,13 +336,10 @@ class TestGenshiQuickStart(CommonTestQuickStart, unittest.TestCase):
 
     def test_login(self):
         self.app.get('/login', status=404)
-
-    def test_unauthenticated_admin(self):
-        self.app.get('/admin', status=404)
 
 
 class TestJinjaQuickStart(CommonTestQuickStart, unittest.TestCase):
-    args = '--jinja --nosa --noauth --skip-tw'
+    args = '--jinja --nosa --noauth'
 
     pass_tests = ['/tests/functional/test_root.']
     skip_tests = [
@@ -355,9 +349,6 @@ class TestJinjaQuickStart(CommonTestQuickStart, unittest.TestCase):
 
     def test_login(self):
         self.app.get('/login', status=404)
-
-    def test_unauthenticated_admin(self):
-        self.app.get('/admin', status=404)
 
 
 class TestNoDBQuickStart(CommonTestQuickStart, unittest.TestCase):
@@ -368,13 +359,10 @@ class TestNoDBQuickStart(CommonTestQuickStart, unittest.TestCase):
         '/tests/functional/test_authentication.',
         '/tests/models/test_auth.']
 
-    args = '--nosa --noauth --skip-tw'
+    args = '--nosa --noauth'
 
     def test_login(self):
         self.app.get('/login', status=404)
-
-    def test_unauthenticated_admin(self):
-        self.app.get('/admin', status=404)
 
 
 class TestNoAuthQuickStart(CommonTestQuickStart, unittest.TestCase):
@@ -397,9 +385,6 @@ class TestNoAuthQuickStart(CommonTestQuickStart, unittest.TestCase):
     def test_login(self):
         self.app.get('/login', status=404)
 
-    def test_unauthenticated_admin(self):
-        self.app.get('/admin', status=404)
-
 
 class TestMingBQuickStart(CommonTestQuickStartWithAuth, unittest.TestCase):
 
@@ -412,14 +397,6 @@ class TestMingBQuickStart(CommonTestQuickStartWithAuth, unittest.TestCase):
 
     def setUp(self):
         super(TestMingBQuickStart, self).setUp()
-
-
-class TestNoTWQuickStart(CommonTestQuickStart, unittest.TestCase):
-
-    args = '--skip-tw'
-
-    def test_unauthenticated_admin(self):
-        self.app.get('/admin', status=404)
 
 
 class TestMinimalQuickStart(CommonTestQuickStart, unittest.TestCase):
