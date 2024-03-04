@@ -47,7 +47,7 @@ install_requires = [
     {{endif}}
     {{if sqlalchemy}}
     "zope.sqlalchemy >= 1.2",
-    "sqlalchemy < 2.0",
+    "sqlalchemy < 3.0",
     {{endif}}
     {{if sqlalchemy and migrations}}
     "alembic",
@@ -57,14 +57,6 @@ install_requires = [
     {{endif}}
     {{if auth}}
     "repoze.who",
-    {{endif}}
-    {{if tw1}}
-    "tw.forms",
-    {{elif not skip_tw}}
-    "tw2.forms",
-    {{endif}}
-    {{if not skip_tw and database}}
-    "tgext.admin >= 0.6.1",
     {{endif}}
     "WebHelpers2"
 ]

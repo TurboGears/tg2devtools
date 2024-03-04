@@ -103,14 +103,6 @@ class QuickstartCommand(Command):
             help="disable alembic model migrations",
             action="store_false", dest="migrations", default=True)
 
-        parser.add_argument("--enable-tw1",
-            help="use toscawidgets 1.x in place of 2.x version",
-            action="store_true", dest="tw1", default=False)
-
-        parser.add_argument("--skip-tw",
-            help="Disables ToscaWidgets",
-            action="store_true", dest="skip_tw", default=False)
-
         parser.add_argument("--skip-default-template",
             help="Disables Kajiki default templates",
             action="store_true", dest="skip_default_tmpl", default=False)
@@ -142,9 +134,6 @@ class QuickstartCommand(Command):
             package = beginning_letter.sub("", package)
             package = valid_only.sub("", package)
             opts.package = package
-
-        if opts.tw1:
-            opts.skip_tw = False
 
         if opts.auth:
             if opts.ming:

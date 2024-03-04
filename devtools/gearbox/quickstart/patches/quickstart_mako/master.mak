@@ -77,7 +77,6 @@
         <li><a href="${tg.url('/login')}">Login</a></li>
       % else:
         <li><a href="${tg.url('/logout_handler')}">Logout</a></li>
-        <li><a href="${tg.url('/admin')}">Admin</a></li>
       % endif
       </ul>
     % endif
