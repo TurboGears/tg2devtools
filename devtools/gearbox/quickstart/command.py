@@ -6,6 +6,7 @@ import os
 import shutil
 import sys
 import glob
+from subprocess import Popen
 
 from gearbox.template import GearBoxTemplate
 from gearbox.command import Command
@@ -106,6 +107,22 @@ class QuickstartCommand(Command):
         parser.add_argument("--skip-default-template",
             help="Disables Kajiki default templates",
             action="store_true", dest="skip_default_tmpl", default=False)
+
+        parser.add_argument(
+            "--enable-git",
+            help="Enables git support: place .gitignore does `git init` and `git add .`",
+            action="store_true",
+            dest="git",
+            default=False,
+        )
+
+        parser.add_argument(
+            "--enable-mercurial",
+            help="Enables hg support: place .hgignore does `hg init` and `hg add`",
+            action="store_true",
+            dest="hg",
+            default=False,
+        )
 
         parser.add_argument("--minimal-quickstart",
             help="Throw away example boilerplate from quickstart project",
@@ -265,3 +282,14 @@ class QuickstartCommand(Command):
             # remove existing migrations directory
             package_migrations_dir = os.path.abspath('migration')
             shutil.rmtree(package_migrations_dir, ignore_errors=True)
+
+        for vcs in ('hg', 'git'):
+            if opts.__getattribute__(vcs):
+                print('Enabling %s support' % vcs)
+                Popen([vcs, 'init']).wait()
+                Popen([vcs, 'add', '.']).wait()
+                print('remember to do:')
+                print('cd %s && %s commit -m "gearbox quickstarted"' % (opts.name, vcs))
+            else:
+                vcs_ignore = '.hgignore' if vcs == 'hg' else '.gitignore'
+                os.remove(vcs_ignore)
