@@ -157,9 +157,9 @@ class QuickstartCommand(Command):
                 print(dist)
                 return
 
-        import imp
+        import importlib.util
         try:
-            if imp.find_module(opts.package):
+            if importlib.util.find_spec(opts.package):
                 print('The package name "%s" is already in use'
                     % opts.package)
                 return
