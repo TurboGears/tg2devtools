@@ -1,11 +1,13 @@
 from __future__ import print_function
 
 import re
-import pkg_resources
 import os
 import shutil
 import sys
 import glob
+import importlib.metadata
+import importlib.util
+
 
 from gearbox.template import GearBoxTemplate
 from gearbox.command import Command
@@ -147,17 +149,16 @@ class QuickstartCommand(Command):
 
         opts.database = opts.sqlalchemy or opts.ming
 
-        opts.name = pkg_resources.safe_name(opts.name)
+        opts.name = safe_name(opts.name)
         opts.project = opts.name
 
-        env = pkg_resources.Environment()
-        if opts.name.lower() in env:
-            print('The name "%s" is already in use by' % opts.name)
-            for dist in env[opts.name]:
-                print(dist)
-                return
+        try:
+            importlib.metadata.metadata(opts.name)
+        except importlib.metadata.PackageNotFoundError:
+            pass
+        else:
+            print('The name "%s" is already in use' % opts.name)
 
-        import importlib.util
         try:
             if importlib.util.find_spec(opts.package):
                 print('The package name "%s" is already in use'
@@ -265,3 +266,11 @@ class QuickstartCommand(Command):
             # remove existing migrations directory
             package_migrations_dir = os.path.abspath('migration')
             shutil.rmtree(package_migrations_dir, ignore_errors=True)
+
+
+def safe_name(name: str) -> str:
+    """Convert an arbitrary string to a standard distribution name
+
+    from setuptools.pkg_resources.safe_name
+    """
+    return re.sub('[^A-Za-z0-9.]+', '-', name)

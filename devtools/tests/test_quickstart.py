@@ -3,7 +3,6 @@ import shutil
 import subprocess
 import sys
 import site
-import pkg_resources
 import unittest
 
 from webtest import TestApp
@@ -125,9 +124,6 @@ class BaseTestQuickStart(object):
         # so we can load app in tests which are not executed inside
         # the newly created virtualenv.
         site.addsitedir(site_packages)
-        cls.past_working_set_state = pkg_resources.working_set.__getstate__()
-        pkg_resources.working_set.add_entry(site_packages)
-        pkg_resources.working_set.add_entry(cls.proj_dir)
 
     def setUp(self):
         os.chdir(self.proj_dir)
@@ -150,7 +146,6 @@ class BaseTestQuickStart(object):
         if not hasattr(cls, 'past_working_set_state'):
             return
 
-        pkg_resources.working_set.__setstate__(cls.past_working_set_state)
         cls.exit_virtualenv()
 
         os.chdir(cls.base_dir)
