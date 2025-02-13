@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tg.devtools"
+version = "2.5.0"
+description = "TurboGears 2 DevTools is a command-line toolkit that streamlines TurboGears2 development."
+readme = { file = "README.rst", content-type = "text/x-rst" }
+keywords = ["turbogears", "devtools", "cli", "scaffold", "gearbox"]
+classifiers = []
+authors = [
+    { name = "TurboGears Team 2008-2025", email = "turbogears@groups.google.com" }
+]
+license = { text = "MIT" }
+urls = { Homepage = "http://www.turbogears.org" }
+dependencies = [
+    "TurboGears2 >= 2.5.0a0",
+    "gearbox >= 0.1.1",
+    "backlash >= 0.0.7",
+    "tgext.debugbar"
+]
+
+[project.optional-dependencies]
+testing = [
+    "kajiki",
+    "genshi",
+    "jinja2",
+    "mako",
+    "WebTest"
+]
+
+[project.entry-points."gearbox.commands"]
+quickstart = "devtools.gearbox.quickstart:QuickstartCommand"
+tgext = "devtools.gearbox.tgext:MakeTGExtCommand"
+
+[project.entry-points."gearbox.project_commands"]
+sqla-migrate = "devtools.gearbox.sqlamigrate:MigrateCommand"
+migrate = "devtools.gearbox.alembic_migrate:MigrateCommand"
+tgshell = "devtools.gearbox.tgshell:ShellCommand"
+
+[tool.setuptools.packages.find]
+exclude = ["ez_setup", "examples", "tests"]
+
+[tool.setuptools]
+include-package-data = true
+zip-safe = false
