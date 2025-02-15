@@ -28,6 +28,11 @@ Key Features
 
 Getting Started
 ---------------
+
+.. image:: https://asciinema.org/a/703596.png
+    :target: https://asciinema.org/a/703596
+
+
 **Installation:**
 
 To install via pip, run:
