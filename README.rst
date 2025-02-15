@@ -30,7 +30,7 @@ Getting Started
 ---------------
 
 .. image:: https://asciinema.org/a/703596.png
-    :target: https://asciinema.org/a/703596
+    :target: https://asciinema.org/a/703596?autoplay=1
 
 
 **Installation:**
