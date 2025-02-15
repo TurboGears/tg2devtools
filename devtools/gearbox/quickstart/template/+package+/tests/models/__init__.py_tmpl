@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """Unit test suite for the models of the application."""
 {{if sqlalchemy}}
+import transaction
+
 from {{package}}.model import DBSession
 {{elif ming}}
 from tg import config
@@ -61,7 +63,7 @@ class ModelTest(object):
                 # On MongoDB drop database
                 datastore.conn.drop_database(datastore.db)
             {{elif sqlalchemy}}
-            DBSession.rollback()
+            transaction.abort()
             {{endif}}
             raise
 
@@ -76,7 +78,7 @@ class ModelTest(object):
             # On MongoDB drop database
             datastore.conn.drop_database(datastore.db)
         {{elif sqlalchemy}}
-        DBSession.rollback()
+        transaction.abort()
         {{endif}}
 
     def do_get_dependencies(self):
