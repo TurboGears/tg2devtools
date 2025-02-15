@@ -4,6 +4,7 @@ import re
 import os
 import shutil
 import glob
+import uuid
 import importlib.metadata
 import importlib.util
 
@@ -160,17 +161,8 @@ class QuickstartCommand(Command):
                 % opts.name)
             return
 
-        opts.cookiesecret = None
-        try:
-            import uuid
-            opts.cookiesecret = str(uuid.uuid4())
-        except ImportError:
-            import random
-            import base64
-            import struct
-            opts.cookiesecret = base64.b64encode(''.join(
-                [struct.pack('i', random.randrange(2 ** 31))
-                    for _n in range(6)])).strip()
+        opts.cookiesecret = str(uuid.uuid4())
+        opts.passwordsalt = str(uuid.uuid4())
 
         quickstart_path = os.path.os.path.abspath(os.path.dirname(__file__))
 
