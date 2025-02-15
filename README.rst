@@ -92,4 +92,4 @@ Contributions, bug reports, and feature requests are welcome!
 License
 -------
 TurboGears 2 DevTools is licensed under the MIT License. 
-See the [LICENSE](LICENSE.txt) file for details.
+See the ``LICENSE.txt`` file for details.
