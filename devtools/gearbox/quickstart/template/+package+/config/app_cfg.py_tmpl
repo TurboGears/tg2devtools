@@ -41,14 +41,12 @@ rendering_config['jinja_extensions'] = []
 {{endif}}
 {{if kajiki}}
 rendering_config['renderers'].append('kajiki')
-# Change this in setup.py too for i18n to work.
+# Change this in pyproject.toml too for i18n to work.
 rendering_config['templating.kajiki.strip_text'] = False
 {{endif}}
 {{if genshi}}
 rendering_config['renderers'].append('genshi')
-{{if PYVERSION >= (3, 4)}}
 rendering_config['templating.genshi.name_constant_patch'] = True
-{{endif}}
 {{endif}}
 base_config.update_blueprint(rendering_config)
 

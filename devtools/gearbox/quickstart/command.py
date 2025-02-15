@@ -3,7 +3,6 @@ from __future__ import print_function
 import re
 import os
 import shutil
-import sys
 import glob
 import importlib.metadata
 import importlib.util
@@ -12,8 +11,6 @@ import importlib.util
 from gearbox.template import GearBoxTemplate
 from gearbox.command import Command
 
-PY3 = sys.version_info[0] == 3
-PYVERSION = sys.version_info[:2]
 beginning_letter = re.compile(r"^[^a-z]*")
 valid_only = re.compile(r"[^a-z0-9_]")
 
@@ -36,15 +33,6 @@ class QuickstartTemplate(GearBoxTemplate):
             vars['template_engine'] = 'mako'
         elif vars['kajiki']:
             vars['template_engine'] = 'kajiki'
-
-        template_engine = vars.setdefault('template_engine', 'kajiki')
-
-        if template_engine == 'mako':
-            # Support a Babel extractor default for Mako
-            vars['babel_templates_extractor'] = ("('templates/**.mako',"
-                " 'mako', None),\n%s#%s") % (' ' * 4, ' ' * 8)
-        else:
-            vars['babel_templates_extractor'] = ''
 
         if vars['migrations'] == 'True':
             vars['egg_plugins'].append('tg.devtools')
@@ -193,19 +181,10 @@ class QuickstartCommand(Command):
         #    if value is True:
         #        template_vars[key] = 'True'
 
-        template_vars['PY3'] = PY3
-        template_vars['PYVERSION'] = PYVERSION
         QuickstartTemplate().run(os.path.join(quickstart_path, 'template'),
                                  opts.name, template_vars)
 
         os.chdir(opts.name)
-
-        try:
-            sys.argv = ['setup.py', 'egg_info']
-            imp.load_module('setup', *imp.find_module('setup', ['.']))
-        except:
-            print('Unable to run egg_info for newly created package! Continuing anyway...')
-
         print("")
 
         # dirty hack to allow "empty" dirs

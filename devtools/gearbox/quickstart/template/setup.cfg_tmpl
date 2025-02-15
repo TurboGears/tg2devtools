@@ -1,4 +1,6 @@
-# Babel configuration
+# Babel configuration, 
+# currently this are only supporterd in babel.cfg or setup.cfg
+
 [compile_catalog]
 domain = {{package}}
 directory = {{package}}/i18n

@@ -135,13 +135,6 @@ class User(DeclarativeBase):
         hash = hash.hexdigest()
 
         password = salt + hash
-
-        {{if PY3 == False}}
-        # Make sure the hashed password is a unicode object at the end of the
-        # process because SQLAlchemy _wants_ unicode objects for Unicode cols
-        password = password.decode('utf-8')
-        {{endif}}
-
         return password
 
     def _set_password(self, password):
@@ -264,13 +257,6 @@ class User(MappedClass):
             hash = hash.hexdigest()
 
             password = salt + hash
-
-            {{if PY3 == False}}
-            # Make sure the hashed password is a unicode object at the end of the
-            # process because SQLAlchemy _wants_ unicode objects for Unicode cols
-            password = password.decode('utf-8')
-            {{endif}}
-
             return password
 
         def __set__(self, instance, value):
