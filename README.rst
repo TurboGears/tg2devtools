@@ -8,8 +8,8 @@ TurboGears 2 DevTools
 .. image:: https://img.shields.io/pypi/v/tg.devtools.svg
    :target: https://pypi.python.org/pypi/tg.devtools
 
-.. image:: https://img.shields.io/pypi/pyversions/tg.devtools.svg
-    :target: https://pypi.python.org/pypi/tg.devtools
+.. image:: https://img.shields.io/pypi/pyversions/TurboGears2.svg
+    :target: https://pypi.python.org/pypi/TurboGears2
 
 .. image:: https://img.shields.io/pypi/l/tg.devtools.svg
     :target: https://pypi.python.org/pypi/tg.devtools
