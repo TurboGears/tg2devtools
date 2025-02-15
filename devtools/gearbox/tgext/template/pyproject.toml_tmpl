@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = {{repr(package)}}
+version = "{{version}}"
+description = "{{description or ''}}"
+readme = { file = "README.rst", content-type = "text/x-rst" }
+classifiers = []  # Get strings from http://pypi.python.org/pypi?%3Aaction=list_classifiers
+keywords = {{repr(keywords or '')}}
+authors = [
+    { name = {{repr(author or '')}}, email = {{repr(author_email or '')}} }
+]
+urls = { Homepage = {{repr(url or '')}} }
+license = { text = {{repr(license_name or '')}} }
+dependencies = [
+    "TurboGears2 >= 2.5.0"
+]
+
+[tool.setuptools.packages.find]
+exclude = ["ez_setup", "examples", "tests"]
+
+[tool.setuptools]
+include-package-data = true
+zip-safe = false
+namespace_packages = ["tgext"]

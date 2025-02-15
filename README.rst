@@ -4,11 +4,11 @@ TurboGears 2 DevTools
 
 [![Build Status](https://img.shields.io/travis/TurboGears/tg2devtools.svg)](https://travis-ci.org/TurboGears/tg2devtools)
 [![PyPI version](https://img.shields.io/pypi/v/tg.devtools.svg)](https://pypi.org/project/tg.devtools)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE.txt)
 
 TurboGears 2 DevTools is a command-line toolkit that streamlines the development of TurboGears2 applications. 
 Built on top of Gearbox, it helps you quickly scaffold new full-stack projects, generate extensions, 
-manage database migrations, and launch interactive shells—all from one unified interface.
+manage database migrations, and launch interactive shells all from one unified interface.
 
 Key Features
 ------------
@@ -43,6 +43,7 @@ Use the quickstart command to generate a new TurboGears2 full-stack application:
     gearbox quickstart myproject
 
 This creates a ready-to-run project with a standard directory structure and preconfigured settings.
+To start the newly created web application, follow the instructions in the project ``README.rst`` file.
 
 Usage Examples
 --------------

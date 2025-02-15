@@ -1,10 +1,3 @@
-[nosetests]
-verbosity = 2
-detailed-errors = 1
-with-coverage = false
-cover-erase = true
-cover-package = {{package}}
-
 # Babel configuration
 [compile_catalog]
 domain = {{package}}
@@ -16,6 +9,7 @@ add_comments = TRANSLATORS:
 output_file = {{package}}/i18n/{{package}}.pot
 width = 80
 keywords = l_
+mapping_file = pyproject.toml
 
 [init_catalog]
 domain = {{package}}
@@ -28,22 +22,3 @@ input_file = {{package}}/i18n/{{package}}.pot
 output_dir = {{package}}/i18n
 previous = true
 
-# Static files extraction for TW
-[archive_tw_resources]
-output = {{package}}/public/toscawidgets/
-distributions = {{package}}
-#yuicompressor = /home/someuser/bin/yuicompressor.jar
-#compresslevel = 2
-onepass = true
-
-[archive_tw2_resources]
-output = {{package}}/public/tw2/
-distributions = {{package}}
-force = true
-#yuicompressor = /home/someuser/bin/yuicompressor.jar
-#compresslevel = 2
-onepass = true
-
-[aliases]
-# A handy alias to make a release to pypi
-release = egg_info -RDb "" sdist bdist_egg register upload

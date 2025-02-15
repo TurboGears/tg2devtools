@@ -1,0 +1,117 @@
+# Quickstarted Options:
+#
+# sqlalchemy: {{sqlalchemy}}
+# auth:       {{auth}}
+# mako:       {{mako}}
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "{{project}}"
+version = "0.1"
+description = ""
+authors = [
+  { name = "Uknown", email = "unknown@email.com" }
+]
+urls = { Homepage = "http://unknown.org" }
+readme = { file = "README.rst", content-type = "text/x-rst" }
+dependencies = [
+  "TurboGears2 >= 2.4.3",
+  "Beaker >= 1.8.0",
+  {{if kajiki}}
+  "Kajiki >= 0.6.3",
+  {{endif}}
+  {{if genshi}}
+  "Genshi",
+  {{endif}}
+  {{if mako}}
+  "Mako",
+  {{endif}}
+  {{if sqlalchemy}}
+  "zope.sqlalchemy >= 1.2",
+  "sqlalchemy < 3.0",
+  {{endif}}
+  {{if sqlalchemy and migrations}}
+  "alembic",
+  {{endif}}
+  {{if ming}}
+  "ming>=0.4.3",
+  {{endif}}
+  {{if auth}}
+  "repoze.who",
+  {{endif}}
+  "WebHelpers2",
+  "Babel > 2.12",
+  {{if jinja}}
+  "jinja2",
+  {{endif}}
+]
+
+[project.optional-dependencies]
+testing = [
+  "WebTest >= 1.2.3",
+  "pytest",
+  "coverage",
+  "gearbox"
+]
+
+[tool.setuptools]
+include-package-data = true
+zip-safe = false
+
+[tool.setuptools.packages.find]
+exclude = []
+
+[tool.setuptools.package-data]
+{{package}} = [
+  "i18n/*/LC_MESSAGES/*.mo",
+  "templates/*/*",
+  "public/*/*"
+]
+
+[tool.babel]
+domain = "{{package}}"
+
+[[tool.babel.mappings]]
+method = "python"
+pattern = "**.py"
+
+[[tool.babel.mappings]]
+method = "ignore"
+pattern = "public/**"
+
+{{if mako}}
+[[tool.babel.mappings]]
+method = "mako"
+pattern = "**/templates/**.mak"
+{{endif}}
+
+{{if kajiki}}
+[[tool.babel.mappings]]
+method = "kajiki"
+pattern = "templates/**.xhtml"
+
+[tool.babel.mappings.options]
+strip_text = false
+extract_python = true
+{{endif}}
+
+{{if jinja}}
+[[tool.babel.mappings]]
+method = "jinja2"
+pattern = "templates/**.jinja"
+{{endif}}
+
+{{if genshi}}
+[[tool.babel.mappings]]
+method = "genshi"
+pattern = "templates/**.html"
+{{endif}}
+
+[project.entry-points."paste.app_factory"]
+main = "{{package}}.config.application:make_app"
+
+[project.entry-points."gearbox.plugins"]
+turbogears-devtools = "tg.devtools"
