@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "tg.devtools"
-version = "2.5.0"
+version = "2.5.1dev1"
 description = "TurboGears 2 DevTools is a command-line toolkit that streamlines TurboGears2 development."
 readme = { file = "README.rst", content-type = "text/x-rst" }
 keywords = ["turbogears", "devtools", "cli", "scaffold", "gearbox"]
@@ -15,7 +15,7 @@ authors = [
 license = { text = "MIT" }
 urls = { Homepage = "http://www.turbogears.org" }
 dependencies = [
-    "TurboGears2 >= 2.5.0",
+    "TurboGears2 >= 2.5.1dev1",
     "gearbox >= 0.3.2",
     "backlash >= 0.0.7",
     "tgext.debugbar"
