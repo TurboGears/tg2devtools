@@ -15,7 +15,7 @@ authors = [
 license = { text = "MIT" }
 urls = { Homepage = "http://www.turbogears.org" }
 dependencies = [
-    "TurboGears2 >= 2.5.0a0",
+    "TurboGears2 >= 2.5.0",
     "gearbox >= 0.3.2",
     "backlash >= 0.0.7",
     "tgext.debugbar"

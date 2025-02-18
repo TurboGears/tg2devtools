@@ -18,7 +18,7 @@ authors = [
 urls = { Homepage = "http://unknown.org" }
 readme = { file = "README.rst", content-type = "text/x-rst" }
 dependencies = [
-  "TurboGears2 >= 2.4.3",
+  "TurboGears2 >= 2.5.0",
   "Beaker >= 1.8.0",
   {{if kajiki}}
   "Kajiki >= 0.6.3",
