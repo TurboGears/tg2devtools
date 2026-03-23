@@ -4,10 +4,10 @@ you would include information such as the information below:
 Installation and Setup
 ======================
 
-Install ``{{project}}`` using the setup.py script::
+Install ``{{project}}`` in editable mode with pip::
 
     $ cd {{project}}
-    $ python setup.py develop
+    $ python -m pip install -e .[testing]
 
 Create the project database for any model classes defined::
 
