@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 """Test suite for the TG app's models"""
-from __future__ import unicode_literals
-
 from {{package}} import model
 from {{package}}.tests.models import ModelTest
 

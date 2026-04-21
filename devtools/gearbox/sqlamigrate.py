@@ -37,13 +37,8 @@ Usage:
 check http://code.google.com/p/sqlalchemy-migrate/wiki/MigrateVersioning for detail.
 
 """
-from __future__ import print_function
+from configparser import ConfigParser
 from gearbox.command import Command
-
-try:
-    from configparser import ConfigParser
-except ImportError:
-    from ConfigParser import ConfigParser
 
 import sys, os
 

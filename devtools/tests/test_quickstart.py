@@ -15,7 +15,6 @@ from gearbox.commands.setup_app import SetupAppCommand
 
 
 PY_VERSION = sys.version_info[:2]
-PY2 = sys.version_info[0] == 2
 PROJECT_NAME = 'TGTest-%02d'
 ENV_NAME = 'TESTENV'
 CLEANUP = True

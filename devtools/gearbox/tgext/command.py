@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 from gearbox.command import TemplateCommand
 import re, getpass
 

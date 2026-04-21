@@ -25,7 +25,7 @@ class TestRootController(TestController):
         assert msg in response
 
         # You can also access a BeautifulSoup'ed response in your tests
-        # (First run $ easy_install BeautifulSoup
+        # (First run `pip install beautifulsoup4`
         # and then uncomment the next two lines)
 
         # links = response.html.findAll('a')
