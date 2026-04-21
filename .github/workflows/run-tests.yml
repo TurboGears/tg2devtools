@@ -1,12 +1,19 @@
 name: run-tests
-on: [push, pull_request, workflow_dispatch]
+on:
+  push:
+    branches:
+      - main
+      - master
+      - development
+  pull_request:
+  workflow_dispatch:
 jobs:
   build:
     name: Run tests
     strategy:
       matrix:
         os: [ubuntu-latest]
-        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
