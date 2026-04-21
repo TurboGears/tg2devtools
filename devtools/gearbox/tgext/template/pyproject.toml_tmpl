@@ -7,8 +7,9 @@ name = {{repr(package)}}
 version = "{{version}}"
 description = "{{description or ''}}"
 readme = { file = "README.rst", content-type = "text/x-rst" }
+requires-python = ">=3.8"
 classifiers = []  # Get strings from http://pypi.python.org/pypi?%3Aaction=list_classifiers
-keywords = {{repr(keywords or '')}}
+keywords = [{{repr(keywords or '')}}]
 authors = [
     { name = {{repr(author or '')}}, email = {{repr(author_email or '')}} }
 ]
@@ -24,4 +25,3 @@ exclude = ["ez_setup", "examples", "tests"]
 [tool.setuptools]
 include-package-data = true
 zip-safe = false
-namespace_packages = ["tgext"]

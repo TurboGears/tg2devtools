@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 import os, sys
 import tg
 
@@ -71,9 +69,9 @@ class ShellCommand(Command):
         if self._can_import(helpers_module):
             locs['h'] = sys.modules[helpers_module]
 
-        exec ('import tg') in locs
-        exec ('from tg import app_globals, config, request, response, '
-              'session, tmpl_context, url') in locs
+        exec('import tg', locs)
+        exec('from tg import app_globals, config, request, response, '
+             'session, tmpl_context, url', locs)
         locs.pop('__builtins__', None)
 
         # Import all objects from the base module
