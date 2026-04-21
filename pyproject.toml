@@ -6,6 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "tg.devtools"
 version = "2.5.1dev1"
 description = "TurboGears 2 DevTools is a command-line toolkit that streamlines TurboGears2 development."
+requires-python = ">=3.10"
 readme = { file = "README.rst", content-type = "text/x-rst" }
 keywords = ["turbogears", "devtools", "cli", "scaffold", "gearbox"]
 classifiers = []
