@@ -42,6 +42,7 @@ sqla-migrate = "devtools.gearbox.sqlamigrate:MigrateCommand"
 migrate = "devtools.gearbox.alembic_migrate:MigrateCommand"
 tgshell = "devtools.gearbox.tgshell:ShellCommand"
 i18n = "devtools.gearbox.i18n:I18nCommand"
+tginfo = "devtools.gearbox.tginfo:TgInfoCommand"
 
 [tool.setuptools.packages.find]
 exclude = ["ez_setup", "examples", "tests"]

@@ -3,6 +3,7 @@
 *.mak.py
 *.pyc
 *.pyo
+__pycache__/
 *.swp
 TESTENV
 TGTest-*
