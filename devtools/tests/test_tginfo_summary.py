@@ -12,7 +12,12 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from devtools.gearbox.tginfo_summary import collect_project_summary, format_project_summary
+from devtools.gearbox.tginfo_summary import (
+    collect_project_scaffolds,
+    collect_project_summary,
+    format_project_scaffolds,
+    format_project_summary,
+)
 
 
 class TgInfoSummaryTests(unittest.TestCase):
@@ -201,6 +206,56 @@ class TgInfoSummaryTests(unittest.TestCase):
         for forbidden in ('count', 'pyproject', 'recipe', 'next step', 'agent playbook'):
             self.assertNotIn(forbidden, output.lower())
 
+    def test_scaffolds_collects_gearbox_discovery_metadata_without_loading_app(self):
+        scaffold_dir = self.project_root / 'controllers'
+        scaffold_dir.mkdir()
+        template_file = scaffold_dir / 'controller.py.template'
+        template_file.write_text('controller scaffold')
+        calls = []
+        load_calls = self.install_fake_tg({'package_name': 'sampleapp'})
+        gearbox = types.ModuleType('gearbox')
+        scaffolding = types.ModuleType('gearbox.scaffolding')
+
+        def discover_scaffold_templates(lookup):
+            calls.append(lookup)
+            return (
+                types.SimpleNamespace(
+                    name='controller',
+                    path=str(template_file),
+                    relative_dir='controllers',
+                    output_extension='.py',
+                ),
+            )
+
+        scaffolding.discover_scaffold_templates = discover_scaffold_templates
+        gearbox.scaffolding = scaffolding
+
+        with patch.dict(sys.modules, {'gearbox': gearbox, 'gearbox.scaffolding': scaffolding}):
+            scaffolds = collect_project_scaffolds(str(self.project_root))
+
+        self.assertEqual(calls, [str(self.project_root)])
+        self.assertEqual(load_calls, [])
+        self.assertEqual(scaffolds, [{
+            'name': 'controller',
+            'template_path': 'controllers/controller.py.template',
+            'relative_dir': 'controllers',
+            'output_extension': '.py',
+            'default_output_pattern': 'controllers/{target}.py',
+        }])
+
+    def test_human_scaffolds_output_is_factual_and_omits_write_advice(self):
+        output = format_project_scaffolds([{
+            'name': 'controller',
+            'template_path': 'controllers/controller.py.template',
+            'relative_dir': 'controllers',
+            'output_extension': '.py',
+            'default_output_pattern': 'controllers/{target}.py',
+        }])
+
+        self.assertIn('controller [.py] controllers/controller.py.template -> controllers/{target}.py', output)
+        for forbidden in ('mount', 'migration', 'setup-app', 'next step'):
+            self.assertNotIn(forbidden, output.lower())
+
 
 class TgInfoCommandTests(unittest.TestCase):
     def setUp(self):
@@ -348,6 +403,32 @@ class TgInfoCommandTests(unittest.TestCase):
         payload = json.loads(output.getvalue())
         self.assertEqual(payload['config_file'], '/project/test.ini')
         self.assertEqual(payload['database'], {'enabled': False, 'orm': None})
+
+    def test_scaffolds_subcommand_prints_json_from_shared_collector(self):
+        command = self.module.TgInfoCommand(None, {})
+        opts = command.get_parser('gearbox tginfo').parse_args([
+            'scaffolds', '--project', '/project', '--config', 'test.ini', '--json',
+        ])
+
+        with patch.object(self.module, 'collect_project_scaffolds', return_value=[{
+            'name': 'controller',
+            'template_path': 'controllers/controller.py.template',
+            'relative_dir': 'controllers',
+            'output_extension': '.py',
+            'default_output_pattern': 'controllers/{target}.py',
+        }]) as collector:
+            output = io.StringIO()
+            with contextlib.redirect_stdout(output):
+                command.take_action(opts)
+
+        collector.assert_called_once_with(project='/project', config='test.ini')
+        self.assertEqual(json.loads(output.getvalue()), [{
+            'name': 'controller',
+            'template_path': 'controllers/controller.py.template',
+            'relative_dir': 'controllers',
+            'output_extension': '.py',
+            'default_output_pattern': 'controllers/{target}.py',
+        }])
 
 
 if __name__ == '__main__':

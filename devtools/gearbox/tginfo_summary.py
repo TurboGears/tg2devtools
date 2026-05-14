@@ -103,6 +103,43 @@ def collect_project_templates(project='.', config='development.ini'):
         return _template_rows(project_root, tg_config, routes)
 
 
+def collect_project_scaffolds(project='.', config='development.ini'):
+    """Collect project scaffold templates through the Gearbox scaffold API.
+
+    :param str project: Project root directory.
+    :param str config: Accepted for tginfo CLI consistency; scaffolds avoid app loading.
+    """
+    try:
+        import gearbox.scaffolding as scaffolding
+    except ImportError as error:
+        if getattr(error, 'name', None) in ('gearbox', 'gearbox.scaffolding'):
+            return []
+        raise
+
+    discover_scaffold_templates = getattr(scaffolding, 'discover_scaffold_templates', None)
+    if discover_scaffold_templates is None:
+        return []
+
+    project_root = os.path.realpath(os.path.abspath(os.path.expanduser(project)))
+    rows = []
+    for template in discover_scaffold_templates(project_root):
+        relative_dir = getattr(template, 'relative_dir', '.') or '.'
+        relative_dir = relative_dir.replace(os.path.sep, '/')
+        output_extension = getattr(template, 'output_extension', '') or ''
+        if relative_dir == '.':
+            default_output_pattern = f'{{target}}{output_extension}'
+        else:
+            default_output_pattern = f'{relative_dir}/{{target}}{output_extension}'
+        rows.append({
+            'name': getattr(template, 'name', None),
+            'template_path': _relative_path(project_root, getattr(template, 'path', '')),
+            'relative_dir': relative_dir,
+            'output_extension': output_extension,
+            'default_output_pattern': default_output_pattern,
+        })
+    return rows
+
+
 def format_project_summary(summary):
     """Format a project summary for humans without adding advice or counts.
 
@@ -209,6 +246,25 @@ def format_project_templates(templates):
         lines.append(
             f"{row.get('file') or 'unknown file'} [{row.get('renderer') or 'unknown'}] "
             f"{name} exposed by {backlinks}"
+        )
+    return '\n'.join(lines) + '\n'
+
+
+def format_project_scaffolds(scaffolds):
+    """Format scaffold rows for humans.
+
+    :param list scaffolds: Rows returned by :func:`collect_project_scaffolds`.
+    """
+    if not scaffolds:
+        return 'No scaffold templates found.\n'
+
+    lines = []
+    for row in scaffolds:
+        path = row.get('template_path') or 'unknown template'
+        pattern = row.get('default_output_pattern') or 'unknown output'
+        lines.append(
+            f"{row.get('name') or 'unknown'} [{row.get('output_extension') or 'no extension'}] "
+            f"{path} -> {pattern}"
         )
     return '\n'.join(lines) + '\n'
 
