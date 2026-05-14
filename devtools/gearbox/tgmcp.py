@@ -33,8 +33,25 @@ SERVER_INSTRUCTIONS = (
 _AGENTS_SECTION_HEADING = '## TurboGears DevTools'
 _AGENTS_SECTION = (
     f'{_AGENTS_SECTION_HEADING}\n\n'
-    'This project can be inspected with TurboGears DevTools. Prefer configured '
-    'TurboGears MCP tools when available.\n'
+    'This is a TurboGears project. Use Gearbox as the entrypoint for TurboGears '
+    'development commands.\n\n'
+    '- Prefer the configured TurboGears MCP tools when available to inspect routes, '
+    'controllers, models, templates, and project scaffolds.\n'
+    '- When MCP tools are unavailable, use the equivalent `gearbox tginfo ... '
+    '--json` inspection commands instead of guessing from files alone.\n'
+    '- Use `gearbox scaffold` to create new models, controllers, and templates '
+    'from the project\'s scaffold templates, then edit generated code directly as needed.\n'
+    '- Use `gearbox tgshell -c development.ini` to run Python code in the fully '
+    'loaded application context. This is the preferred way to do runtime checks '
+    'and WebTest requests.\n'
+    '- Use `gearbox serve -c development.ini` to run the application locally when '
+    'browser/manual testing is needed.\n'
+    '- Use `gearbox setup-app -c development.ini` only when intentionally '
+    'initializing application data/schema for a development or test environment.\n'
+    '- Use migration commands such as `gearbox migrate` only when intentionally '
+    'creating, inspecting, or applying database migrations.\n'
+    '- Do not run `setup-app`, migrations, or other database-mutating commands as '
+    'part of routine inspection.\n'
 )
 
 _TGMCP_ARGS = ['tgmcp', '--project', '.', '--config', 'development.ini']
@@ -352,9 +369,12 @@ def _agents_md_content(path):
                 content = existing.read()
         except OSError as error:
             raise _TgMcpInitError(_merge_failure(path, 'pi', f'existing AGENTS.md cannot be read: {error}'))
-        if _AGENTS_SECTION_HEADING in content:
+        if re.search(r'(?m)^## TurboGears DevTools[ \t]*$', content):
             return None
-        return content.rstrip() + '\n\n' + _AGENTS_SECTION
+        if not content:
+            return _AGENTS_SECTION
+        separator = '' if content.endswith('\n\n') else '\n' if content.endswith('\n') else '\n\n'
+        return content + separator + _AGENTS_SECTION
     return _AGENTS_SECTION
 
 

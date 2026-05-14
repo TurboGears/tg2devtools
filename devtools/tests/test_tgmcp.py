@@ -165,6 +165,82 @@ class TgMcpProtocolTests(unittest.TestCase):
                 with open(os.path.join(project, relative_path)) as generated:
                     self.assertEqual(generated.read(), expected)
 
+    def test_init_creates_appends_and_preserves_agents_md_guidance(self):
+        required_guidance = [
+            'Use Gearbox as the entrypoint for TurboGears development commands',
+            'configured TurboGears MCP tools',
+            'gearbox tginfo ... --json',
+            'gearbox scaffold',
+            'gearbox tgshell -c development.ini',
+            'WebTest requests',
+            'gearbox serve -c development.ini',
+            'gearbox setup-app -c development.ini',
+            'gearbox migrate',
+            'Do not run `setup-app`, migrations, or other database-mutating commands',
+        ]
+
+        with tempfile.TemporaryDirectory() as project:
+            code, stdout, stderr = self.run_command(['--project', project, 'init', 'pi'])
+
+            self.assertEqual(code, 0)
+            self.assertIn('Configured TurboGears MCP init target pi', stdout)
+            self.assertEqual(stderr, '')
+            with open(os.path.join(project, 'AGENTS.md')) as agents:
+                created = agents.read()
+            self.assertTrue(created.startswith('## TurboGears DevTools\n\n'))
+            for phrase in required_guidance:
+                self.assertIn(phrase, created)
+
+            code, stdout, stderr = self.run_command(['--project', project, 'init', 'pi'])
+
+            self.assertEqual(code, 0)
+            self.assertEqual(stderr, '')
+            with open(os.path.join(project, 'AGENTS.md')) as agents:
+                self.assertEqual(agents.read(), created)
+
+        with tempfile.TemporaryDirectory() as project:
+            original = '# Existing project guidance\n\nKeep this exact guidance.  \n\n'
+            with open(os.path.join(project, 'AGENTS.md'), 'w') as agents:
+                agents.write(original)
+
+            code, stdout, stderr = self.run_command(['--project', project, 'init', 'pi'])
+
+            self.assertEqual(code, 0)
+            self.assertEqual(stderr, '')
+            with open(os.path.join(project, 'AGENTS.md')) as agents:
+                updated = agents.read()
+            self.assertTrue(updated.startswith(original))
+            self.assertEqual(updated.count('## TurboGears DevTools'), 1)
+            for phrase in required_guidance:
+                self.assertIn(phrase, updated)
+
+            code, stdout, stderr = self.run_command(['--project', project, 'init', 'pi'])
+
+            self.assertEqual(code, 0)
+            self.assertEqual(stderr, '')
+            with open(os.path.join(project, 'AGENTS.md')) as agents:
+                self.assertEqual(agents.read(), updated)
+
+        with tempfile.TemporaryDirectory() as project:
+            original = (
+                b'# Existing project guidance\n\n'
+                b'Keep this manual guidance before the tool section.\n\n'
+                b'## TurboGears DevTools\n\n'
+                b'Maintain this hand-written TurboGears guidance exactly.  \n\n'
+                b'## Local Notes\n\n'
+                b'Keep this manual guidance after the tool section.\n'
+            )
+            path = os.path.join(project, 'AGENTS.md')
+            with open(path, 'wb') as agents:
+                agents.write(original)
+
+            code, stdout, stderr = self.run_command(['--project', project, 'init', 'pi'])
+
+            self.assertEqual(code, 0)
+            self.assertEqual(stderr, '')
+            with open(path, 'rb') as agents:
+                self.assertEqual(agents.read(), original)
+
     def test_init_respects_single_targets_and_no_agents_md(self):
         with tempfile.TemporaryDirectory() as project:
             code, stdout, stderr = self.run_command(['--project', project, 'init', 'claude', '--no-agents-md'])
