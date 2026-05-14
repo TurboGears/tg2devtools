@@ -36,6 +36,7 @@ testing = [
 quickstart = "devtools.gearbox.quickstart:QuickstartCommand"
 quickstart-api = "devtools.gearbox.quickstart:QuickstartAPICommand"
 tgext = "devtools.gearbox.tgext:MakeTGExtCommand"
+tgmcp = "devtools.gearbox.tgmcp:TgMcpCommand"
 
 [project.entry-points."gearbox.project_commands"]
 sqla-migrate = "devtools.gearbox.sqlamigrate:MigrateCommand"
@@ -43,6 +44,7 @@ migrate = "devtools.gearbox.alembic_migrate:MigrateCommand"
 tgshell = "devtools.gearbox.tgshell:ShellCommand"
 i18n = "devtools.gearbox.i18n:I18nCommand"
 tginfo = "devtools.gearbox.tginfo:TgInfoCommand"
+tgmcp = "devtools.gearbox.tgmcp:TgMcpCommand"
 
 [tool.setuptools.packages.find]
 exclude = ["ez_setup", "examples", "tests"]
