@@ -368,7 +368,7 @@ class TgInfoRoutesTests(unittest.TestCase):
         self.assertEqual(secure['controller_allow_only'], 'manage permission')
 
         lookup = by_path_action[('/*', '_lookup')]
-        self.assertEqual(lookup['kind'], 'lookup')
+        self.assertEqual(lookup['kind'], 'dynamic_lookup')
         self.assertEqual(lookup['params'], [
             {'name': 'remainder', 'kind': 'var_positional', 'required': False},
         ])
@@ -376,7 +376,7 @@ class TgInfoRoutesTests(unittest.TestCase):
 
         default = by_path_action[('/secc/*', '_default')]
         default_source = f"sampleapp/controllers/root.py:{inspect.getsourcelines(self.root_module.SecureController._default)[1]}"
-        self.assertEqual(default['kind'], 'default')
+        self.assertEqual(default['kind'], 'dynamic_default')
         self.assertEqual(default['action_source'], default_source)
         self.assertFalse(os.path.isabs(default['action_source'].rsplit(':', 1)[0]))
         self.assertEqual(default['action_doc'], 'Default docs.')

@@ -507,12 +507,12 @@ class _RouteCollector:
 
                 if name == '_lookup':
                     if callable(value):
-                        self.rows.append(self._row(controller, self._dispatch_path(segments), 'lookup', name, value))
+                        self.rows.append(self._row(controller, self._dispatch_path(segments), 'dynamic_lookup', name, value))
                     continue
 
                 if name == '_default':
                     if callable(value) and self._is_exposed(value):
-                        self.rows.append(self._row(controller, self._dispatch_path(segments), 'default', name, value))
+                        self.rows.append(self._row(controller, self._dispatch_path(segments), 'dynamic_default', name, value))
                     continue
 
                 if name.startswith('_'):
