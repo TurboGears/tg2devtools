@@ -1,5 +1,6 @@
 import re
 import os
+import shlex
 import shutil
 import uuid
 import importlib.metadata
@@ -172,6 +173,10 @@ class QuickstartCommand(Command):
             # remove existing migrations directory
             package_migrations_dir = os.path.abspath('migration')
             shutil.rmtree(package_migrations_dir, ignore_errors=True)
+
+        print('To enable TurboGears-aware coding agents for this project, run: '
+              'cd %s; gearbox tgmcp init claude # or codex, vscode, pi, all'
+              % shlex.quote('./' + opts.name if opts.name.startswith('-') else opts.name))
 
 
 def safe_name(name: str) -> str:
