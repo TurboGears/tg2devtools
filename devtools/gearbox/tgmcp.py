@@ -1,17 +1,81 @@
 import json
 import os
 import sys
+from contextlib import redirect_stdout
 
 from gearbox.command import Command
+
+from devtools.gearbox.tginfo_summary import (
+    collect_project_models,
+    collect_project_routes,
+    collect_project_scaffolds,
+    collect_project_summary,
+    collect_project_templates,
+)
 
 
 SERVER_INSTRUCTIONS = (
     'Prefer TurboGears MCP tools for static inspection of routes, controllers, '
-    'models, templates, and scaffolds. Use tg_scaffold or gearbox scaffold to '
-    'create framework-conventional structure, then edit files directly. Do not '
-    'run setup-app or migrations unless explicitly asked. For runtime request '
+    'models, templates, and scaffolds. Use gearbox scaffold to create '
+    'framework-conventional structure, then edit files directly. Do not run '
+    'setup-app or migrations unless explicitly asked. For runtime request '
     'debugging, use gearbox tgshell -c development.ini with WebTest requests.'
 )
+
+_READ_TOOLS = [
+    {
+        'name': 'tg_project_summary',
+        'description': (
+            'Use to get factual TurboGears project basics: package, renderers, '
+            'paths, root controller, database, and auth state.'
+        ),
+        'result_key': 'summary',
+        'collector': collect_project_summary,
+        'output_type': 'object',
+    },
+    {
+        'name': 'tg_list_routes',
+        'description': (
+            'Use to inspect the static TurboGears object-dispatch route map, '
+            'exposed actions, params, requirements, validations, and templates.'
+        ),
+        'result_key': 'routes',
+        'collector': collect_project_routes,
+        'output_type': 'array',
+    },
+    {
+        'name': 'tg_list_models',
+        'description': (
+            'Use to list models exported by the project model package, including '
+            'ORM kind, source, and docstrings when available.'
+        ),
+        'result_key': 'models',
+        'collector': collect_project_models,
+        'output_type': 'array',
+    },
+    {
+        'name': 'tg_list_templates',
+        'description': (
+            'Use to inventory recognized template files and see which static '
+            'routes expose each template.'
+        ),
+        'result_key': 'templates',
+        'collector': collect_project_templates,
+        'output_type': 'array',
+    },
+    {
+        'name': 'tg_list_scaffolds',
+        'description': (
+            'Use to discover available Gearbox scaffold templates before '
+            'creating conventional project structure.'
+        ),
+        'result_key': 'scaffolds',
+        'collector': collect_project_scaffolds,
+        'output_type': 'array',
+    },
+]
+
+_READ_TOOLS_BY_NAME = {tool['name']: tool for tool in _READ_TOOLS}
 
 
 class TgMcpCommand(Command):
@@ -41,14 +105,14 @@ class TgMcpCommand(Command):
         try:
             os.chdir(project_dir)
             sys.path.insert(0, project_dir)
-            _serve_mcp_stdio(sys.stdin, sys.stdout, sys.stderr)
+            _serve_mcp_stdio(sys.stdin, sys.stdout, sys.stderr, project_dir, config_file)
         finally:
             sys.path[:] = previous_sys_path
             os.chdir(previous_cwd)
 
 
-def _serve_mcp_stdio(stdin, stdout, stderr):
-    server = _McpServer(stdout, stderr)
+def _serve_mcp_stdio(stdin, stdout, stderr, project='.', config='development.ini'):
+    server = _McpServer(stdout, stderr, project, config)
     for raw_line in stdin:
         line = raw_line.strip()
         if not line:
@@ -57,9 +121,11 @@ def _serve_mcp_stdio(stdin, stdout, stderr):
 
 
 class _McpServer:
-    def __init__(self, stdout, stderr):
+    def __init__(self, stdout, stderr, project, config):
         self.stdout = stdout
         self.stderr = stderr
+        self.project = project
+        self.config = config
 
     def handle_line(self, line):
         try:
@@ -88,9 +154,9 @@ class _McpServer:
         if method == 'initialize':
             self._write_result(request_id, self._initialize_result(message.get('params') or {}))
         elif method == 'tools/list':
-            self._write_result(request_id, {'tools': []})
+            self._write_result(request_id, {'tools': self._tool_definitions()})
         elif method == 'tools/call':
-            self._write_result(request_id, self._tool_execution_error(message.get('params') or {}))
+            self._write_result(request_id, self._call_tool(message.get('params') or {}))
         else:
             self._write_error(request_id, -32601, 'Method not found')
 
@@ -105,12 +171,53 @@ class _McpServer:
             'instructions': SERVER_INSTRUCTIONS,
         }
 
-    def _tool_execution_error(self, params):
+    def _tool_definitions(self):
+        tools = []
+        for tool in _READ_TOOLS:
+            result_key = tool['result_key']
+            tools.append({
+                'name': tool['name'],
+                'description': tool['description'],
+                'inputSchema': {
+                    'type': 'object',
+                    'properties': {},
+                    'additionalProperties': False,
+                },
+                'outputSchema': {
+                    'type': 'object',
+                    'properties': {
+                        result_key: {'type': tool['output_type']},
+                    },
+                    'required': [result_key],
+                    'additionalProperties': False,
+                },
+            })
+        return tools
+
+    def _call_tool(self, params):
         name = params.get('name') if isinstance(params, dict) else None
-        if not name:
-            name = 'unknown'
+        tool = _READ_TOOLS_BY_NAME.get(name)
+        if tool is None:
+            return self._tool_execution_error(f"Unknown tool: {name or 'unknown'}")
+
+        try:
+            with redirect_stdout(self.stderr):
+                result = tool['collector'](project=self.project, config=self.config)
+        except Exception as error:
+            return self._tool_execution_error(f"{name} failed: {error}")
+
+        structured = {tool['result_key']: result}
         return {
-            'content': [{'type': 'text', 'text': 'Unknown tool: %s' % name}],
+            'content': [{
+                'type': 'text',
+                'text': json.dumps(structured, indent=2, sort_keys=True),
+            }],
+            'structuredContent': structured,
+        }
+
+    def _tool_execution_error(self, message):
+        return {
+            'content': [{'type': 'text', 'text': message}],
             'isError': True,
         }
 

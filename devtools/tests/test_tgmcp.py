@@ -42,11 +42,11 @@ class TgMcpProtocolTests(unittest.TestCase):
             else:
                 sys.modules[name] = module
 
-    def serve(self, messages):
+    def serve(self, messages, project='.', config='development.ini'):
         stdin = io.StringIO(''.join(json.dumps(message) + '\n' for message in messages))
         stdout = io.StringIO()
         stderr = io.StringIO()
-        self.module._serve_mcp_stdio(stdin, stdout, stderr)
+        self.module._serve_mcp_stdio(stdin, stdout, stderr, project, config)
         return [json.loads(line) for line in stdout.getvalue().splitlines()], stderr.getvalue()
 
     def test_initialize_initialized_tools_list_and_unknown_tool_call(self):
@@ -78,11 +78,27 @@ class TgMcpProtocolTests(unittest.TestCase):
         instructions = initialize['instructions']
         self.assertIn('Prefer TurboGears MCP tools', instructions)
         self.assertIn('gearbox scaffold', instructions)
+        self.assertNotIn('tg_scaffold', instructions)
         self.assertIn('edit files directly', instructions)
         self.assertIn('Do not run setup-app or migrations unless explicitly asked', instructions)
         self.assertIn('tgshell -c development.ini', instructions)
         self.assertIn('WebTest', instructions)
-        self.assertEqual(responses[1]['result'], {'tools': []})
+        tools = responses[1]['result']['tools']
+        self.assertEqual(
+            [tool['name'] for tool in tools],
+            ['tg_project_summary', 'tg_list_routes', 'tg_list_models', 'tg_list_templates', 'tg_list_scaffolds'],
+        )
+        for tool in tools:
+            self.assertTrue(tool['name'].startswith('tg_'))
+            self.assertNotIn('playbook', tool['description'].lower())
+            self.assertIn('Use', tool['description'])
+            self.assertEqual(tool['inputSchema']['type'], 'object')
+            self.assertEqual(tool['inputSchema']['properties'], {})
+            self.assertFalse(tool['inputSchema']['additionalProperties'])
+            self.assertEqual(tool['outputSchema']['type'], 'object')
+        self.assertNotIn('tg_trace_url', [tool['name'] for tool in tools])
+        self.assertNotIn('tg_scaffold', [tool['name'] for tool in tools])
+        self.assertNotIn('tg_run_gearbox', [tool['name'] for tool in tools])
         self.assertTrue(responses[2]['result']['isError'])
         self.assertEqual(responses[2]['result']['content'][0]['type'], 'text')
         self.assertIn(
@@ -91,6 +107,73 @@ class TgMcpProtocolTests(unittest.TestCase):
         )
         self.assertTrue(responses[3]['result']['isError'])
         self.assertIn('Unknown tool: unknown', responses[3]['result']['content'][0]['text'])
+
+    def test_tools_call_returns_structured_results_from_tginfo_collectors(self):
+        original_collectors = {
+            name: tool['collector']
+            for name, tool in self.module._READ_TOOLS_BY_NAME.items()
+        }
+        calls = []
+
+        def collector(name, value):
+            def collect(project='.', config='development.ini'):
+                calls.append((name, project, config))
+                return value
+            return collect
+
+        try:
+            self.module._READ_TOOLS_BY_NAME['tg_project_summary']['collector'] = collector(
+                'tg_project_summary', {'package_name': 'sample'}
+            )
+            self.module._READ_TOOLS_BY_NAME['tg_list_routes']['collector'] = collector(
+                'tg_list_routes', [{'path': '/', 'kind': 'index'}]
+            )
+            self.module._READ_TOOLS_BY_NAME['tg_list_models']['collector'] = collector(
+                'tg_list_models', [{'name': 'User', 'orm': 'sqlalchemy'}]
+            )
+            self.module._READ_TOOLS_BY_NAME['tg_list_templates']['collector'] = collector(
+                'tg_list_templates', [{'file': 'sample/templates/index.xhtml'}]
+            )
+            self.module._READ_TOOLS_BY_NAME['tg_list_scaffolds']['collector'] = collector(
+                'tg_list_scaffolds', [{'name': 'controller'}]
+            )
+
+            responses, stderr = self.serve([
+                {
+                    'jsonrpc': '2.0',
+                    'id': index,
+                    'method': 'tools/call',
+                    'params': {'name': name, 'arguments': {}},
+                }
+                for index, name in enumerate([
+                    'tg_project_summary',
+                    'tg_list_routes',
+                    'tg_list_models',
+                    'tg_list_templates',
+                    'tg_list_scaffolds',
+                ], 1)
+            ], project='/project', config='/project/development.ini')
+        finally:
+            for name, collect in original_collectors.items():
+                self.module._READ_TOOLS_BY_NAME[name]['collector'] = collect
+
+        self.assertEqual(stderr, '')
+        self.assertEqual(calls, [
+            ('tg_project_summary', '/project', '/project/development.ini'),
+            ('tg_list_routes', '/project', '/project/development.ini'),
+            ('tg_list_models', '/project', '/project/development.ini'),
+            ('tg_list_templates', '/project', '/project/development.ini'),
+            ('tg_list_scaffolds', '/project', '/project/development.ini'),
+        ])
+        self.assertEqual(responses[0]['result']['structuredContent'], {'summary': {'package_name': 'sample'}})
+        self.assertEqual(responses[1]['result']['structuredContent'], {'routes': [{'path': '/', 'kind': 'index'}]})
+        self.assertEqual(responses[2]['result']['structuredContent'], {'models': [{'name': 'User', 'orm': 'sqlalchemy'}]})
+        self.assertEqual(responses[3]['result']['structuredContent'], {'templates': [{'file': 'sample/templates/index.xhtml'}]})
+        self.assertEqual(responses[4]['result']['structuredContent'], {'scaffolds': [{'name': 'controller'}]})
+        for response in responses:
+            content = response['result']['content']
+            self.assertEqual(content[0]['type'], 'text')
+            self.assertEqual(json.loads(content[0]['text']), response['result']['structuredContent'])
 
     def test_protocol_errors_are_json_rpc_messages(self):
         stdin = io.StringIO('not-json\n[]\n' + json.dumps({'jsonrpc': '2.0'}) + '\n' + json.dumps({
@@ -158,7 +241,12 @@ class TgMcpProtocolTests(unittest.TestCase):
         self.assertEqual(os.getcwd(), previous_cwd)
         self.assertEqual(sys.path, previous_sys_path)
         responses = [json.loads(line) for line in stdout.getvalue().splitlines()]
-        self.assertEqual(responses, [{'jsonrpc': '2.0', 'id': 1, 'result': {'tools': []}}])
+        self.assertEqual(responses[0]['jsonrpc'], '2.0')
+        self.assertEqual(responses[0]['id'], 1)
+        self.assertEqual(
+            [tool['name'] for tool in responses[0]['result']['tools']],
+            ['tg_project_summary', 'tg_list_routes', 'tg_list_models', 'tg_list_templates', 'tg_list_scaffolds'],
+        )
         self.assertEqual(stderr.getvalue(), '')
 
     def test_command_normalizes_absolute_config_with_user_and_realpath(self):
