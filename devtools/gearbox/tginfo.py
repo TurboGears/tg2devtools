@@ -7,9 +7,11 @@ from devtools.gearbox.tginfo_summary import (
     collect_project_models,
     collect_project_routes,
     collect_project_summary,
+    collect_project_templates,
     format_project_models,
     format_project_routes,
     format_project_summary,
+    format_project_templates,
 )
 
 
@@ -40,6 +42,12 @@ class TgInfoCommand(Command):
         models.add_argument('-c', '--config', dest='config_file', default='development.ini',
                             help='application config file to read (default: development.ini)')
         models.add_argument('--json', action='store_true', dest='as_json', help='emit JSON output')
+
+        templates = subparsers.add_parser('templates', help='Show recognized project templates')
+        templates.add_argument('--project', default='.', help='project root directory (default: current directory)')
+        templates.add_argument('-c', '--config', dest='config_file', default='development.ini',
+                               help='application config file to read (default: development.ini)')
+        templates.add_argument('--json', action='store_true', dest='as_json', help='emit JSON output')
         return parser
 
     def take_action(self, opts):
@@ -70,4 +78,13 @@ class TgInfoCommand(Command):
                 sys.stdout.write(format_project_models(models))
             return
 
-        raise SystemExit('tginfo requires a subcommand: summary, routes, or models')
+        if opts.tginfo_command == 'templates':
+            templates = collect_project_templates(project=opts.project, config=opts.config_file)
+            if opts.as_json:
+                json.dump(templates, sys.stdout, indent=2, sort_keys=True)
+                sys.stdout.write('\n')
+            else:
+                sys.stdout.write(format_project_templates(templates))
+            return
+
+        raise SystemExit('tginfo requires a subcommand: summary, routes, models, or templates')

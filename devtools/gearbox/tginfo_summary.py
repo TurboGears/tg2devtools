@@ -83,6 +83,26 @@ def collect_project_models(project='.', config='development.ini'):
         return _model_rows(project_root, model_package)
 
 
+def collect_project_templates(project='.', config='development.ini'):
+    """Collect recognized template files with route backlinks.
+
+    :param str project: Project root directory.
+    :param str config: PasteDeploy config file, relative to project when not absolute.
+    """
+    project_root = os.path.realpath(os.path.abspath(os.path.expanduser(project)))
+
+    with _project_import_context(project_root), redirect_stdout(sys.stderr):
+        _load_app(project_root, config)
+        tg_config = _tg_config()
+        package_name = _config_get(tg_config, 'package_name')
+        root_controller = _root_controller_object(package_name, tg_config)
+        if root_controller is None:
+            routes = []
+        else:
+            routes = _RouteCollector(project_root, tg_config).collect(root_controller)
+        return _template_rows(project_root, tg_config, routes)
+
+
 def format_project_summary(summary):
     """Format a project summary for humans without adding advice or counts.
 
@@ -170,6 +190,26 @@ def format_project_models(models):
         if row.get('source'):
             target = f"{target} ({row['source']})"
         lines.append(f"{row.get('name') or 'unknown'} [{row.get('orm') or 'unknown'}] {target}")
+    return '\n'.join(lines) + '\n'
+
+
+def format_project_templates(templates):
+    """Format template rows for humans.
+
+    :param list templates: Rows returned by :func:`collect_project_templates`.
+    """
+    if not templates:
+        return 'No recognized templates found.\n'
+
+    lines = []
+    for row in templates:
+        name = row.get('name') or 'unknown dotted name'
+        exposed_by = row.get('exposed_by') or []
+        backlinks = ', '.join(exposed_by) if exposed_by else 'not exposed by static routes'
+        lines.append(
+            f"{row.get('file') or 'unknown file'} [{row.get('renderer') or 'unknown'}] "
+            f"{name} exposed by {backlinks}"
+        )
     return '\n'.join(lines) + '\n'
 
 
@@ -683,11 +723,7 @@ class _TemplateResolver:
         return self._unresolved('TurboGears dotted filename finder returned a missing file')
 
     def _template_extension(self, renderer):
-        config_key, default = _STANDARD_TEMPLATE_RENDERERS[renderer]
-        extension = _config_get(self.tg_config, config_key, default) if config_key else default
-        if not extension:
-            extension = default
-        return extension if str(extension).startswith('.') else f'.{extension}'
+        return _template_extension(self.tg_config, renderer)
 
     def _dotted_filename_finder(self, tg_config):
         app_globals = _config_get(tg_config, 'tg.app_globals')
@@ -716,6 +752,116 @@ class _TemplateResolver:
 
     def _unresolved(self, reason):
         return {'status': 'unresolved', 'file': None, 'reason': reason}
+
+
+def _template_rows(project_root, tg_config, routes):
+    extensions = _recognized_template_extensions(tg_config)
+    exposed_by_file = {}
+    exposed_by_name_extension = {}
+    for route in routes:
+        for expose in route.get('exposes') or []:
+            path = expose.get('template_file')
+            if path:
+                exposed_by_file.setdefault(path, set()).add(route['path'])
+                continue
+
+            name = expose.get('template')
+            if not name:
+                continue
+            for extension in _template_fallback_extensions(tg_config, expose.get('renderer')):
+                exposed_by_name_extension.setdefault((name, extension), set()).add(route['path'])
+
+    rows = []
+    seen = set()
+    for template_root in _template_paths(project_root, tg_config):
+        try:
+            walker = os.walk(template_root)
+        except OSError:
+            continue
+        for dirname, _, filenames in walker:
+            for filename in filenames:
+                extension = os.path.splitext(filename)[1]
+                renderer = extensions.get(extension)
+                if renderer is None:
+                    continue
+                path = os.path.join(dirname, filename)
+                relative_file = _relative_path(project_root, path)
+                if relative_file in seen:
+                    continue
+                seen.add(relative_file)
+                name = _template_dotted_name(project_root, path)
+                exposed_by = set(exposed_by_file.get(relative_file, ()))
+                if name:
+                    exposed_by.update(exposed_by_name_extension.get((name, extension), ()))
+                rows.append({
+                    'name': name,
+                    'file': relative_file,
+                    'renderer': renderer,
+                    'exposed_by': sorted(exposed_by),
+                })
+    rows.sort(key=lambda row: row['file'])
+    return rows
+
+
+def _template_paths(project_root, tg_config):
+    configured = _mapping_get(_config_get(tg_config, 'paths', {}) or {}, 'templates')
+    if configured:
+        values = configured if isinstance(configured, (list, tuple, set)) else (configured,)
+        return [_absolute_path(project_root, value) for value in values]
+
+    package_name = _config_get(tg_config, 'package_name')
+    if not package_name:
+        return []
+    package = _import_optional(package_name)
+    if not package or not getattr(package, '__file__', None):
+        return []
+    return [os.path.join(os.path.dirname(os.path.abspath(package.__file__)), 'templates')]
+
+
+def _recognized_template_extensions(tg_config):
+    extensions = {}
+    configured_renderers = _config_get(tg_config, 'renderers') or []
+    standard_renderers = [renderer for renderer in configured_renderers if renderer in _STANDARD_TEMPLATE_RENDERERS]
+    if not standard_renderers:
+        standard_renderers = list(_STANDARD_TEMPLATE_RENDERERS)
+    for renderer in standard_renderers:
+        extensions.setdefault(_template_extension(tg_config, renderer), renderer)
+    return extensions
+
+
+def _template_fallback_extensions(tg_config, renderer):
+    renderer = renderer or _config_get(tg_config, 'default_renderer')
+    if not renderer:
+        return tuple(_recognized_template_extensions(tg_config))
+    renderer = str(renderer).lower()
+    if renderer in _STANDARD_TEMPLATE_RENDERERS:
+        return (_template_extension(tg_config, renderer),)
+    return ()
+
+
+def _template_extension(tg_config, renderer):
+    config_key, default = _STANDARD_TEMPLATE_RENDERERS[renderer]
+    extension = _config_get(tg_config, config_key, default) if config_key else default
+    if not extension:
+        extension = default
+    return extension if str(extension).startswith('.') else f'.{extension}'
+
+
+def _template_dotted_name(project_root, path):
+    relative = _relative_path(project_root, os.path.splitext(path)[0])
+    if os.path.isabs(relative):
+        return None
+    parts = relative.split('/')
+    if not parts or any(not part.isidentifier() for part in parts):
+        return None
+    return '.'.join(parts)
+
+
+def _absolute_path(project_root, path):
+    path = os.fspath(path)
+    if not os.path.isabs(path):
+        path = os.path.join(project_root, path)
+    return os.path.realpath(os.path.abspath(path))
 
 
 def _import_project_model_package(module_name):
