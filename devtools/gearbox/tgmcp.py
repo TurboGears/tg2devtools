@@ -5,6 +5,7 @@ from contextlib import redirect_stdout
 
 from gearbox.command import Command
 
+from devtools.gearbox.scaffold import scaffold_project
 from devtools.gearbox.tginfo_summary import (
     collect_project_models,
     collect_project_routes,
@@ -74,6 +75,16 @@ _READ_TOOLS = [
         'output_type': 'array',
     },
 ]
+
+_SCAFFOLD_TOOL = {
+    'name': 'tg_scaffold',
+    'description': (
+        'Use to create conventional project files through Gearbox scaffold. '
+        'Pass dry_run only when you want Gearbox dry-run behavior and the '
+        'installed Gearbox supports it.'
+    ),
+    'result_key': 'scaffold',
+}
 
 _READ_TOOLS_BY_NAME = {tool['name']: tool for tool in _READ_TOOLS}
 
@@ -192,21 +203,89 @@ class _McpServer:
                     'additionalProperties': False,
                 },
             })
+        tools.append({
+            'name': _SCAFFOLD_TOOL['name'],
+            'description': _SCAFFOLD_TOOL['description'],
+            'inputSchema': {
+                'type': 'object',
+                'properties': {
+                    'scaffolds': {
+                        'type': 'array',
+                        'items': {'type': 'string'},
+                        'minItems': 1,
+                    },
+                    'target': {'type': 'string'},
+                    'lookup': {'type': 'string'},
+                    'path': {'type': 'string'},
+                    'subdir': {'type': 'string'},
+                    'no_package': {'type': 'boolean'},
+                    'dry_run': {'type': 'boolean'},
+                },
+                'required': ['scaffolds', 'target'],
+                'additionalProperties': False,
+            },
+            'outputSchema': {
+                'type': 'object',
+                'properties': {
+                    _SCAFFOLD_TOOL['result_key']: {'type': 'object'},
+                },
+                'required': [_SCAFFOLD_TOOL['result_key']],
+                'additionalProperties': False,
+            },
+        })
         return tools
 
     def _call_tool(self, params):
         name = params.get('name') if isinstance(params, dict) else None
         tool = _READ_TOOLS_BY_NAME.get(name)
-        if tool is None:
-            return self._tool_execution_error(f"Unknown tool: {name or 'unknown'}")
+        if tool is not None:
+            try:
+                with redirect_stdout(self.stderr):
+                    result = tool['collector'](project=self.project, config=self.config)
+            except Exception as error:
+                return self._tool_execution_error(f"{name} failed: {error}")
+            return self._tool_result(tool['result_key'], result)
+
+        if name == _SCAFFOLD_TOOL['name']:
+            return self._call_scaffold_tool(params.get('arguments') if isinstance(params, dict) else None)
+
+        return self._tool_execution_error(f"Unknown tool: {name or 'unknown'}")
+
+    def _call_scaffold_tool(self, arguments):
+        if not isinstance(arguments, dict):
+            return self._tool_execution_error('tg_scaffold requires object arguments')
+
+        scaffolds = arguments.get('scaffolds')
+        target = arguments.get('target')
+        if not isinstance(scaffolds, list) or not scaffolds or not all(isinstance(item, str) for item in scaffolds):
+            return self._tool_execution_error('tg_scaffold requires scaffolds as a non-empty array of strings')
+        if not isinstance(target, str) or not target:
+            return self._tool_execution_error('tg_scaffold requires target as a non-empty string')
+        for option in ('lookup', 'path', 'subdir'):
+            if arguments.get(option) is not None and not isinstance(arguments.get(option), str):
+                return self._tool_execution_error(f'tg_scaffold requires {option} as a string')
+        for option in ('no_package', 'dry_run'):
+            if option in arguments and not isinstance(arguments.get(option), bool):
+                return self._tool_execution_error(f'tg_scaffold requires {option} as a boolean')
 
         try:
             with redirect_stdout(self.stderr):
-                result = tool['collector'](project=self.project, config=self.config)
+                result = scaffold_project(
+                    project=self.project,
+                    scaffold_names=scaffolds,
+                    target=target,
+                    lookup=arguments.get('lookup'),
+                    path=arguments.get('path'),
+                    subdir=arguments.get('subdir'),
+                    no_package=bool(arguments.get('no_package', False)),
+                    dry_run=bool(arguments.get('dry_run', False)),
+                )
         except Exception as error:
-            return self._tool_execution_error(f"{name} failed: {error}")
+            return self._tool_execution_error(f"tg_scaffold failed: {error}")
+        return self._tool_result(_SCAFFOLD_TOOL['result_key'], result)
 
-        structured = {tool['result_key']: result}
+    def _tool_result(self, result_key, result):
+        structured = {result_key: result}
         return {
             'content': [{
                 'type': 'text',
