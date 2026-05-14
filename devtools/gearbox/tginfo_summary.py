@@ -65,6 +65,24 @@ def collect_project_routes(project='.', config='development.ini'):
         return _RouteCollector(project_root, tg_config).collect(root_controller)
 
 
+def collect_project_models(project='.', config='development.ini'):
+    """Collect models exported by a TurboGears project's model package.
+
+    :param str project: Project root directory.
+    :param str config: Accepted for tginfo CLI consistency; models avoid app loading.
+    """
+    project_root = os.path.realpath(os.path.abspath(os.path.expanduser(project)))
+    package_name = _project_package_for_models(project_root)
+    if not package_name:
+        return []
+
+    with _project_import_context(project_root), redirect_stdout(sys.stderr):
+        model_package = _import_project_model_package(f'{package_name}.model')
+        if model_package is None:
+            return []
+        return _model_rows(project_root, model_package)
+
+
 def format_project_summary(summary):
     """Format a project summary for humans without adding advice or counts.
 
@@ -138,6 +156,23 @@ def format_project_routes(routes):
     return '\n'.join(lines) + '\n'
 
 
+def format_project_models(models):
+    """Format model rows for humans.
+
+    :param list models: Rows returned by :func:`collect_project_models`.
+    """
+    if not models:
+        return 'No exported models found.\n'
+
+    lines = []
+    for row in models:
+        target = row.get('class') or 'unknown class'
+        if row.get('source'):
+            target = f"{target} ({row['source']})"
+        lines.append(f"{row.get('name') or 'unknown'} [{row.get('orm') or 'unknown'}] {target}")
+    return '\n'.join(lines) + '\n'
+
+
 @contextmanager
 def _project_import_context(project_root):
     old_cwd = os.getcwd()
@@ -156,6 +191,135 @@ def _load_app(project_root, config):
     from paste.deploy import loadapp
 
     loadapp(f'config:{os.path.expanduser(config)}', relative_to=project_root)
+
+
+def _project_package_for_models(project_root):
+    package_name = _pyproject_app_package(project_root)
+    if package_name:
+        return package_name
+    return _unique_top_level_model_package(project_root)
+
+
+def _pyproject_app_package(project_root):
+    pyproject = os.path.join(project_root, 'pyproject.toml')
+    if not os.path.isfile(pyproject):
+        return None
+
+    try:
+        import tomllib
+    except ImportError:
+        app_factories = _parse_pyproject_app_factories_without_tomllib(pyproject)
+    else:
+        try:
+            with open(pyproject, 'rb') as handle:
+                data = tomllib.load(handle)
+        except (OSError, tomllib.TOMLDecodeError):
+            return None
+
+        app_factories = (
+            data.get('project', {})
+            .get('entry-points', {})
+            .get('paste.app_factory', {})
+        )
+
+    if not isinstance(app_factories, dict):
+        return None
+
+    for value in ([app_factories.get('main')] + list(app_factories.values())):
+        if not isinstance(value, str):
+            continue
+        module_name = value.split(':', 1)[0].split('[', 1)[0].strip()
+        package_name = _app_package_containing_model(project_root, module_name)
+        if package_name:
+            return package_name
+    return None
+
+
+def _parse_pyproject_app_factories_without_tomllib(pyproject):
+    try:
+        with open(pyproject, encoding='utf-8') as handle:
+            lines = handle.readlines()
+    except OSError:
+        return {}
+
+    app_factories = {}
+    in_app_factory_section = False
+    for raw_line in lines:
+        line = raw_line.strip()
+        if not line or line.startswith('#'):
+            continue
+        if line.startswith('['):
+            section = ''.join(line.split('#', 1)[0].split())
+            in_app_factory_section = section in (
+                '[project.entry-points."paste.app_factory"]',
+                "[project.entry-points.'paste.app_factory']",
+            )
+            continue
+        if not in_app_factory_section:
+            continue
+
+        key, separator, value = line.partition('=')
+        if not separator:
+            continue
+        key = key.strip()
+        if len(key) >= 2 and key[0] in ('"', "'") and key[-1] == key[0]:
+            key = key[1:-1]
+        if not key:
+            continue
+
+        value = value.strip()
+        if len(value) < 2 or value[0] not in ('"', "'"):
+            continue
+        quote = value[0]
+        chars = []
+        escaped = False
+        for index, char in enumerate(value[1:], 1):
+            if escaped:
+                chars.append(char)
+                escaped = False
+            elif quote == '"' and char == '\\':
+                escaped = True
+            elif char == quote:
+                remainder = value[index + 1:].strip()
+                if not remainder or remainder.startswith('#'):
+                    app_factories[key] = ''.join(chars)
+                break
+            else:
+                chars.append(char)
+    return app_factories
+
+
+def _app_package_containing_model(project_root, module_name):
+    parts = module_name.split('.')
+    if not parts or any(not part.isidentifier() for part in parts):
+        return None
+
+    for end in range(len(parts), 0, -1):
+        package_parts = parts[:end]
+        model_init = os.path.join(
+            project_root, *package_parts, 'model', '__init__.py'
+        )
+        if os.path.isfile(model_init):
+            return '.'.join(package_parts)
+    return None
+
+
+def _unique_top_level_model_package(project_root):
+    candidates = []
+    try:
+        entries = os.scandir(project_root)
+    except OSError:
+        return None
+
+    with entries:
+        for entry in entries:
+            if not entry.is_dir() or not entry.name.isidentifier():
+                continue
+            package_init = os.path.join(entry.path, '__init__.py')
+            model_init = os.path.join(entry.path, 'model', '__init__.py')
+            if os.path.isfile(package_init) and os.path.isfile(model_init):
+                candidates.append(entry.name)
+    return candidates[0] if len(candidates) == 1 else None
 
 
 def _tg_config():
@@ -552,6 +716,75 @@ class _TemplateResolver:
 
     def _unresolved(self, reason):
         return {'status': 'unresolved', 'file': None, 'reason': reason}
+
+
+def _import_project_model_package(module_name):
+    try:
+        return importlib.import_module(module_name)
+    except ImportError as error:
+        if getattr(error, 'name', None) == module_name:
+            return None
+        raise
+
+
+def _model_rows(project_root, model_package):
+    model_package_name = model_package.__name__
+    exports = getattr(model_package, '__all__', _MISSING)
+    if exports is _MISSING:
+        candidates = (
+            (name, value)
+            for name, value in vars(model_package).items()
+            if not name.startswith('_')
+        )
+    else:
+        if isinstance(exports, str):
+            export_names = (exports,)
+        else:
+            try:
+                export_names = tuple(exports)
+            except TypeError:
+                export_names = ()
+        candidates = (
+            (name, getattr(model_package, name, _MISSING))
+            for name in export_names
+            if isinstance(name, str)
+        )
+
+    rows = []
+    for name, value in candidates:
+        if value is _MISSING or not inspect.isclass(value):
+            continue
+        module = getattr(value, '__module__', '')
+        if module != model_package_name and not module.startswith(f'{model_package_name}.'):
+            continue
+        source = _source_info(value, project_root).get('source')
+        rows.append({
+            'name': name,
+            'class': _class_name(value),
+            'module': module,
+            'source': source,
+            'orm': _model_orm(value),
+            'docstring': inspect.getdoc(value),
+        })
+    rows.sort(key=lambda row: (row['name'], row['class']))
+    return rows
+
+
+def _model_orm(cls):
+    if _static_attr(cls, '__mongometa__') is not _MISSING:
+        return 'ming'
+    if _static_attr(cls, '__mapper__') is not _MISSING or _static_attr(cls, '__table__') is not _MISSING:
+        return 'sqlalchemy'
+    if _static_attr(cls, '__tablename__') is not _MISSING and _static_attr(cls, 'metadata') is not _MISSING:
+        return 'sqlalchemy'
+    return 'unknown'
+
+
+def _static_attr(value, name):
+    try:
+        return inspect.getattr_static(value, name)
+    except AttributeError:
+        return _MISSING
 
 
 def _root_controller_object(package_name, tg_config):

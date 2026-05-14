@@ -4,8 +4,10 @@ import sys
 from gearbox.command import Command
 
 from devtools.gearbox.tginfo_summary import (
+    collect_project_models,
     collect_project_routes,
     collect_project_summary,
+    format_project_models,
     format_project_routes,
     format_project_summary,
 )
@@ -32,6 +34,12 @@ class TgInfoCommand(Command):
         routes.add_argument('-c', '--config', dest='config_file', default='development.ini',
                             help='application config file to read (default: development.ini)')
         routes.add_argument('--json', action='store_true', dest='as_json', help='emit JSON output')
+
+        models = subparsers.add_parser('models', help='Show exported project models')
+        models.add_argument('--project', default='.', help='project root directory (default: current directory)')
+        models.add_argument('-c', '--config', dest='config_file', default='development.ini',
+                            help='application config file to read (default: development.ini)')
+        models.add_argument('--json', action='store_true', dest='as_json', help='emit JSON output')
         return parser
 
     def take_action(self, opts):
@@ -53,4 +61,13 @@ class TgInfoCommand(Command):
                 sys.stdout.write(format_project_routes(routes))
             return
 
-        raise SystemExit('tginfo requires a subcommand: summary or routes')
+        if opts.tginfo_command == 'models':
+            models = collect_project_models(project=opts.project, config=opts.config_file)
+            if opts.as_json:
+                json.dump(models, sys.stdout, indent=2, sort_keys=True)
+                sys.stdout.write('\n')
+            else:
+                sys.stdout.write(format_project_models(models))
+            return
+
+        raise SystemExit('tginfo requires a subcommand: summary, routes, or models')
