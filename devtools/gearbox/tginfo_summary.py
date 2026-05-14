@@ -5,6 +5,19 @@ import sys
 from contextlib import contextmanager, redirect_stdout
 
 
+_STANDARD_TEMPLATE_RENDERERS = {
+    'kajiki': ('templating.kajiki.template_extension', '.xhtml'),
+    'mako': ('templating.mako.template_extension', '.mak'),
+    'jinja': (None, '.jinja'),
+    'jinja2': (None, '.jinja'),
+    'genshi': (None, '.html'),
+}
+
+_DISPATCH_PRIVATE_NAMES = {'_lookup', '_default'}
+_IGNORED_PRIVATE_NAMES = {'_before', '_after', '_visit'}
+_MISSING = object()
+
+
 def collect_project_summary(project='.', config='development.ini'):
     """Collect factual read-only facts about a TurboGears project.
 
@@ -32,6 +45,24 @@ def collect_project_summary(project='.', config='development.ini'):
             'auth': _auth_info(tg_config),
         }
     return summary
+
+
+def collect_project_routes(project='.', config='development.ini'):
+    """Collect static object-dispatch routes from a TurboGears project.
+
+    :param str project: Project root directory.
+    :param str config: PasteDeploy config file, relative to project when not absolute.
+    """
+    project_root = os.path.realpath(os.path.abspath(os.path.expanduser(project)))
+
+    with _project_import_context(project_root), redirect_stdout(sys.stderr):
+        _load_app(project_root, config)
+        tg_config = _tg_config()
+        package_name = _config_get(tg_config, 'package_name')
+        root_controller = _root_controller_object(package_name, tg_config)
+        if root_controller is None:
+            return []
+        return _RouteCollector(project_root, tg_config).collect(root_controller)
 
 
 def format_project_summary(summary):
@@ -86,6 +117,24 @@ def format_project_summary(summary):
         auth_text = 'unknown'
     lines.append(f'Auth: {auth_text}')
 
+    return '\n'.join(lines) + '\n'
+
+
+def format_project_routes(routes):
+    """Format route rows for humans.
+
+    :param list routes: Rows returned by :func:`collect_project_routes`.
+    """
+    if not routes:
+        return 'No static routes found.\n'
+
+    lines = []
+    for row in routes:
+        target = row.get('controller') or 'unknown controller'
+        action = row.get('action')
+        if action:
+            target = f'{target}.{action}'
+        lines.append(f"{row.get('path') or 'unknown'} [{row.get('kind') or 'route'}] {target}")
     return '\n'.join(lines) + '\n'
 
 
@@ -164,6 +213,371 @@ def _root_controller_info(project_root, package_name, tg_config):
     info = {'class': _class_name(controller_class)}
     info.update(_source_info(controller_class, project_root))
     return info
+
+
+class _RouteCollector:
+    def __init__(self, project_root, tg_config):
+        self.project_root = project_root
+        self.template_resolver = _TemplateResolver(project_root, tg_config)
+        self.rows = []
+
+    def collect(self, root_controller):
+        self._walk(root_controller, [], set())
+        self.rows.sort(key=lambda row: (row['path'], row['kind'], row.get('action') or ''))
+        return self.rows
+
+    def _walk(self, controller, segments, active):
+        controller = self._controller_instance(controller)
+        if controller is None:
+            return
+
+        identity = id(controller)
+        if identity in active:
+            return
+        active.add(identity)
+        try:
+            if self._is_wsgi_controller(controller):
+                self.rows.append(self._row(controller, self._dispatch_path(segments), 'wsgi_app', '_default'))
+                return
+
+            members = self._dispatch_members(controller)
+            for name, value in members:
+                if name in _IGNORED_PRIVATE_NAMES:
+                    continue
+
+                if name == '_lookup':
+                    if callable(value):
+                        self.rows.append(self._row(controller, self._dispatch_path(segments), 'lookup', name, value))
+                    continue
+
+                if name == '_default':
+                    if callable(value) and self._is_exposed(value):
+                        self.rows.append(self._row(controller, self._dispatch_path(segments), 'default', name, value))
+                    continue
+
+                if name.startswith('_'):
+                    continue
+
+                if self._is_wsgi_controller(value):
+                    self.rows.append(self._row(value, self._dispatch_path(segments + [name]), 'wsgi_app', '_default'))
+                    continue
+
+                if self._is_controller(value):
+                    self._walk(value, segments + [name], active)
+                    continue
+
+                if callable(value) and self._is_exposed(value):
+                    kind = 'index' if name == 'index' else 'action'
+                    self.rows.append(self._row(controller, self._action_path(segments, name), kind, name, value))
+        finally:
+            active.remove(identity)
+
+    def _row(self, controller, path, kind, action_name, action=None):
+        controller_class = controller if inspect.isclass(controller) else controller.__class__
+        controller_source = _source_info(controller_class, self.project_root).get('source')
+        controller_allow_only = self._plain_static_member(controller, 'allow_only')
+        if controller_allow_only is _MISSING:
+            controller_allow_only = None
+        action_source = _source_info(action, self.project_root).get('source') if action is not None else None
+        decoration = self._decoration(action)
+        return {
+            'path': path,
+            'kind': kind,
+            'controller': _class_name(controller_class),
+            'controller_source': controller_source,
+            'controller_doc': inspect.getdoc(controller_class),
+            'controller_allow_only': _safe_text(controller_allow_only) if controller_allow_only is not None else None,
+            'action': action_name,
+            'action_source': action_source,
+            'action_doc': inspect.getdoc(action) if action is not None else None,
+            'params': self._params(action),
+            'action_requires': self._requirements(decoration),
+            'validations': self._validations(decoration),
+            'exposes': self._exposes(decoration),
+        }
+
+    def _dispatch_members(self, controller):
+        seen = set()
+        members = []
+
+        try:
+            instance_members = vars(controller).items()
+        except TypeError:
+            instance_members = ()
+        for name, value in instance_members:
+            seen.add(name)
+            members.append((name, value))
+
+        for cls in controller.__class__.mro():
+            for name, value in vars(cls).items():
+                if name in seen:
+                    continue
+                seen.add(name)
+                if inspect.isfunction(value):
+                    members.append((name, value.__get__(controller, cls)))
+                elif isinstance(value, (staticmethod, classmethod)):
+                    members.append((name, value.__get__(controller, cls)))
+                elif not hasattr(value, '__get__'):
+                    members.append((name, value))
+        return members
+
+    def _is_controller(self, value):
+        value = self._controller_instance(value)
+        if value is None or isinstance(value, (str, bytes, bytearray, int, float, bool, tuple, list, dict, set)):
+            return False
+        if self._is_wsgi_controller(value):
+            return True
+        for name, member in self._dispatch_members(value):
+            if name in _DISPATCH_PRIVATE_NAMES and callable(member):
+                return True
+            if not name.startswith('_') and callable(member) and self._is_exposed(member):
+                return True
+        return False
+
+    def _controller_instance(self, value):
+        if inspect.isclass(value):
+            try:
+                return value()
+            except Exception:
+                return None
+        return value
+
+    def _is_wsgi_controller(self, value):
+        return (
+            value is not None
+            and value.__class__.__name__ == 'WSGIAppController'
+            and self._plain_static_member(value, 'app') is not _MISSING
+        )
+
+    def _plain_static_member(self, value, name):
+        if value is None:
+            return _MISSING
+        try:
+            instance_members = vars(value)
+        except TypeError:
+            instance_members = {}
+        if name in instance_members:
+            return instance_members[name]
+        for cls in value.__class__.mro():
+            if name not in vars(cls):
+                continue
+            member = inspect.getattr_static(value, name, _MISSING)
+            if member is _MISSING or inspect.getattr_static(member, '__get__', _MISSING) is not _MISSING:
+                return _MISSING
+            return member
+        return _MISSING
+
+    def _is_exposed(self, value):
+        decoration = self._decoration(value)
+        if decoration is None:
+            return False
+        exposed = self._plain_static_member(decoration, 'exposed')
+        expositions = self._plain_static_member(decoration, '_expositions')
+        engines = self._plain_static_member(decoration, 'engines')
+        custom_engines = self._plain_static_member(decoration, 'custom_engines')
+        return bool(
+            (exposed is not _MISSING and exposed)
+            or (expositions is not _MISSING and expositions)
+            or (engines is not _MISSING and engines)
+            or (custom_engines is not _MISSING and custom_engines)
+        )
+
+    def _decoration(self, value):
+        if value is None:
+            return None
+        value = getattr(value, '__func__', value)
+        decoration = self._plain_static_member(value, 'decoration')
+        if decoration is _MISSING:
+            return None
+        expositions = self._plain_static_member(decoration, '_expositions')
+        if expositions is not _MISSING and expositions:
+            resolve = self._plain_static_member(decoration, '_resolve_expositions')
+            if resolve is not _MISSING and callable(resolve):
+                try:
+                    resolve()
+                except Exception:
+                    pass
+        return decoration
+
+    def _action_path(self, segments, name):
+        if name == 'index':
+            if not segments:
+                return '/'
+            return '/' + '/'.join(segments) + '/'
+        return '/' + '/'.join(segments + [name])
+
+    def _dispatch_path(self, segments):
+        if not segments:
+            return '/*'
+        return '/' + '/'.join(segments) + '/*'
+
+    def _params(self, action):
+        if action is None:
+            return []
+        try:
+            signature = inspect.signature(action)
+        except (TypeError, ValueError):
+            return []
+
+        params = []
+        for param in signature.parameters.values():
+            if param.name == 'self':
+                continue
+            item = {'name': param.name, 'kind': param.kind.name.lower()}
+            if param.kind in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD):
+                item['required'] = False
+            elif param.default is inspect.Parameter.empty:
+                item['required'] = True
+            else:
+                item['required'] = False
+                item['default'] = _safe_text(param.default)
+            params.append(item)
+        return params
+
+    def _requirements(self, decoration):
+        if decoration is None:
+            return []
+        requirements = []
+        values = self._plain_static_member(decoration, 'requirements')
+        for requirement in (values if values is not _MISSING else []) or []:
+            predicate = self._plain_static_member(requirement, 'predicate')
+            requirements.append(_safe_text(predicate if predicate is not _MISSING else requirement))
+        return requirements
+
+    def _validations(self, decoration):
+        if decoration is None:
+            return []
+        validations = []
+        values = self._plain_static_member(decoration, 'validations')
+        for validation in (values if values is not _MISSING else []) or []:
+            item = {}
+            for source_name, output_name in (
+                ('validators', 'validators'),
+                ('validator', 'validator'),
+                ('error_handler', 'error_handler'),
+                ('chain_validation', 'chain_validation'),
+            ):
+                value = self._plain_static_member(validation, source_name)
+                if value is not _MISSING:
+                    item[output_name] = _safe_text(value)
+            validations.append(item or {'value': _safe_text(validation)})
+        return validations
+
+    def _exposes(self, decoration):
+        if decoration is None:
+            return []
+
+        exposes = []
+        engines = self._plain_static_member(decoration, 'engines')
+        for content_type, values in ((engines if engines is not _MISSING else {}) or {}).items():
+            engine, template = (tuple(values) + (None, None))[:2]
+            exposes.append(self._expose(engine, content_type, template))
+        custom_engines = self._plain_static_member(decoration, 'custom_engines')
+        for custom_format, values in ((custom_engines if custom_engines is not _MISSING else {}) or {}).items():
+            content_type, engine, template = (tuple(values) + (None, None, None))[:3]
+            expose = self._expose(engine, content_type, template)
+            expose['custom_format'] = custom_format
+            exposes.append(expose)
+        return exposes
+
+    def _expose(self, engine, content_type, template):
+        template = template or None
+        resolution = self.template_resolver.resolve(engine, template)
+        return {
+            'renderer': engine,
+            'content_type': content_type,
+            'template': template,
+            'template_file': resolution['file'],
+            'template_resolution': resolution,
+        }
+
+
+class _TemplateResolver:
+    def __init__(self, project_root, tg_config):
+        self.project_root = project_root
+        self.tg_config = tg_config
+        self.finder = self._dotted_filename_finder(tg_config)
+
+    def resolve(self, engine, template):
+        if not template:
+            return self._not_applicable('exposure has no template')
+
+        renderer = (engine or '').lower()
+        if renderer not in _STANDARD_TEMPLATE_RENDERERS:
+            return self._unresolved(f"renderer {engine!r} does not expose a standard template filename resolver")
+
+        if self.finder is None:
+            return self._unresolved('TurboGears dotted filename finder is unavailable')
+
+        try:
+            path = self.finder.get_dotted_filename(template, self._template_extension(renderer))
+        except Exception as error:
+            return self._unresolved(f'TurboGears dotted filename finder failed: {_safe_text(error)}')
+
+        if os.path.isfile(path):
+            return {'status': 'resolved', 'file': _relative_path(self.project_root, path), 'reason': None}
+        return self._unresolved('TurboGears dotted filename finder returned a missing file')
+
+    def _template_extension(self, renderer):
+        config_key, default = _STANDARD_TEMPLATE_RENDERERS[renderer]
+        extension = _config_get(self.tg_config, config_key, default) if config_key else default
+        if not extension:
+            extension = default
+        return extension if str(extension).startswith('.') else f'.{extension}'
+
+    def _dotted_filename_finder(self, tg_config):
+        app_globals = _config_get(tg_config, 'tg.app_globals')
+        finder = self._app_globals_finder(app_globals)
+        if finder is not None:
+            return finder
+
+        try:
+            from tg.util import DottedFileNameFinder
+        except Exception:
+            return None
+        return DottedFileNameFinder()
+
+    def _app_globals_finder(self, app_globals):
+        if app_globals is None:
+            return None
+        finder = _mapping_get(app_globals, 'dotted_filename_finder')
+        if finder is None:
+            finder = getattr(app_globals, 'dotted_filename_finder', None)
+        if getattr(finder, 'get_dotted_filename', None):
+            return finder
+        return None
+
+    def _not_applicable(self, reason):
+        return {'status': 'not_applicable', 'file': None, 'reason': reason}
+
+    def _unresolved(self, reason):
+        return {'status': 'unresolved', 'file': None, 'reason': reason}
+
+
+def _root_controller_object(package_name, tg_config):
+    root_controller = _config_get(tg_config, 'tg.root_controller')
+    if root_controller is None:
+        root_controller = _config_get(tg_config, 'root_controller')
+    if root_controller is not None:
+        if inspect.isclass(root_controller):
+            try:
+                return root_controller()
+            except Exception:
+                return root_controller
+        return root_controller
+
+    root_module = _config_get(tg_config, 'application_root_module')
+    if isinstance(root_module, str):
+        root_module = _import_optional(root_module)
+    if root_module is None and package_name:
+        root_module = _import_optional(f'{package_name}.controllers.root')
+    root_class = getattr(root_module, 'RootController', None) if root_module else None
+    if root_class is None:
+        return None
+    try:
+        return root_class()
+    except Exception:
+        return root_class
 
 
 def _database_info(tg_config):
@@ -268,6 +682,15 @@ def _class_name(cls):
     module = getattr(cls, '__module__', None)
     name = getattr(cls, '__qualname__', getattr(cls, '__name__', None))
     return f'{module}.{name}' if module else name
+
+
+def _safe_text(value):
+    if isinstance(value, (str, int, float, bool)) or value is None:
+        return value
+    try:
+        return repr(value)
+    except Exception:
+        return f'<{value.__class__.__module__}.{value.__class__.__name__}>'
 
 
 def _as_bool(value):
