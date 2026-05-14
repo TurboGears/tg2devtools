@@ -288,6 +288,41 @@ class TgInfoCommandTests(unittest.TestCase):
             else:
                 sys.modules[name] = module
 
+    def test_tginfo_is_registered_as_gearbox_project_command(self):
+        pyproject = Path(__file__).parents[2] / 'pyproject.toml'
+        in_project_commands = False
+        project_commands = {}
+        for raw_line in pyproject.read_text().splitlines():
+            line = raw_line.strip()
+            if not line or line.startswith('#'):
+                continue
+            if line.startswith('['):
+                in_project_commands = line == '[project.entry-points."gearbox.project_commands"]'
+                continue
+            if not in_project_commands or '=' not in line:
+                continue
+            name, value = line.split('=', 1)
+            project_commands[name.strip()] = value.strip().strip('"')
+
+        self.assertEqual(project_commands.get('tginfo'), 'devtools.gearbox.tginfo:TgInfoCommand')
+        module_name, class_name = project_commands['tginfo'].split(':', 1)
+        self.assertIs(getattr(importlib.import_module(module_name), class_name), self.module.TgInfoCommand)
+
+    def test_parser_exposes_v1_subcommands_with_shared_options_and_no_all(self):
+        parser = self.module.TgInfoCommand(None, {}).get_parser('gearbox tginfo')
+
+        for subcommand in ('summary', 'routes', 'models', 'templates', 'scaffolds'):
+            with self.subTest(subcommand=subcommand):
+                opts = parser.parse_args([subcommand, '--project', '/project', '--config', 'test.ini', '--json'])
+                self.assertEqual(opts.tginfo_command, subcommand)
+                self.assertEqual(opts.project, '/project')
+                self.assertEqual(opts.config_file, 'test.ini')
+                self.assertTrue(opts.as_json)
+
+        with contextlib.redirect_stderr(io.StringIO()):
+            with self.assertRaises(SystemExit):
+                parser.parse_args(['all'])
+
     def test_summary_subcommand_prints_human_output_by_default(self):
         command = self.module.TgInfoCommand(None, {})
         opts = command.get_parser('gearbox tginfo').parse_args(['summary', '--project', '/project'])
