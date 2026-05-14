@@ -1,7 +1,14 @@
 import json
 import os
+import re
 import sys
+import tempfile
 from contextlib import redirect_stdout
+
+try:
+    import tomllib
+except ImportError:  # pragma: no cover - exercised only on Python < 3.11
+    tomllib = None
 
 from gearbox.command import Command
 
@@ -22,6 +29,21 @@ SERVER_INSTRUCTIONS = (
     'setup-app or migrations unless explicitly asked. For runtime request '
     'debugging, use gearbox tgshell -c development.ini with WebTest requests.'
 )
+
+_AGENTS_SECTION_HEADING = '## TurboGears DevTools'
+_AGENTS_SECTION = (
+    f'{_AGENTS_SECTION_HEADING}\n\n'
+    'This project can be inspected with TurboGears DevTools. Prefer configured '
+    'TurboGears MCP tools when available.\n'
+)
+
+_TGMCP_ARGS = ['tgmcp', '--project', '.', '--config', 'development.ini']
+_VSCODE_TGMCP_ARGS = ['tgmcp', '--project', '${workspaceFolder}', '--config', 'development.ini']
+_CODEX_TGMCP_SECTION = '''[mcp_servers.turbogears]
+command = "gearbox"
+args = ["tgmcp", "--project", ".", "--config", "development.ini"]
+enabled = true
+'''
 
 _READ_TOOLS = [
     {
@@ -93,22 +115,39 @@ class TgMcpCommand(Command):
     """Serve TurboGears MCP over JSON-RPC stdio."""
 
     def get_description(self):
-        return 'Serve TurboGears MCP over stdio'
+        return 'Serve TurboGears MCP over stdio or configure MCP clients'
 
     def get_parser(self, prog_name):
         parser = super(TgMcpCommand, self).get_parser(prog_name)
         parser.add_argument('--project', default='.', help='project root directory (default: current directory)')
         parser.add_argument('-c', '--config', dest='config_file', default='development.ini',
                             help='application config file to read (default: development.ini)')
+        parser.add_argument('action', nargs='?', choices=['init'], help='run `init TARGET` to configure MCP clients')
+        parser.add_argument('target', nargs='?', choices=['claude', 'codex', 'vscode', 'pi', 'all'],
+                            help='MCP client configuration target for init')
+        parser.add_argument('--no-agents-md', action='store_true', dest='no_agents_md',
+                            help='skip updating AGENTS.md during init')
         return parser
 
     def take_action(self, opts):
         project_dir = os.path.realpath(os.path.abspath(os.path.expanduser(opts.project)))
+        opts.project = project_dir
+
+        if opts.action == 'init':
+            if not opts.target:
+                sys.stderr.write('gearbox tgmcp init requires a target: claude, codex, vscode, pi, or all\n')
+                raise SystemExit(2)
+            try:
+                _init_tgmcp_project(project_dir, opts.target, no_agents_md=opts.no_agents_md)
+            except _TgMcpInitError as error:
+                sys.stderr.write(f'{error}\n')
+                raise SystemExit(1)
+            return
+
         config_file = os.path.expanduser(opts.config_file)
         if not os.path.isabs(config_file):
             config_file = os.path.join(project_dir, config_file)
         config_file = os.path.realpath(os.path.abspath(config_file))
-        opts.project = project_dir
         opts.config_file = config_file
 
         previous_cwd = os.getcwd()
@@ -120,6 +159,221 @@ class TgMcpCommand(Command):
         finally:
             sys.path[:] = previous_sys_path
             os.chdir(previous_cwd)
+
+
+def _init_tgmcp_project(project_dir, target, no_agents_md=False):
+    targets = ['claude', 'codex', 'vscode', 'pi'] if target == 'all' else [target]
+    destinations = []
+
+    if 'claude' in targets:
+        destinations.append((os.path.join(project_dir, '.mcp.json'), 'claude'))
+    if 'codex' in targets:
+        destinations.append((os.path.join(project_dir, '.codex', 'config.toml'), 'codex'))
+    if 'vscode' in targets:
+        destinations.append((os.path.join(project_dir, '.vscode', 'mcp.json'), 'vscode'))
+    if not no_agents_md:
+        destinations.append((os.path.join(project_dir, 'AGENTS.md'), 'pi'))
+
+    _preflight_init_destinations(destinations)
+
+    changes = []
+    for path, destination in destinations:
+        if destination == 'claude':
+            changes.append((path, destination, _json_mcp_config_content(
+                path,
+                'mcpServers',
+                _mcp_server_config(_TGMCP_ARGS),
+                destination,
+            )))
+        elif destination == 'codex':
+            changes.append((path, destination, _codex_config_content(path)))
+        elif destination == 'vscode':
+            changes.append((path, destination, _json_mcp_config_content(
+                path,
+                'servers',
+                _mcp_server_config(_VSCODE_TGMCP_ARGS),
+                destination,
+            )))
+        else:
+            content = _agents_md_content(path)
+            if content is not None:
+                changes.append((path, destination, content))
+
+    _write_init_changes(changes)
+
+    sys.stdout.write(f'Configured TurboGears MCP init target {target} under {project_dir}\n')
+
+
+class _TgMcpInitError(Exception):
+    pass
+
+
+def _write_init_changes(changes):
+    staged = []
+    snapshots = {}
+    applied = []
+    try:
+        for path, destination, _content in changes:
+            try:
+                os.makedirs(os.path.dirname(path), exist_ok=True)
+            except OSError as error:
+                raise _TgMcpInitError(_merge_failure(
+                    path, destination, f'parent directory cannot be created: {error}'
+                ))
+
+        for path, destination, content in changes:
+            temp_path = None
+            try:
+                fd, temp_path = tempfile.mkstemp(prefix='.tgmcp-init-', dir=os.path.dirname(path))
+                with os.fdopen(fd, 'w', encoding='utf-8') as output:
+                    output.write(content)
+            except OSError as error:
+                if temp_path is not None:
+                    try:
+                        os.remove(temp_path)
+                    except OSError:
+                        pass
+                raise _TgMcpInitError(_merge_failure(path, destination, f'temporary config cannot be written: {error}'))
+            staged.append((path, destination, temp_path))
+
+        for path, destination, _temp_path in staged:
+            if os.path.exists(path):
+                try:
+                    with open(path, 'rb') as existing:
+                        snapshots[path] = existing.read()
+                except OSError as error:
+                    raise _TgMcpInitError(_merge_failure(path, destination, f'existing config cannot be read: {error}'))
+            else:
+                snapshots[path] = None
+
+        for path, destination, temp_path in staged:
+            try:
+                os.replace(temp_path, path)
+            except OSError as error:
+                raise _TgMcpInitError(_merge_failure(path, destination, f'destination cannot be written: {error}'))
+            applied.append((path, destination))
+    except _TgMcpInitError:
+        for path, _destination in reversed(applied):
+            if snapshots[path] is None:
+                try:
+                    os.remove(path)
+                except OSError:
+                    pass
+            else:
+                try:
+                    with open(path, 'wb') as restored:
+                        restored.write(snapshots[path])
+                except OSError:
+                    pass
+        for _path, _destination, temp_path in staged:
+            try:
+                os.remove(temp_path)
+            except OSError:
+                pass
+        raise
+
+
+def _preflight_init_destinations(destinations):
+    for path, destination in destinations:
+        parent = os.path.dirname(path)
+        ancestor = parent
+        while ancestor and not os.path.exists(ancestor):
+            next_ancestor = os.path.dirname(ancestor)
+            if next_ancestor == ancestor:
+                break
+            ancestor = next_ancestor
+        if ancestor and os.path.exists(ancestor) and not os.path.isdir(ancestor):
+            raise _TgMcpInitError(_merge_failure(path, destination, f'parent path is not a directory: {ancestor}'))
+        if os.path.isdir(path):
+            raise _TgMcpInitError(_merge_failure(path, destination, 'destination is a directory'))
+
+
+def _mcp_server_config(args):
+    return {
+        'type': 'stdio',
+        'command': 'gearbox',
+        'args': args,
+    }
+
+
+def _json_mcp_config_content(path, top_key, server_config, target):
+    config = {}
+    if os.path.exists(path):
+        try:
+            with open(path, encoding='utf-8') as existing:
+                config = json.load(existing)
+        except OSError as error:
+            raise _TgMcpInitError(_merge_failure(path, target, f'existing config cannot be read: {error}'))
+        except ValueError as error:
+            raise _TgMcpInitError(_merge_failure(path, target, f'invalid JSON: {error}'))
+        if not isinstance(config, dict):
+            raise _TgMcpInitError(_merge_failure(path, target, 'top-level JSON value is not an object'))
+
+    servers = config.setdefault(top_key, {})
+    if not isinstance(servers, dict):
+        raise _TgMcpInitError(_merge_failure(path, target, f'{top_key} is not an object'))
+    servers['turbogears'] = server_config
+    return json.dumps(config, indent=2, sort_keys=True) + '\n'
+
+
+def _codex_config_content(path):
+    if not os.path.exists(path):
+        return _CODEX_TGMCP_SECTION
+    if tomllib is None:
+        raise _TgMcpInitError(_merge_failure(path, 'codex', 'TOML parsing is unavailable on this Python'))
+    try:
+        with open(path, 'rb') as existing:
+            raw_text = existing.read()
+    except OSError as error:
+        raise _TgMcpInitError(_merge_failure(path, 'codex', f'existing config cannot be read: {error}'))
+    try:
+        text = raw_text.decode('utf-8')
+        config = tomllib.loads(text)
+    except Exception as error:
+        raise _TgMcpInitError(_merge_failure(path, 'codex', f'invalid TOML: {error}'))
+    mcp_servers = config.get('mcp_servers', {})
+    if not isinstance(mcp_servers, dict):
+        raise _TgMcpInitError(_merge_failure(path, 'codex', 'mcp_servers is not a table'))
+    if 'turbogears' in mcp_servers and not isinstance(mcp_servers['turbogears'], dict):
+        raise _TgMcpInitError(_merge_failure(path, 'codex', 'mcp_servers.turbogears is not a table'))
+
+    pattern = r'(?ms)^[ \t]*\[mcp_servers\.turbogears\][ \t]*(?:#.*)?\n.*?(?=^[ \t]*\[|\Z)'
+    if re.search(pattern, text):
+        return re.sub(pattern, _CODEX_TGMCP_SECTION, text, count=1)
+    if 'turbogears' in mcp_servers:
+        raise _TgMcpInitError(_merge_failure(path, 'codex', 'existing turbogears entry is not a replaceable table'))
+    return text.rstrip() + '\n\n' + _CODEX_TGMCP_SECTION
+
+
+def _agents_md_content(path):
+    if os.path.exists(path):
+        try:
+            with open(path, encoding='utf-8') as existing:
+                content = existing.read()
+        except OSError as error:
+            raise _TgMcpInitError(_merge_failure(path, 'pi', f'existing AGENTS.md cannot be read: {error}'))
+        if _AGENTS_SECTION_HEADING in content:
+            return None
+        return content.rstrip() + '\n\n' + _AGENTS_SECTION
+    return _AGENTS_SECTION
+
+
+def _merge_failure(path, target, reason):
+    return (
+        f'Could not safely update {path} for tgmcp init {target}: {reason}.\n'
+        'No changes were written for that file. Add or repair this snippet manually:\n'
+        f'{_init_snippet(target)}'
+    )
+
+
+def _init_snippet(target):
+    if target == 'claude':
+        return json.dumps({'mcpServers': {'turbogears': _mcp_server_config(_TGMCP_ARGS)}}, indent=2, sort_keys=True)
+    if target == 'vscode':
+        return json.dumps({'servers': {'turbogears': _mcp_server_config(_VSCODE_TGMCP_ARGS)}}, indent=2, sort_keys=True)
+    if target == 'codex':
+        return _CODEX_TGMCP_SECTION.rstrip()
+    return _AGENTS_SECTION.rstrip()
 
 
 def _serve_mcp_stdio(stdin, stdout, stderr, project='.', config='development.ini'):

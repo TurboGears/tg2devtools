@@ -53,6 +53,19 @@ class TgMcpProtocolTests(unittest.TestCase):
         self.module._serve_mcp_stdio(stdin, stdout, stderr, project, config)
         return [json.loads(line) for line in stdout.getvalue().splitlines()], stderr.getvalue()
 
+    def run_command(self, args):
+        command = self.module.TgMcpCommand(None, {})
+        opts = command.get_parser('gearbox tgmcp').parse_args(args)
+        stdout = io.StringIO()
+        stderr = io.StringIO()
+        code = 0
+        with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+            try:
+                command.take_action(opts)
+            except SystemExit as error:
+                code = error.code
+        return code, stdout.getvalue(), stderr.getvalue()
+
     def install_fake_scaffold_command(self, calls, supports_dry_run=True):
         commands = types.ModuleType('gearbox.commands')
         scaffold = types.ModuleType('gearbox.commands.scaffold')
@@ -92,6 +105,299 @@ class TgMcpProtocolTests(unittest.TestCase):
         sys.modules['gearbox'].commands = commands
         sys.modules['gearbox.commands'] = commands
         sys.modules['gearbox.commands.scaffold'] = scaffold
+
+    def test_init_all_writes_client_configs_and_agents_idempotently(self):
+        with tempfile.TemporaryDirectory() as project:
+            with open(os.path.join(project, '.mcp.json'), 'w') as config:
+                json.dump({
+                    'unrelated': True,
+                    'mcpServers': {'other': {'command': 'other'}},
+                }, config)
+            os.mkdir(os.path.join(project, '.codex'))
+            with open(os.path.join(project, '.codex', 'config.toml'), 'w') as config:
+                config.write('[other]\nvalue = 1\n\n[mcp_servers.other]\ncommand = "other"\n')
+            with open(os.path.join(project, 'AGENTS.md'), 'w') as agents:
+                agents.write('# Existing project guidance\n')
+
+            code, stdout, stderr = self.run_command(['--project', project, 'init', 'all'])
+
+            self.assertEqual(code, 0)
+            self.assertIn('Configured TurboGears MCP init target all', stdout)
+            self.assertEqual(stderr, '')
+            with open(os.path.join(project, '.mcp.json')) as config:
+                claude = json.load(config)
+            self.assertTrue(claude['unrelated'])
+            self.assertEqual(claude['mcpServers']['other'], {'command': 'other'})
+            self.assertEqual(claude['mcpServers']['turbogears'], {
+                'type': 'stdio',
+                'command': 'gearbox',
+                'args': ['tgmcp', '--project', '.', '--config', 'development.ini'],
+            })
+            with open(os.path.join(project, '.codex', 'config.toml')) as config:
+                codex = config.read()
+            self.assertIn('[other]\nvalue = 1', codex)
+            self.assertIn('[mcp_servers.other]\ncommand = "other"', codex)
+            self.assertIn('[mcp_servers.turbogears]', codex)
+            self.assertIn('command = "gearbox"', codex)
+            self.assertIn('args = ["tgmcp", "--project", ".", "--config", "development.ini"]', codex)
+            self.assertIn('enabled = true', codex)
+            with open(os.path.join(project, '.vscode', 'mcp.json')) as config:
+                vscode = json.load(config)
+            self.assertEqual(vscode['servers']['turbogears'], {
+                'type': 'stdio',
+                'command': 'gearbox',
+                'args': ['tgmcp', '--project', '${workspaceFolder}', '--config', 'development.ini'],
+            })
+            with open(os.path.join(project, 'AGENTS.md')) as agents:
+                agents_md = agents.read()
+            self.assertIn('# Existing project guidance', agents_md)
+            self.assertIn('## TurboGears DevTools', agents_md)
+
+            snapshots = {}
+            for relative_path in ('.mcp.json', '.codex/config.toml', '.vscode/mcp.json', 'AGENTS.md'):
+                with open(os.path.join(project, relative_path)) as generated:
+                    snapshots[relative_path] = generated.read()
+            code, stdout, stderr = self.run_command(['--project', project, 'init', 'all'])
+
+            self.assertEqual(code, 0)
+            self.assertEqual(stderr, '')
+            for relative_path, expected in snapshots.items():
+                with open(os.path.join(project, relative_path)) as generated:
+                    self.assertEqual(generated.read(), expected)
+
+    def test_init_respects_single_targets_and_no_agents_md(self):
+        with tempfile.TemporaryDirectory() as project:
+            code, stdout, stderr = self.run_command(['--project', project, 'init', 'claude', '--no-agents-md'])
+
+            self.assertEqual(code, 0)
+            self.assertIn('Configured TurboGears MCP init target claude', stdout)
+            self.assertEqual(stderr, '')
+            self.assertTrue(os.path.exists(os.path.join(project, '.mcp.json')))
+            self.assertFalse(os.path.exists(os.path.join(project, 'AGENTS.md')))
+            self.assertFalse(os.path.exists(os.path.join(project, '.codex')))
+            self.assertFalse(os.path.exists(os.path.join(project, '.vscode')))
+
+        with tempfile.TemporaryDirectory() as project:
+            code, stdout, stderr = self.run_command(['--project', project, 'init', 'codex'])
+
+            self.assertEqual(code, 0)
+            self.assertIn('Configured TurboGears MCP init target codex', stdout)
+            self.assertEqual(stderr, '')
+            self.assertTrue(os.path.exists(os.path.join(project, '.codex', 'config.toml')))
+            self.assertTrue(os.path.exists(os.path.join(project, 'AGENTS.md')))
+            self.assertFalse(os.path.exists(os.path.join(project, '.mcp.json')))
+            self.assertFalse(os.path.exists(os.path.join(project, '.vscode')))
+
+        with tempfile.TemporaryDirectory() as project:
+            code, stdout, stderr = self.run_command(['--project', project, 'init', 'vscode'])
+
+            self.assertEqual(code, 0)
+            self.assertIn('Configured TurboGears MCP init target vscode', stdout)
+            self.assertEqual(stderr, '')
+            self.assertTrue(os.path.exists(os.path.join(project, '.vscode', 'mcp.json')))
+            self.assertTrue(os.path.exists(os.path.join(project, 'AGENTS.md')))
+            self.assertFalse(os.path.exists(os.path.join(project, '.mcp.json')))
+            self.assertFalse(os.path.exists(os.path.join(project, '.codex')))
+
+        with tempfile.TemporaryDirectory() as project:
+            code, stdout, stderr = self.run_command(['--project', project, 'init', 'pi'])
+
+            self.assertEqual(code, 0)
+            self.assertIn('Configured TurboGears MCP init target pi', stdout)
+            self.assertEqual(stderr, '')
+            self.assertTrue(os.path.exists(os.path.join(project, 'AGENTS.md')))
+            self.assertFalse(os.path.exists(os.path.join(project, '.mcp.json')))
+            self.assertFalse(os.path.exists(os.path.join(project, '.codex')))
+            self.assertFalse(os.path.exists(os.path.join(project, '.vscode')))
+
+    def test_init_updates_existing_turbogears_entries_while_preserving_unrelated_config(self):
+        with tempfile.TemporaryDirectory() as project:
+            with open(os.path.join(project, '.mcp.json'), 'w') as config:
+                json.dump({
+                    'mcpServers': {
+                        'turbogears': {'command': 'old-gearbox', 'args': ['old']},
+                        'other': {'command': 'other'},
+                    },
+                    'unrelated': {'keep': True},
+                }, config)
+            os.mkdir(os.path.join(project, '.codex'))
+            with open(os.path.join(project, '.codex', 'config.toml'), 'w') as config:
+                config.write(
+                    '[top]\nvalue = 1\n\n'
+                    '[mcp_servers.turbogears]\ncommand = "old-gearbox"\nargs = ["old"]\nenabled = false\n\n'
+                    '[mcp_servers.other]\ncommand = "other"\n'
+                )
+            os.mkdir(os.path.join(project, '.vscode'))
+            with open(os.path.join(project, '.vscode', 'mcp.json'), 'w') as config:
+                json.dump({
+                    'servers': {
+                        'turbogears': {'command': 'old-gearbox', 'args': ['old']},
+                        'other': {'command': 'other'},
+                    },
+                    'unrelated': True,
+                }, config)
+
+            code, stdout, stderr = self.run_command(['--project', project, 'init', 'all', '--no-agents-md'])
+
+            self.assertEqual(code, 0)
+            self.assertIn('Configured TurboGears MCP init target all', stdout)
+            self.assertEqual(stderr, '')
+            with open(os.path.join(project, '.mcp.json')) as config:
+                claude = json.load(config)
+            self.assertEqual(claude['mcpServers']['other'], {'command': 'other'})
+            self.assertEqual(claude['unrelated'], {'keep': True})
+            self.assertEqual(claude['mcpServers']['turbogears']['command'], 'gearbox')
+            self.assertEqual(claude['mcpServers']['turbogears']['args'], ['tgmcp', '--project', '.', '--config', 'development.ini'])
+            with open(os.path.join(project, '.codex', 'config.toml')) as config:
+                codex = config.read()
+            self.assertIn('[top]\nvalue = 1', codex)
+            self.assertIn('[mcp_servers.other]\ncommand = "other"', codex)
+            self.assertEqual(codex.count('[mcp_servers.turbogears]'), 1)
+            self.assertIn('command = "gearbox"', codex)
+            self.assertIn('args = ["tgmcp", "--project", ".", "--config", "development.ini"]', codex)
+            self.assertNotIn('old-gearbox', codex)
+            with open(os.path.join(project, '.vscode', 'mcp.json')) as config:
+                vscode = json.load(config)
+            self.assertEqual(vscode['servers']['other'], {'command': 'other'})
+            self.assertTrue(vscode['unrelated'])
+            self.assertEqual(vscode['servers']['turbogears']['command'], 'gearbox')
+            self.assertEqual(vscode['servers']['turbogears']['args'], ['tgmcp', '--project', '${workspaceFolder}', '--config', 'development.ini'])
+            self.assertFalse(os.path.exists(os.path.join(project, 'AGENTS.md')))
+
+    def test_init_invalid_existing_config_fails_without_overwrite_and_prints_snippet(self):
+        with tempfile.TemporaryDirectory() as project:
+            path = os.path.join(project, '.mcp.json')
+            with open(path, 'w') as config:
+                config.write('{not-json')
+
+            code, stdout, stderr = self.run_command(['--project', project, 'init', 'claude'])
+
+            self.assertEqual(code, 1)
+            self.assertEqual(stdout, '')
+            self.assertIn('invalid JSON', stderr)
+            self.assertIn('"mcpServers"', stderr)
+            self.assertIn('"turbogears"', stderr)
+            with open(path) as config:
+                self.assertEqual(config.read(), '{not-json')
+
+        with tempfile.TemporaryDirectory() as project:
+            claude_path = os.path.join(project, '.mcp.json')
+            with open(claude_path, 'w') as config:
+                config.write('{"mcpServers": {"keep": {"command": "keep"}}}')
+            os.mkdir(os.path.join(project, '.codex'))
+            path = os.path.join(project, '.codex', 'config.toml')
+            with open(path, 'w') as config:
+                config.write('[not-valid')
+
+            code, stdout, stderr = self.run_command(['--project', project, 'init', 'all'])
+
+            self.assertEqual(code, 1)
+            self.assertEqual(stdout, '')
+            if self.module.tomllib is None:
+                self.assertIn('TOML parsing is unavailable', stderr)
+            else:
+                self.assertIn('invalid TOML', stderr)
+            self.assertIn('[mcp_servers.turbogears]', stderr)
+            with open(path) as config:
+                self.assertEqual(config.read(), '[not-valid')
+            with open(claude_path) as config:
+                self.assertEqual(config.read(), '{"mcpServers": {"keep": {"command": "keep"}}}')
+            self.assertFalse(os.path.exists(os.path.join(project, '.vscode')))
+            self.assertFalse(os.path.exists(os.path.join(project, 'AGENTS.md')))
+
+    def test_init_valid_but_unsafe_existing_config_fails_without_overwrite(self):
+        with tempfile.TemporaryDirectory() as project:
+            path = os.path.join(project, '.mcp.json')
+            with open(path, 'w') as config:
+                config.write('{"mcpServers": "not-an-object", "keep": true}')
+
+            code, stdout, stderr = self.run_command(['--project', project, 'init', 'claude'])
+
+            self.assertEqual(code, 1)
+            self.assertEqual(stdout, '')
+            self.assertIn('mcpServers is not an object', stderr)
+            self.assertIn('"mcpServers"', stderr)
+            with open(path) as config:
+                self.assertEqual(config.read(), '{"mcpServers": "not-an-object", "keep": true}')
+
+        if self.module.tomllib is not None:
+            with tempfile.TemporaryDirectory() as project:
+                os.mkdir(os.path.join(project, '.codex'))
+                path = os.path.join(project, '.codex', 'config.toml')
+                with open(path, 'w') as config:
+                    config.write('[mcp_servers]\nturbogears = "not-a-table"\nother = "keep"\n')
+
+                code, stdout, stderr = self.run_command(['--project', project, 'init', 'codex'])
+
+                self.assertEqual(code, 1)
+                self.assertEqual(stdout, '')
+                self.assertIn('mcp_servers.turbogears is not a table', stderr)
+                self.assertIn('[mcp_servers.turbogears]', stderr)
+                with open(path) as config:
+                    self.assertEqual(config.read(), '[mcp_servers]\nturbogears = "not-a-table"\nother = "keep"\n')
+
+    def test_init_preflights_destinations_before_writing_any_config(self):
+        with tempfile.TemporaryDirectory() as project:
+            claude_path = os.path.join(project, '.mcp.json')
+            with open(claude_path, 'w') as config:
+                config.write('{"mcpServers": {"keep": {"command": "keep"}}}')
+            with open(os.path.join(project, '.codex'), 'w') as config:
+                config.write('not-a-directory')
+
+            code, stdout, stderr = self.run_command(['--project', project, 'init', 'all'])
+
+            self.assertEqual(code, 1)
+            self.assertEqual(stdout, '')
+            self.assertIn('parent path is not a directory', stderr)
+            self.assertIn('[mcp_servers.turbogears]', stderr)
+            with open(claude_path) as config:
+                self.assertEqual(config.read(), '{"mcpServers": {"keep": {"command": "keep"}}}')
+            with open(os.path.join(project, '.codex')) as config:
+                self.assertEqual(config.read(), 'not-a-directory')
+            self.assertFalse(os.path.exists(os.path.join(project, '.vscode')))
+            self.assertFalse(os.path.exists(os.path.join(project, 'AGENTS.md')))
+
+    def test_init_apply_failure_restores_earlier_writes_and_leaves_later_configs_unchanged(self):
+        with tempfile.TemporaryDirectory() as project:
+            claude_path = os.path.join(project, '.mcp.json')
+            codex_dir = os.path.join(project, '.codex')
+            codex_path = os.path.join(codex_dir, 'config.toml')
+            vscode_dir = os.path.join(project, '.vscode')
+            vscode_path = os.path.join(vscode_dir, 'mcp.json')
+            agents_path = os.path.join(project, 'AGENTS.md')
+            os.mkdir(codex_dir)
+            os.mkdir(vscode_dir)
+            originals = {
+                claude_path: '{"mcpServers": {"keep": {"command": "keep"}}}',
+                codex_path: '[mcp_servers.keep]\ncommand = "keep"\n',
+                vscode_path: '{"servers": {"keep": {"command": "keep"}}}',
+                agents_path: '# Existing agent guidance\n',
+            }
+            for path, content in originals.items():
+                with open(path, 'w') as config:
+                    config.write(content)
+
+            real_replace = self.module.os.replace
+            replace_calls = []
+
+            def fail_on_codex_replace(source, destination):
+                replace_calls.append(destination)
+                if destination == codex_path:
+                    raise OSError('simulated replace failure')
+                return real_replace(source, destination)
+
+            with patch.object(self.module.os, 'replace', side_effect=fail_on_codex_replace):
+                code, stdout, stderr = self.run_command(['--project', project, 'init', 'all'])
+
+            self.assertEqual(code, 1)
+            self.assertEqual(stdout, '')
+            self.assertIn('simulated replace failure', stderr)
+            self.assertEqual(replace_calls, [claude_path, codex_path])
+            for path, content in originals.items():
+                with open(path) as config:
+                    self.assertEqual(config.read(), content)
+            for directory in (project, codex_dir, vscode_dir):
+                self.assertFalse(any(name.startswith('.tgmcp-init-') for name in os.listdir(directory)))
 
     def test_initialize_initialized_tools_list_and_unknown_tool_call(self):
         responses, stderr = self.serve([
