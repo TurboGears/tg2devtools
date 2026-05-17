@@ -17,7 +17,7 @@ application_name = 'main_without_authn'
 
 def load_app(name=application_name):
     """Load the test application."""
-    return TestApp(loadapp('config:test.ini#%s' % name, relative_to=getcwd()))
+    return TestApp(loadapp(f'config:test.ini#{name}', relative_to=getcwd()))
 
 
 def setup_app():
