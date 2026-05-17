@@ -72,7 +72,7 @@ class Group(DeclarativeBase):
     users = relationship('User', secondary=user_group_table, backref='groups')
 
     def __repr__(self):
-        return '<Group: name=%s>' % repr(self.group_name)
+        return f'<Group: name={self.group_name!r}>'
 
     def __unicode__(self):
         return self.group_name
@@ -96,11 +96,7 @@ class User(DeclarativeBase):
     created = Column(DateTime, default=datetime.now)
 
     def __repr__(self):
-        return '<User: name=%s, email=%s, display=%s>' % (
-            repr(self.user_name),
-            repr(self.email_address),
-            repr(self.display_name)
-        )
+        return f'<User: name={self.user_name!r}, email={self.email_address!r}, display={self.display_name!r}>'
 
     def __unicode__(self):
         return self.display_name or self.user_name
@@ -185,7 +181,7 @@ class Permission(DeclarativeBase):
                           backref='permissions')
 
     def __repr__(self):
-        return '<Permission: name=%s>' % repr(self.permission_name)
+        return f'<Permission: name={self.permission_name!r}>'
 
     def __unicode__(self):
         return self.permission_name

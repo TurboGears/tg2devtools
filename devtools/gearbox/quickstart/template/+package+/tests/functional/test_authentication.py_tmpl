@@ -34,7 +34,7 @@ class TestAuthentication(TestController):
         home_page = post_login.follow(status=302)
         assert (
             'authtkt' in home_page.request.cookies
-        ), 'Session cookie was not defined: %s' % home_page.request.cookies
+        ), f'Session cookie was not defined: {home_page.request.cookies}'
         assert home_page.location, 'http://localhost/'
 
     def test_logout(self):
@@ -45,7 +45,7 @@ class TestAuthentication(TestController):
         resp = resp.follow(status=302)
         assert (
             'authtkt' in resp.request.cookies
-        ), 'Session cookie was not defined: %s' % resp.request.cookies
+        ), f'Session cookie was not defined: {resp.request.cookies}'
         # Logging out:
         resp = self.app.get('/logout_handler', status=302)
         assert resp.location.startswith('http://localhost/post_logout')
@@ -54,7 +54,7 @@ class TestAuthentication(TestController):
         authtkt = home_page.request.cookies.get('authtkt')
         assert (
             not authtkt or authtkt == 'INVALID'
-        ), 'Session cookie was not deleted: %s' % home_page.request.cookies
+        ), f'Session cookie was not deleted: {home_page.request.cookies}'
         assert home_page.location == 'http://localhost/'
 
     def test_failed_login_keeps_username(self):
