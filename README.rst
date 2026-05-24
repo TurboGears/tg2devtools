@@ -24,6 +24,7 @@ Key Features
 - **Extension Generator**: Easily create and integrate TurboGears extensions.
 - **Database Migrations**: Run migration commands for SQLAlchemy and Alembic effortlessly.
 - **Interactive Shell**: Launch a shell preloaded with your app's context for rapid testing.
+- **Internationalization**: Extract, initialize, update, and compile translation catalogs for your application.
 - **Gearbox Integration**: Seamlessly work with Gearbox to serve and manage your applications.
 
 Getting Started
@@ -78,6 +79,15 @@ Usage Examples
   ::
 
       gearbox tgshell
+
+- **Manage Translations:**
+
+  ::
+
+      gearbox i18n extract
+      gearbox i18n init -l es
+      gearbox i18n update
+      gearbox i18n compile
 
 Resources
 ---------

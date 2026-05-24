@@ -19,7 +19,8 @@ dependencies = [
     "TurboGears2 >= 2.5.1dev1",
     "gearbox >= 0.3.2",
     "backlash >= 0.0.7",
-    "tgext.debugbar"
+    "tgext.debugbar",
+    "tomli; python_version < '3.11'"
 ]
 
 [project.optional-dependencies]
@@ -39,6 +40,7 @@ tgext = "devtools.gearbox.tgext:MakeTGExtCommand"
 sqla-migrate = "devtools.gearbox.sqlamigrate:MigrateCommand"
 migrate = "devtools.gearbox.alembic_migrate:MigrateCommand"
 tgshell = "devtools.gearbox.tgshell:ShellCommand"
+i18n = "devtools.gearbox.i18n:I18nCommand"
 
 [tool.setuptools.packages.find]
 exclude = ["ez_setup", "examples", "tests"]

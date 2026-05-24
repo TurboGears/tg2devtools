@@ -43,7 +43,7 @@ dependencies = [
   "repoze.who",
   {{endif}}
   "WebHelpers2",
-  "Babel > 2.12",
+  "Babel >= 2.16.0",
   {{if jinja}}
   "jinja2",
   {{endif}}
@@ -71,8 +71,24 @@ exclude = []
   "public/*/*"
 ]
 
-[tool.babel]
+[tool.tg.devtools.i18n]
 domain = "{{package}}"
+directory = "{{package}}/i18n"
+pot_file = "{{package}}/i18n/{{package}}.pot"
+
+[tool.tg.devtools.i18n.extract]
+add_comments = "TRANSLATORS:"
+width = 80
+keywords = ["l_"]
+mapping_file = "pyproject.toml"
+
+[tool.tg.devtools.i18n.update]
+previous = true
+
+[tool.tg.devtools.i18n.compile]
+statistics = true
+
+[tool.babel]
 
 [[tool.babel.mappings]]
 method = "python"
@@ -91,9 +107,7 @@ pattern = "**/templates/**.mak"
 {{if kajiki}}
 [[tool.babel.mappings]]
 method = "kajiki"
-pattern = "templates/**.xhtml"
-
-[tool.babel.mappings.options]
+pattern = "**/templates/**.xhtml"
 strip_text = false
 extract_python = true
 {{endif}}
@@ -101,13 +115,13 @@ extract_python = true
 {{if jinja}}
 [[tool.babel.mappings]]
 method = "jinja2"
-pattern = "templates/**.jinja"
+pattern = "**/templates/**.jinja"
 {{endif}}
 
 {{if genshi}}
 [[tool.babel.mappings]]
 method = "genshi"
-pattern = "templates/**.html"
+pattern = "**/templates/**.html"
 {{endif}}
 
 [project.entry-points."paste.app_factory"]

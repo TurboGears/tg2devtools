@@ -1,3 +1,4 @@
+import gettext
 import os
 import shutil
 import subprocess
@@ -304,6 +305,58 @@ class TestDefaultQuickStart(CommonTestQuickStartWithAuth, unittest.TestCase):
 
     def setUp(self):
         super(TestDefaultQuickStart, self).setUp()
+
+    def test_translation_i18n_commands_create_artifacts(self):
+        package = os.path.basename(self.proj_dir).lower().replace('-', '')
+        pot_file = os.path.join(package, 'i18n', '%s.pot' % package)
+        po_file = os.path.join(package, 'i18n', 'es', 'LC_MESSAGES', '%s.po' % package)
+        mo_file = os.path.join(package, 'i18n', 'es', 'LC_MESSAGES', '%s.mo' % package)
+        env = dict(os.environ, PATH=self.bin_dir + os.pathsep + os.environ['PATH'])
+
+        def run_i18n(*args):
+            result = subprocess.run(
+                [os.path.join(self.bin_dir, 'gearbox'), 'i18n'] + list(args),
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                timeout=300,
+                env=env,
+            )
+            self.assertEqual(result.returncode, 0, result.stdout)
+
+        run_i18n('extract')
+        with open(pot_file) as f:
+            pot = f.read()
+        self.assertIn('msgid "Only for managers"', pot)
+
+        run_i18n('init', '-l', 'es')
+        with open(po_file) as f:
+            po = f.read()
+        self.assertIn('"Language: es', po)
+        self.assertIn('msgid "Only for managers"', po)
+
+        with open(os.path.join(package, 'controllers', 'root.py'), 'a') as f:
+            f.write("\nI18N_UPDATE_PROBE = l_('Added during i18n update')\n")
+        run_i18n('extract')
+        run_i18n('update', '-l', 'es')
+        with open(po_file) as f:
+            po = f.read()
+        self.assertIn('msgid "Added during i18n update"', po)
+        translated_po = po.replace(
+            'msgid "Added during i18n update"\nmsgstr ""',
+            'msgid "Added during i18n update"\nmsgstr "Agregado durante i18n update"',
+        )
+        self.assertNotEqual(po, translated_po)
+        with open(po_file, 'w') as f:
+            f.write(translated_po)
+
+        run_i18n('compile', '-l', 'es')
+        with open(mo_file, 'rb') as f:
+            translations = gettext.GNUTranslations(f)
+        self.assertEqual(
+            translations.gettext('Added during i18n update'),
+            'Agregado durante i18n update',
+        )
 
 
 class TestMakoQuickStart(CommonTestQuickStart, unittest.TestCase):
