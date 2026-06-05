@@ -15,7 +15,7 @@
 <body>
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
     <div class="container">
-      <a class="navbar-brand" href="${tg.url('/demo')}">
+      <a class="navbar-brand" href="${tg.url('/')}">
         ${getattr(tmpl_context, 'project_name', 'turbogears2')}
       </a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-content" aria-controls="navbar-content" aria-expanded="false" aria-label="Toggle navigation">
@@ -42,7 +42,10 @@
   </main>
 
   <footer class="container border-top mt-5 py-3 text-muted small">
-    Powered by TurboGears, Kajiki, Bootstrap, and htmx.
+    Powered by <a href="https://www.turbogears.org/">TurboGears</a>,
+    <a href="https://kajiki.readthedocs.io/">Kajiki</a>,
+    <a href="https://getbootstrap.com/">Bootstrap</a>, and
+    <a href="https://htmx.org/">htmx</a>.
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

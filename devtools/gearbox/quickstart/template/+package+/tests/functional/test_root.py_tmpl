@@ -1,67 +1,11 @@
 # -*- coding: utf-8 -*-
-"""Functional test suite for the generated demo."""
+"""Functional tests for the generated root controller."""
 from {{package}}.tests import TestController
 
 
 class TestRootController(TestController):
-    """Tests for the generated root and demo controllers."""
+    """Tests for the generated root controller."""
 
     def test_index_redirects_to_demo(self):
         response = self.app.get('/', status=302)
         assert response.location == 'http://localhost/demo'
-
-    def test_demo_landing(self):
-        response = self.app.get('/demo')
-        assert 'Welcome to TurboGears' in response
-        assert 'Create your own actions, controllers, templates, and models' in response
-
-{{if sqlalchemy}}
-    def test_todo_demo_stores_items(self):
-        response = self.app.get('/demo')
-        form = response.forms['new-todo']
-        form['title'] = 'Try TurboGears'
-
-        response = form.submit()
-        assert 'Try TurboGears' in response
-
-        response = self.app.get('/demo')
-        assert 'Try TurboGears' in response
-
-    def test_todo_demo_toggles_done_state(self):
-        response = self.app.get('/demo')
-        form = response.forms['new-todo']
-        form['title'] = 'Try TurboGears'
-
-        response = form.submit()
-        response = response.forms[1].submit()
-        assert 'Reopen' in response
-        assert 'text-decoration-line-through text-muted' in response
-
-        response = self.app.get('/demo')
-        assert 'Reopen' in response
-        assert 'text-decoration-line-through text-muted' in response
-{{else}}
-    def test_todo_demo_is_omitted_without_sqlalchemy(self):
-        response = self.app.get('/demo')
-        assert 'database-backed todo demo was omitted' in response
-        self.app.get('/demo/add', status=404)
-{{endif}}
-
-{{if auth}}
-    def test_protected_demo_with_manager(self):
-        environ = {'REMOTE_USER': 'manager'}
-        response = self.app.get('/demo/protected', extra_environ=environ)
-        assert 'Protected demo' in response
-
-    def test_protected_demo_with_editor(self):
-        environ = {'REMOTE_USER': 'editor'}
-        self.app.get('/demo/protected', extra_environ=environ, status=403)
-
-    def test_protected_demo_with_anonymous(self):
-        self.app.get('/demo/protected', status=401)
-{{else}}
-    def test_auth_demo_is_omitted_without_auth(self):
-        response = self.app.get('/demo')
-        assert '/demo/protected' not in response
-        self.app.get('/demo/protected', status=404)
-{{endif}}

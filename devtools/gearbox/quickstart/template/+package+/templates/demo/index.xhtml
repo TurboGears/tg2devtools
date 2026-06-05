@@ -38,7 +38,7 @@
       and <code>templates/demo/</code>, then point <code>RootController.index</code> at your own page.
     </p>
     <pre><code>cd ${tmpl_context.project_name}
-rm -rf controllers/demo.py model/todo.py templates/demo
+rm -rf controllers/demo.py model/todo.py templates/demo tests/functional/test_demo.py
 gearbox patch controllers/root.py DemoController -d
 gearbox patch controllers/root.py "redirect('/demo')" -r "return 'Hello World'"
 gearbox patch model/__init__.py TodoItem -d</code></pre>
