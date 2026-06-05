@@ -1,0 +1,46 @@
+<html py:extends="master.xhtml" py:strip="True">
+  <head py:block="head" py:strip="True">
+    <title py:block="master_title">TurboGears Demo</title>
+  </head>
+
+  <body py:block="body" py:strip="True">
+    <div class="row g-4">
+      <div class="col-lg-5">
+        <div class="card mb-4">
+          <div class="card-body">
+            <h1>Welcome to TurboGears</h1>
+            <p class="lead">Start replacing this starter page with your own application.</p>
+            <p>Create your own actions, controllers, templates, and models, then delete the generated demo when you are ready.</p>
+          </div>
+        </div>
+
+        <div py:if="tg.auth_stack_enabled" class="card">
+          <div class="card-body">
+            <h2 class="h5">Authentication demo</h2>
+            <p class="mb-2">This generated app includes one protected demo page.</p>
+            <a class="btn btn-outline-primary" href="${tg.url('/demo/protected')}">Open protected demo</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-7">
+        <py:if test="has_todos">
+          <py:include href="demo/todo_list.xhtml" />
+        </py:if>
+        <div py:if="not has_todos" class="alert alert-info">
+          Run without SQLAlchemy, so the database-backed todo demo was omitted.
+        </div>
+      </div>
+    </div>
+
+    <p class="text-muted mt-4 small">
+      To remove this demo, delete <code>controllers/demo.py</code>, <code>model/todo.py</code>,
+      and <code>templates/demo/</code>, then point <code>RootController.index</code> at your own page.
+    </p>
+    <pre><code>cd ${tmpl_context.project_name}
+rm -rf controllers/demo.py model/todo.py templates/demo
+gearbox patch controllers/root.py DemoController -d
+gearbox patch controllers/root.py "redirect('/demo')" -r "return 'Hello World'"
+gearbox patch model/__init__.py TodoItem -d</code></pre>
+  </body>
+</html>

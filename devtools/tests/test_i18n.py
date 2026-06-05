@@ -182,17 +182,11 @@ statistics = true
         self.assertEqual(set(pyproject['tool']['babel'].keys()), {'mappings'})
 
         mappings = {mapping['method']: mapping for mapping in pyproject['tool']['babel']['mappings']}
+        self.assertEqual(set(mappings), {'python', 'ignore', 'kajiki'})
         self.assertEqual(mappings['python']['pattern'], '**.py')
         self.assertEqual(mappings['ignore']['pattern'], 'public/**')
-        for method, package_template, pattern in [
-            ('mako', 'myapp/templates/index.mak', '**/templates/**.mak'),
-            ('kajiki', 'myapp/templates/index.xhtml', '**/templates/**.xhtml'),
-            ('jinja2', 'myapp/templates/index.jinja', '**/templates/**.jinja'),
-            ('genshi', 'myapp/templates/index.html', '**/templates/**.html'),
-        ]:
-            self.assertEqual(mappings[method]['pattern'], pattern)
-            self.assertTrue(fnmatch.fnmatchcase(package_template, pattern))
-
+        self.assertEqual(mappings['kajiki']['pattern'], '**/templates/**.xhtml')
+        self.assertTrue(fnmatch.fnmatchcase('myapp/templates/demo/index.xhtml', mappings['kajiki']['pattern']))
         self.assertFalse(mappings['kajiki']['strip_text'])
         self.assertTrue(mappings['kajiki']['extract_python'])
         self.assertNotIn('options', mappings['kajiki'])

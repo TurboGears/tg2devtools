@@ -5,65 +5,47 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <meta charset="${response.charset}" />
 
-  <title py:block="master_title">Your generic title goes here</title>
-  <link rel="stylesheet" type="text/css" media="screen" href="${tg.url('/css/bootstrap.min.css')}" />
+  <title py:block="master_title">TurboGears</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link rel="stylesheet" type="text/css" media="screen" href="${tg.url('/css/style.css')}" />
 
   <py:block name="head"></py:block>
 </head>
 
 <body>
-  <!-- Navbar -->
-  <nav class="navbar navbar-default">
-    <div class="navbar-header">
-      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-content">
-        <span class="sr-only">Toggle navigation</span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </button>
-      <a class="navbar-brand" href="${tg.url('/')}">
-        <img src="${tg.url('/img/turbogears_logo.png')}" height="20" alt="TurboGears 2"/>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+    <div class="container">
+      <a class="navbar-brand" href="${tg.url('/demo')}">
         ${getattr(tmpl_context, 'project_name', 'turbogears2')}
       </a>
-    </div>
-
-    <div class="collapse navbar-collapse" id="navbar-content">
-      <ul class="nav navbar-nav">
-        <li class="${('', 'active')[self.defined('page') and page=='index']}"><a href="${tg.url('/')}">Welcome</a></li>
-        <li class="${('', 'active')[self.defined('page') and page=='about']}"><a href="${tg.url('/about')}">About</a></li>
-        <li class="${('', 'active')[self.defined('page') and page=='data']}"><a href="${tg.url('/data')}">Serving Data</a></li>
-        <li class="${('', 'active')[self.defined('page') and page=='environ']}"><a href="${tg.url('/environ')}">WSGI Environment</a></li>
-      </ul>
-      <ul py:if="tg.auth_stack_enabled" class="nav navbar-nav navbar-right">
-        <li py:if="not request.identity"><a href="${tg.url('/login')}">Login</a></li>
-        <li py:if="request.identity"><a href="${tg.url('/logout_handler')}">Logout</a></li>
-      </ul>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar-content" aria-controls="navbar-content" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbar-content">
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item"><a class="nav-link ${('active' if self.defined('page') and page=='demo' else '')}" href="${tg.url('/demo')}">Demo</a></li>
+        </ul>
+        <ul py:if="tg.auth_stack_enabled" class="navbar-nav">
+          <li py:if="not request.identity" class="nav-item"><a class="nav-link" href="${tg.url('/login')}">Login</a></li>
+          <li py:if="request.identity" class="nav-item"><a class="nav-link" href="${tg.url('/logout_handler')}">Logout</a></li>
+        </ul>
+      </div>
     </div>
   </nav>
 
-
-  <div class="container">
-    <!-- Flash messages -->
+  <main class="container">
     <py:with vars="flash=tg.flash_obj.render('flash', use_js=False)">
-      <div class="row">
-        <div class="col-md-8 col-md-offset-2">
-          <div py:if="flash" py:replace="Markup(flash)" />
-        </div>
-      </div>
+      <div py:if="flash" py:replace="Markup(flash)" />
     </py:with>
 
-    <!-- Main included content -->
     <py:block name="body"></py:block>
-  </div>
+  </main>
 
-  <!-- Footer -->
-  <footer class="footer hidden-xs hidden-sm">
-    <a class="pull-right" href="http://www.turbogears.org"><img style="vertical-align:middle;" src="${tg.url('/img/under_the_hood_blue.png')}" alt="TurboGears 2" /></a>
-    <p>Copyright &copy; ${getattr(tmpl_context, 'project_name', 'TurboGears2')} ${h.current_year()}</p>
+  <footer class="container border-top mt-5 py-3 text-muted small">
+    Powered by TurboGears, Kajiki, Bootstrap, and htmx.
   </footer>
 
-  <script src="//code.jquery.com/jquery.js"></script>
-  <script src="${tg.url('/javascript/bootstrap.min.js')}"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://unpkg.com/htmx.org@1.9.12"></script>
 </body>
 </html>

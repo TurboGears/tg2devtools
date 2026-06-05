@@ -1,5 +1,5 @@
-This file is for you to describe the {{project}} application. Typically
-you would include information such as the information below:
+{{project}}
+{{'=' * len(project)}}
 
 Installation and Setup
 ======================
@@ -9,16 +9,42 @@ Install ``{{project}}`` in editable mode with pip::
     $ cd {{project}}
     $ python -m pip install -e .[testing]
 
-Create the project database for any model classes defined::
+{{if sqlalchemy}}
+Create the project database for the generated SQLAlchemy models::
 
     $ gearbox setup-app
+{{endif}}
 
-Start the paste http server::
+Start the web application::
 
     $ gearbox serve
 
-While developing you may want the server to reload after changes in package files (or its dependencies) are saved. This can be achieved easily by adding the --reload option::
+While developing you may want the server to reload after changes are saved::
 
     $ gearbox serve --reload --debug
 
-Then you are ready to go.
+Then open http://localhost:8080/ and you will be redirected to the demo.
+
+Generated Demo Code
+===================
+
+The quickstart includes a small Kajiki + Bootstrap 5 demo under
+``{{package}}.controllers.demo``.
+{{if sqlalchemy}}
+It also includes a SQLAlchemy ``TodoItem`` model in ``{{package}}.model.todo``
+so you can see a database-backed, server-rendered htmx interaction.
+{{else}}
+This project was created without SQLAlchemy, so the database-backed todo demo
+was omitted.
+{{endif}}
+{{if auth}}
+Authentication is enabled, so the demo includes one protected action at
+``/demo/protected``.
+{{else}}
+Authentication is disabled, so protected demo links and actions are omitted.
+{{endif}}
+
+When you are ready to build your own application, delete
+``{{package}}/controllers/demo.py``, ``{{package}}/model/todo.py`` if present,
+and ``{{package}}/templates/demo``. Then change ``RootController.index`` to
+redirect or render your own starting page.

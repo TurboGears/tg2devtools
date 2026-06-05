@@ -1,7 +1,6 @@
 import re
 import os
 import shutil
-import glob
 import uuid
 import importlib.metadata
 import importlib.util
@@ -23,17 +22,9 @@ class QuickstartTemplate(GearBoxTemplate):
             # Rename the app logger in the rare case a project is named 'root'
             package_logger = 'app'
         vars['package_logger'] = package_logger
+        vars['template_engine'] = 'kajiki'
 
-        if vars['genshi']:
-            vars['template_engine'] = 'genshi'
-        elif vars['jinja']:
-            vars['template_engine'] = 'jinja'
-        elif vars['mako']:
-            vars['template_engine'] = 'mako'
-        elif vars['kajiki']:
-            vars['template_engine'] = 'kajiki'
-
-        if vars['migrations'] == 'True':
+        if vars['migrations']:
             vars['egg_plugins'].append('tg.devtools')
 
 
@@ -55,23 +46,6 @@ class QuickstartCommand(Command):
             help='No authorization support',
             action="store_true", dest="no_auth")
 
-        parser.add_argument("-m", "--mako",
-            help="default templates mako",
-            action="store_true", dest="mako")
-
-        parser.add_argument("-j", "--jinja",
-            help="default templates jinja",
-            action="store_true", dest="jinja")
-
-        parser.add_argument("-k", "--kajiki",
-            help="default templates kajiki",
-            action="store_true", dest="kajiki",
-            default=True)
-
-        parser.add_argument("-g", "--genshi",
-            help="default templates genshi",
-            action="store_true", dest="genshi")
-
         parser.add_argument("-p", "--package",
             help="package name for the code",
             dest="package")
@@ -92,14 +66,6 @@ class QuickstartCommand(Command):
             help="disable alembic model migrations",
             action="store_false", dest="migrations", default=True)
 
-        parser.add_argument("--skip-default-template",
-            help="Disables Kajiki default templates",
-            action="store_true", dest="skip_default_tmpl", default=False)
-
-        parser.add_argument("--minimal-quickstart",
-            help="Throw away example boilerplate from quickstart project",
-            action="store_true", dest="minimal_quickstart", default=False)
-
         return parser
 
     def take_action(self, opts):
@@ -107,16 +73,15 @@ class QuickstartCommand(Command):
 
         if opts.no_sqlalchemy:
             opts.sqlalchemy = False
+            if not opts.ming:
+                opts.migrations = False
 
         if opts.ming:
             opts.sqlalchemy = False
             opts.migrations = False
 
-        if opts.no_auth:
+        if opts.no_auth or (opts.no_sqlalchemy and not opts.ming):
             opts.auth = False
-
-        if opts.skip_default_tmpl:
-            opts.kajiki = False
 
         if not opts.package:
             package = opts.name.lower()
@@ -183,44 +148,11 @@ class QuickstartCommand(Command):
                 if filename == 'empty':
                     os.remove(os.path.join(base, filename))
 
-        if opts.mako or opts.genshi or opts.jinja or opts.kajiki:
-            package_template_dir = os.path.abspath(os.path.join(opts.package, 'templates'))
-            def overwrite_templates(template_type):
-                print('Writing %s template files to ./%s' % (
-                    template_type, os.path.join(opts.package, 'templates')
-                ))
-                # replace template files with alternative ones
-                alt_template_dir = os.path.join(quickstart_path, 'patches',
-                                                'quickstart_%s' % template_type)
-                shutil.rmtree(package_template_dir)
-                shutil.copytree(alt_template_dir, package_template_dir)
-
-            if opts.genshi:
-                overwrite_templates('genshi')
-            elif opts.jinja:
-                overwrite_templates('jinja')
-            elif opts.mako:
-                overwrite_templates('mako')
-            elif opts.kajiki:
-                overwrite_templates('kajiki')
-
-        if opts.kajiki:
-            # Provide Kajiki as a lingua franca for pluggable apps.
-            print('Adding Kajiki master for pluggable apps')
-            package_template_dir = os.path.abspath(os.path.join(opts.package, 'templates'))
-            alt_template_dir = os.path.join(quickstart_path, 'patches', 'quickstart_kajiki')
-            shutil.copy(os.path.join(alt_template_dir, 'master.xhtml'),
-                        package_template_dir)
-
-        if opts.minimal_quickstart:
-            print('Minimal Quickstart requested, throwing away example parts')
-            package_controllers_dir = os.path.abspath(os.path.join(opts.package, 'controllers'))
-            os.unlink(next(glob.iglob(os.path.join(package_controllers_dir, 'secure.py'))))
-
-            package_template_dir = os.path.abspath(os.path.join(opts.package, 'templates'))
-            os.unlink(next(glob.iglob(os.path.join(package_template_dir, 'data.*'))))
-            os.unlink(next(glob.iglob(os.path.join(package_template_dir, 'environ.*'))))
-            os.unlink(next(glob.iglob(os.path.join(package_template_dir, 'about.*'))))
+        package_template_dir = os.path.abspath(os.path.join(opts.package, 'templates'))
+        alt_template_dir = os.path.join(quickstart_path, 'patches', 'quickstart_kajiki')
+        print('Writing kajiki template files to ./%s' % os.path.join(opts.package, 'templates'))
+        shutil.rmtree(package_template_dir)
+        shutil.copytree(alt_template_dir, package_template_dir)
 
         if opts.ming:
             print('Writing Ming model files to ./%s' % os.path.join(

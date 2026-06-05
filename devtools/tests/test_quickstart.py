@@ -4,6 +4,7 @@ import shutil
 import subprocess
 import sys
 import site
+import tempfile
 import unittest
 
 from webtest import TestApp
@@ -47,6 +48,107 @@ def get_passed_and_failed(env_cmd, python_cmd, testpath):
                 failed.append(test)
                 test = None
     return passed, failed, lines
+
+
+class TestQuickstartGeneration(unittest.TestCase):
+
+    def setUp(self):
+        self.command = QuickstartCommand(None, {})
+        self.parser = self.command.get_parser('tg2devtools-test')
+
+    def quickstart(self, *args):
+        old_cwd = os.getcwd()
+        tmpdir = tempfile.TemporaryDirectory()
+        self.addCleanup(tmpdir.cleanup)
+        os.chdir(tmpdir.name)
+        self.addCleanup(os.chdir, old_cwd)
+
+        opts = self.parser.parse_args(list(args) + ['ModernApp'])
+        self.command.run(opts)
+        return os.path.join(tmpdir.name, 'ModernApp'), 'modernapp'
+
+    def test_default_generates_modern_kajiki_sqlalchemy_demo(self):
+        project_dir, package = self.quickstart()
+
+        with open(os.path.join(project_dir, package, 'controllers', 'root.py')) as f:
+            root = f.read()
+        with open(os.path.join(project_dir, package, 'controllers', 'demo.py')) as f:
+            demo = f.read()
+        with open(os.path.join(project_dir, package, 'model', 'todo.py')) as f:
+            todo = f.read()
+        with open(os.path.join(project_dir, package, 'templates', 'master.xhtml')) as f:
+            master = f.read()
+        with open(os.path.join(project_dir, package, 'templates', 'demo', 'index.xhtml')) as f:
+            demo_template = f.read()
+        with open(os.path.join(project_dir, package, 'templates', 'demo', 'todo_list.xhtml')) as f:
+            todo_template = f.read()
+        with open(os.path.join(project_dir, package, 'templates', 'demo', 'protected.xhtml')) as f:
+            protected_template = f.read()
+        with open(os.path.join(project_dir, package, 'tests', 'functional', 'test_root.py')) as f:
+            root_tests = f.read()
+        with open(os.path.join(project_dir, 'pyproject.toml')) as f:
+            pyproject = f.read()
+
+        self.assertIn('redirect(\'/demo\')', root)
+        self.assertIn(f"@expose('{package}.templates.demo.index')", demo)
+        self.assertIn(f"@expose('{package}.templates.demo.todo_list')", demo)
+        self.assertIn(f"@expose('{package}.templates.demo.protected')", demo)
+        self.assertIn('return self._todo_data()\n\n    @expose', demo)
+        self.assertIn('@validate(error_handler=todos)', demo)
+        self.assertIn('def add(self, title: str):', demo)
+        self.assertNotIn('priority', demo.lower())
+        self.assertIn('def toggle(self, todo_id: int, done: bool = False):', demo)
+        self.assertIn('DBSession.query(TodoItem).filter_by(id=todo_id).first()', demo)
+        self.assertNotIn('DBSession.get(TodoItem, todo_id)', demo)
+        self.assertIn("class TodoItem", todo)
+        self.assertNotIn('priority', todo.lower())
+        self.assertIn('cdn.jsdelivr.net/npm/bootstrap@5.3.3', master)
+        self.assertIn('unpkg.com/htmx.org', master)
+        self.assertIn('Create your own actions, controllers, templates, and models', demo_template)
+        self.assertIn('<code>templates/demo/</code>', demo_template)
+        self.assertIn('rm -rf controllers/demo.py model/todo.py templates/demo', demo_template)
+        self.assertIn('gearbox patch controllers/root.py DemoController -d', demo_template)
+        self.assertIn('gearbox patch controllers/root.py "redirect(\'/demo\')" -r "return \'Hello World\'"', demo_template)
+        self.assertIn('gearbox patch model/__init__.py TodoItem -d', demo_template)
+        self.assertNotIn('and the demo templates', demo_template)
+        self.assertNotIn('This quickstart is a small Kajiki-only', demo_template)
+        self.assertIn('py:extends="master.xhtml"', demo_template)
+        self.assertIn('href="demo/todo_list.xhtml"', demo_template)
+        self.assertIn('py:extends="master.xhtml"', protected_template)
+        self.assertIn('class="row g-4"', demo_template)
+        self.assertIn('class="col-lg-5"', demo_template)
+        self.assertIn('class="col-lg-7"', demo_template)
+        self.assertIn('name="title"', todo_template)
+        self.assertNotIn('priority', todo_template.lower())
+        self.assertIn('test_todo_demo_stores_items', root_tests)
+        self.assertIn('test_todo_demo_toggles_done_state', root_tests)
+        self.assertIn('test_protected_demo_with_manager', root_tests)
+        self.assertNotIn('priority', root_tests.lower())
+        self.assertIn('"TurboGears2 >= 2.5.1dev1"', pyproject)
+        self.assertTrue(os.path.exists(os.path.join(project_dir, package, 'templates', 'demo', '__init__.py')))
+        self.assertFalse(os.path.exists(os.path.join(project_dir, package, 'controllers', 'secure.py')))
+        self.assertFalse(os.path.exists(os.path.join(project_dir, package, 'templates', 'demo.xhtml')))
+        self.assertFalse(os.path.exists(os.path.join(project_dir, package, 'templates', 'todo_list.xhtml')))
+        self.assertFalse(os.path.exists(os.path.join(project_dir, package, 'templates', 'about.xhtml')))
+
+    def test_nosa_omits_persistent_todo_demo(self):
+        project_dir, package = self.quickstart('--nosa')
+
+        with open(os.path.join(project_dir, package, 'controllers', 'demo.py')) as f:
+            demo = f.read()
+        with open(os.path.join(project_dir, package, 'model', 'todo.py')) as f:
+            todo = f.read()
+
+        self.assertNotIn('TodoItem', demo)
+        self.assertNotIn('class TodoItem', todo)
+        self.assertIn('has_todos=False', demo)
+        self.assertFalse(os.path.exists(os.path.join(project_dir, 'migration')))
+
+    def test_unsupported_template_options_are_not_registered(self):
+        for option in ('--mako', '--jinja', '--genshi', '--skip-default-template', '--minimal-quickstart'):
+            with self.subTest(option=option):
+                with self.assertRaises(SystemExit):
+                    self.parser.parse_args([option, 'ModernApp'])
 
 
 class BaseTestQuickStart(object):
@@ -221,8 +323,8 @@ class CommonTestQuickStart(BaseTestQuickStart):
     skip_tests = []
 
     def test_index(self):
-        resp = self.app.get('/')
-        assert 'Welcome to TurboGears' in resp, resp
+        resp = self.app.get('/', status=302)
+        assert resp.headers['Location'] == 'http://localhost/demo'
 
     def test_login(self):
         resp = self.app.get('/login')
@@ -262,42 +364,49 @@ class CommonTestQuickStart(BaseTestQuickStart):
 class CommonTestQuickStartWithAuth(CommonTestQuickStart):
     def test_secured_controller(self):
         assert (
-            '<h1>Login</h1>' in self.app.get('/secc/', status=302).follow()
+            '<h1>Login</h1>' in self.app.get('/demo/protected', status=302).follow()
         )
 
     def test_secured_controller_with_prefix(self):
-        resp1 = self.app.get('/prefix/secc/', extra_environ={'SCRIPT_NAME': '/prefix'}, status=302)
+        resp1 = self.app.get('/prefix/demo/protected', extra_environ={'SCRIPT_NAME': '/prefix'}, status=302)
         assert (
-            resp1.headers['Location'] == 'http://localhost/prefix/login?came_from=%2Fprefix%2Fsecc%2F'
+            resp1.headers['Location'] == 'http://localhost/prefix/login?came_from=%2Fprefix%2Fdemo%2Fprotected'
         ), resp1.headers['Location']
         resp2 = resp1.follow(extra_environ={'SCRIPT_NAME': '/prefix'})
         assert '/prefix/login_handler' in resp2, resp2
 
     def test_login_with_prefix(self):
         self.init_database()
-        resp1 = self.app.post('/prefix/login_handler?came_from=%2Fprefix%2Fsecc%2F',
-                              params={'login': 'editor', 'password': 'editpass'},
+        resp1 = self.app.post('/prefix/login_handler?came_from=%2Fprefix%2Fdemo%2Fprotected',
+                              params={'login': 'manager', 'password': 'managepass'},
                               extra_environ={'SCRIPT_NAME': '/prefix'})
         assert (
-            resp1.headers['Location'] == 'http://localhost/prefix/post_login?came_from=%2Fprefix%2Fsecc%2F'
+            resp1.headers['Location'] == 'http://localhost/prefix/post_login?came_from=%2Fprefix%2Fdemo%2Fprotected'
         ), resp1.headers['Location']
         resp2 = resp1.follow(extra_environ={'SCRIPT_NAME': '/prefix'})
         assert (
-            resp2.headers['Location'] == 'http://localhost/prefix/secc/'
+            resp2.headers['Location'] == 'http://localhost/prefix/demo/protected'
         ), resp2.headers['Location']
 
     def test_login_failure_with_prefix(self):
         self.init_database()
-        resp = self.app.post('/prefix/login_handler?came_from=%2Fprefix%2Fsecc%2F',
+        resp = self.app.post('/prefix/login_handler?came_from=%2Fprefix%2Fdemo%2Fprotected',
                              params={'login': 'WRONG', 'password': 'WRONG'},
                              extra_environ={'SCRIPT_NAME': '/prefix'})
         location = resp.headers['Location']
         assert 'http://localhost/prefix/login' in location, location
-        assert 'came_from=%2Fprefix%2Fsecc%2F' in location, location
+        assert 'came_from=%2Fprefix%2Fdemo%2Fprotected' in location, location
 
 
 class TestDefaultQuickStart(CommonTestQuickStartWithAuth, unittest.TestCase):
     args = ''
+    pass_tests = [
+        '/tests/functional/test_authentication.',
+        '/tests/functional/test_root.py::TestRootController::test_todo_demo_stores_items',
+        '/tests/functional/test_root.py::TestRootController::test_todo_demo_toggles_done_state',
+        '/tests/functional/test_root.py::TestRootController::test_protected_demo_with_manager',
+        '/tests/models/test_auth.',
+    ]
 
     @classmethod
     def setUpClass(cls):
@@ -359,54 +468,22 @@ class TestDefaultQuickStart(CommonTestQuickStartWithAuth, unittest.TestCase):
         )
 
 
-class TestMakoQuickStart(CommonTestQuickStart, unittest.TestCase):
-    args = '--mako --nosa --noauth'
-
-    pass_tests = ['/tests/functional/test_root.']
-    skip_tests = [
-        'TestRootController::test_secc',
-        '/tests/functional/test_authentication.',
-        '/tests/models/test_auth.']
-
-    def test_login(self):
-        self.app.get('/login', status=404)
-
-
-class TestGenshiQuickStart(CommonTestQuickStart, unittest.TestCase):
-    args = '--genshi --nosa --noauth'
-
-    pass_tests = ['/tests/functional/test_root.']
-    skip_tests = [
-        'TestRootController::test_secc',
-        '/tests/functional/test_authentication.',
-        '/tests/models/test_auth.']
-
-    def test_login(self):
-        self.app.get('/login', status=404)
-
-
-class TestJinjaQuickStart(CommonTestQuickStart, unittest.TestCase):
-    args = '--jinja --nosa --noauth'
-
-    pass_tests = ['/tests/functional/test_root.']
-    skip_tests = [
-        'TestRootController::test_secc',
-        '/tests/functional/test_authentication.',
-        '/tests/models/test_auth.']
-
-    def test_login(self):
-        self.app.get('/login', status=404)
-
-
 class TestNoDBQuickStart(CommonTestQuickStart, unittest.TestCase):
 
-    pass_tests = ['/tests/functional/test_root.']
+    pass_tests = [
+        '/tests/functional/test_root.py::TestRootController::test_todo_demo_is_omitted_without_sqlalchemy',
+        '/tests/functional/test_root.py::TestRootController::test_auth_demo_is_omitted_without_auth',
+    ]
     skip_tests = [
-        'TestRootController::test_secc',
+        'TestRootController::test_todo_demo_stores_items',
+        'TestRootController::test_todo_demo_toggles_done_state',
+        'TestRootController::test_protected_demo_with_manager',
+        'TestRootController::test_protected_demo_with_editor',
+        'TestRootController::test_protected_demo_with_anonymous',
         '/tests/functional/test_authentication.',
         '/tests/models/test_auth.']
 
-    args = '--nosa --noauth'
+    args = '--nosa'
 
     def test_login(self):
         self.app.get('/login', status=404)
@@ -414,9 +491,15 @@ class TestNoDBQuickStart(CommonTestQuickStart, unittest.TestCase):
 
 class TestNoAuthQuickStart(CommonTestQuickStart, unittest.TestCase):
 
-    pass_tests = ['/tests/functional/test_root.']
+    pass_tests = [
+        '/tests/functional/test_root.py::TestRootController::test_todo_demo_stores_items',
+        '/tests/functional/test_root.py::TestRootController::test_todo_demo_toggles_done_state',
+        '/tests/functional/test_root.py::TestRootController::test_auth_demo_is_omitted_without_auth',
+    ]
     skip_tests = [
-        'TestRootController::test_secc',
+        'TestRootController::test_protected_demo_with_manager',
+        'TestRootController::test_protected_demo_with_editor',
+        'TestRootController::test_protected_demo_with_anonymous',
         '/tests/functional/test_authentication.',
         '/tests/models/test_auth.']
 
@@ -444,11 +527,3 @@ class TestMingBQuickStart(CommonTestQuickStartWithAuth, unittest.TestCase):
 
     def setUp(self):
         super(TestMingBQuickStart, self).setUp()
-
-
-class TestMinimalQuickStart(CommonTestQuickStart, unittest.TestCase):
-
-    args = '--minimal-quickstart'
-
-    def test_secc_is_removed(self):
-        self.app.get('/secc', status=404)
