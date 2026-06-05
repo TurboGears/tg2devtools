@@ -86,8 +86,12 @@ class TestQuickstartGeneration(unittest.TestCase):
             protected_template = f.read()
         with open(os.path.join(project_dir, package, 'tests', 'functional', 'test_root.py')) as f:
             root_tests = f.read()
+        with open(os.path.join(project_dir, package, 'tests', 'functional', 'test_demo.py')) as f:
+            demo_tests = f.read()
         with open(os.path.join(project_dir, 'pyproject.toml')) as f:
             pyproject = f.read()
+        with open(os.path.join(project_dir, 'test.ini')) as f:
+            test_ini = f.read()
 
         self.assertIn('redirect(\'/demo\')', root)
         self.assertIn(f"@expose('{package}.templates.demo.index')", demo)
@@ -104,9 +108,15 @@ class TestQuickstartGeneration(unittest.TestCase):
         self.assertNotIn('priority', todo.lower())
         self.assertIn('cdn.jsdelivr.net/npm/bootstrap@5.3.3', master)
         self.assertIn('unpkg.com/htmx.org', master)
+        self.assertIn('href="https://www.turbogears.org/"', master)
+        self.assertIn('href="https://kajiki.readthedocs.io/"', master)
+        self.assertIn('href="https://getbootstrap.com/"', master)
+        self.assertIn('href="https://htmx.org/"', master)
+        self.assertIn('class="navbar-brand" href="${tg.url(\'/\')}"', master)
+        self.assertIn(f'tmpl_context.project_name = "{package}"', demo)
         self.assertIn('Create your own actions, controllers, templates, and models', demo_template)
         self.assertIn('<code>templates/demo/</code>', demo_template)
-        self.assertIn('rm -rf controllers/demo.py model/todo.py templates/demo', demo_template)
+        self.assertIn('rm -rf controllers/demo.py model/todo.py templates/demo tests/functional/test_demo.py', demo_template)
         self.assertIn('gearbox patch controllers/root.py DemoController -d', demo_template)
         self.assertIn('gearbox patch controllers/root.py "redirect(\'/demo\')" -r "return \'Hello World\'"', demo_template)
         self.assertIn('gearbox patch model/__init__.py TodoItem -d', demo_template)
@@ -120,12 +130,17 @@ class TestQuickstartGeneration(unittest.TestCase):
         self.assertIn('class="col-lg-7"', demo_template)
         self.assertIn('name="title"', todo_template)
         self.assertNotIn('priority', todo_template.lower())
-        self.assertIn('test_todo_demo_stores_items', root_tests)
-        self.assertIn('test_todo_demo_toggles_done_state', root_tests)
-        self.assertIn('test_protected_demo_with_manager', root_tests)
-        self.assertNotIn('priority', root_tests.lower())
+        self.assertIn('test_index_redirects_to_demo', root_tests)
+        self.assertNotIn('test_todo_demo_stores_items', root_tests)
+        self.assertIn('class TestDemoController', demo_tests)
+        self.assertIn('test_todo_demo_stores_items', demo_tests)
+        self.assertIn('test_todo_demo_toggles_done_state', demo_tests)
+        self.assertIn('test_protected_demo_with_manager', demo_tests)
+        self.assertNotIn('priority', demo_tests.lower())
         self.assertIn('"TurboGears2 >= 2.5.1dev1"', pyproject)
+        self.assertIn('sqlalchemy.url = sqlite:///:memory:', test_ini)
         self.assertTrue(os.path.exists(os.path.join(project_dir, package, 'templates', 'demo', '__init__.py')))
+        self.assertTrue(os.path.exists(os.path.join(project_dir, package, 'tests', 'functional', 'test_demo.py')))
         self.assertFalse(os.path.exists(os.path.join(project_dir, package, 'controllers', 'secure.py')))
         self.assertFalse(os.path.exists(os.path.join(project_dir, package, 'templates', 'demo.xhtml')))
         self.assertFalse(os.path.exists(os.path.join(project_dir, package, 'templates', 'todo_list.xhtml')))
@@ -402,9 +417,9 @@ class TestDefaultQuickStart(CommonTestQuickStartWithAuth, unittest.TestCase):
     args = ''
     pass_tests = [
         '/tests/functional/test_authentication.',
-        '/tests/functional/test_root.py::TestRootController::test_todo_demo_stores_items',
-        '/tests/functional/test_root.py::TestRootController::test_todo_demo_toggles_done_state',
-        '/tests/functional/test_root.py::TestRootController::test_protected_demo_with_manager',
+        '/tests/functional/test_demo.py::TestDemoController::test_todo_demo_stores_items',
+        '/tests/functional/test_demo.py::TestDemoController::test_todo_demo_toggles_done_state',
+        '/tests/functional/test_demo.py::TestDemoController::test_protected_demo_with_manager',
         '/tests/models/test_auth.',
     ]
 
@@ -471,15 +486,15 @@ class TestDefaultQuickStart(CommonTestQuickStartWithAuth, unittest.TestCase):
 class TestNoDBQuickStart(CommonTestQuickStart, unittest.TestCase):
 
     pass_tests = [
-        '/tests/functional/test_root.py::TestRootController::test_todo_demo_is_omitted_without_sqlalchemy',
-        '/tests/functional/test_root.py::TestRootController::test_auth_demo_is_omitted_without_auth',
+        '/tests/functional/test_demo.py::TestDemoController::test_todo_demo_is_omitted_without_sqlalchemy',
+        '/tests/functional/test_demo.py::TestDemoController::test_auth_demo_is_omitted_without_auth',
     ]
     skip_tests = [
-        'TestRootController::test_todo_demo_stores_items',
-        'TestRootController::test_todo_demo_toggles_done_state',
-        'TestRootController::test_protected_demo_with_manager',
-        'TestRootController::test_protected_demo_with_editor',
-        'TestRootController::test_protected_demo_with_anonymous',
+        'TestDemoController::test_todo_demo_stores_items',
+        'TestDemoController::test_todo_demo_toggles_done_state',
+        'TestDemoController::test_protected_demo_with_manager',
+        'TestDemoController::test_protected_demo_with_editor',
+        'TestDemoController::test_protected_demo_with_anonymous',
         '/tests/functional/test_authentication.',
         '/tests/models/test_auth.']
 
@@ -492,14 +507,14 @@ class TestNoDBQuickStart(CommonTestQuickStart, unittest.TestCase):
 class TestNoAuthQuickStart(CommonTestQuickStart, unittest.TestCase):
 
     pass_tests = [
-        '/tests/functional/test_root.py::TestRootController::test_todo_demo_stores_items',
-        '/tests/functional/test_root.py::TestRootController::test_todo_demo_toggles_done_state',
-        '/tests/functional/test_root.py::TestRootController::test_auth_demo_is_omitted_without_auth',
+        '/tests/functional/test_demo.py::TestDemoController::test_todo_demo_stores_items',
+        '/tests/functional/test_demo.py::TestDemoController::test_todo_demo_toggles_done_state',
+        '/tests/functional/test_demo.py::TestDemoController::test_auth_demo_is_omitted_without_auth',
     ]
     skip_tests = [
-        'TestRootController::test_protected_demo_with_manager',
-        'TestRootController::test_protected_demo_with_editor',
-        'TestRootController::test_protected_demo_with_anonymous',
+        'TestDemoController::test_protected_demo_with_manager',
+        'TestDemoController::test_protected_demo_with_editor',
+        'TestDemoController::test_protected_demo_with_anonymous',
         '/tests/functional/test_authentication.',
         '/tests/models/test_auth.']
 

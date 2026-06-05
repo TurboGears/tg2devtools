@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Main Controller"""
 
-from tg import expose, flash, request, redirect, lurl, tmpl_context
+from tg import expose, flash, request, redirect, lurl
 from tg.i18n import ugettext as _
 from tg.exceptions import HTTPFound
 
@@ -17,9 +17,6 @@ class RootController(BaseController):
 
     demo = DemoController()
     error = ErrorController()
-
-    def _before(self, *args, **kw):
-        tmpl_context.project_name = "{{package}}"
 
     @expose()
     def index(self):

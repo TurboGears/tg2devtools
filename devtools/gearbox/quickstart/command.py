@@ -148,12 +148,6 @@ class QuickstartCommand(Command):
                 if filename == 'empty':
                     os.remove(os.path.join(base, filename))
 
-        package_template_dir = os.path.abspath(os.path.join(opts.package, 'templates'))
-        alt_template_dir = os.path.join(quickstart_path, 'patches', 'quickstart_kajiki')
-        print('Writing kajiki template files to ./%s' % os.path.join(opts.package, 'templates'))
-        shutil.rmtree(package_template_dir)
-        shutil.copytree(alt_template_dir, package_template_dir)
-
         if opts.ming:
             print('Writing Ming model files to ./%s' % os.path.join(
                 opts.package, 'model'))

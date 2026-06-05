@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Small generated demo controller."""
 
-from tg import expose, request, validate
+from tg import expose, request, tmpl_context, validate
 {{if auth}}
 from tg import predicates, require
 from tg.i18n import lazy_ugettext as l_
@@ -18,6 +18,9 @@ __all__ = ['DemoController']
 
 class DemoController(BaseController):
     """A tiny server-rendered demo that is safe to delete."""
+
+    def _before(self, *args, **kw):
+        tmpl_context.project_name = "{{package}}"
 
     @expose('{{package}}.templates.demo.index')
     def index(self, **kw):
