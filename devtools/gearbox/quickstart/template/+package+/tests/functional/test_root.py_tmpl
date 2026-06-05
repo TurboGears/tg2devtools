@@ -1,71 +1,67 @@
 # -*- coding: utf-8 -*-
-"""
-Functional test suite for the root controller.
-
-This is an example of how functional tests can be written for controllers.
-
-As opposed to a unit-test, which test a small unit of functionality,
-functional tests exercise the whole application and its WSGI stack.
-
-Please read https://webtest.readthedocs.io/ for more information.
-
-"""
+"""Functional test suite for the generated demo."""
 from {{package}}.tests import TestController
 
 
 class TestRootController(TestController):
-    """Tests for the method in the root controller."""
+    """Tests for the generated root and demo controllers."""
 
-    def test_index(self):
-        """The front page is working properly"""
-        response = self.app.get('/')
-        msg = 'TurboGears 2 is rapid web application development toolkit '\
-              'designed to make your life easier.'
-        # You can look for specific strings:
-        assert msg in response
+    def test_index_redirects_to_demo(self):
+        response = self.app.get('/', status=302)
+        assert response.location == 'http://localhost/demo'
 
-        # You can also access a BeautifulSoup'ed response in your tests
-        # (First run `pip install beautifulsoup4`
-        # and then uncomment the next two lines)
+    def test_demo_landing(self):
+        response = self.app.get('/demo')
+        assert 'Welcome to TurboGears' in response
+        assert 'Create your own actions, controllers, templates, and models' in response
 
-        # links = response.html.findAll('a')
-        # print(links)
-        # assert links, "Mummy, there are no links here!"
+{{if sqlalchemy}}
+    def test_todo_demo_stores_items(self):
+        response = self.app.get('/demo')
+        form = response.forms['new-todo']
+        form['title'] = 'Try TurboGears'
 
-{{if not minimal_quickstart}}
-    def test_environ(self):
-        """Displaying the wsgi environ works"""
-        response = self.app.get('/environ.html')
-        assert 'The keys in the environment are:' in response
+        response = form.submit()
+        assert 'Try TurboGears' in response
 
-    def test_data(self):
-        """The data display demo works with HTML"""
-        response = self.app.get('/data.html?a=1&b=2')
-        response.mustcontain("<td>a", "<td>1",
-                             "<td>b", "<td>2")
+        response = self.app.get('/demo')
+        assert 'Try TurboGears' in response
 
-    def test_data_json(self):
-        """The data display demo works with JSON"""
-        resp = self.app.get('/data.json?a=1&b=2')
-        assert dict(page='data', params={'a': '1', 'b': '2'}) == resp.json
+    def test_todo_demo_toggles_done_state(self):
+        response = self.app.get('/demo')
+        form = response.forms['new-todo']
+        form['title'] = 'Try TurboGears'
+
+        response = form.submit()
+        response = response.forms[1].submit()
+        assert 'Reopen' in response
+        assert 'text-decoration-line-through text-muted' in response
+
+        response = self.app.get('/demo')
+        assert 'Reopen' in response
+        assert 'text-decoration-line-through text-muted' in response
+{{else}}
+    def test_todo_demo_is_omitted_without_sqlalchemy(self):
+        response = self.app.get('/demo')
+        assert 'database-backed todo demo was omitted' in response
+        self.app.get('/demo/add', status=404)
+{{endif}}
 
 {{if auth}}
-    def test_secc_with_manager(self):
-        """The manager can access the secure controller"""
-        # Note how authentication is forged:
+    def test_protected_demo_with_manager(self):
         environ = {'REMOTE_USER': 'manager'}
-        resp = self.app.get('/secc', extra_environ=environ, status=200)
-        assert 'Secure Controller here' in resp.text, resp.text
+        response = self.app.get('/demo/protected', extra_environ=environ)
+        assert 'Protected demo' in response
 
-    def test_secc_with_editor(self):
-        """The editor cannot access the secure controller"""
+    def test_protected_demo_with_editor(self):
         environ = {'REMOTE_USER': 'editor'}
-        self.app.get('/secc', extra_environ=environ, status=403)
-        # It's enough to know that authorization was denied with a 403 status
+        self.app.get('/demo/protected', extra_environ=environ, status=403)
 
-    def test_secc_with_anonymous(self):
-        """Anonymous users must not access the secure controller"""
-        self.app.get('/secc', status=401)
-        # It's enough to know that authorization was denied with a 401 status
-{{endif}}
+    def test_protected_demo_with_anonymous(self):
+        self.app.get('/demo/protected', status=401)
+{{else}}
+    def test_auth_demo_is_omitted_without_auth(self):
+        response = self.app.get('/demo')
+        assert '/demo/protected' not in response
+        self.app.get('/demo/protected', status=404)
 {{endif}}

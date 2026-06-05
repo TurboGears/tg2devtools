@@ -28,27 +28,12 @@ base_config.update_blueprint({
 })
 
 # Rendering Engines Configuration
-rendering_config = {
-    'renderers': ['json'],  # Enable json in expose
-    'default_renderer': '{{template_engine}}',
-}
-{{if mako}}
-rendering_config['renderers'].append('mako')
-{{endif}}
-{{if jinja}}
-rendering_config['renderers'].append('jinja')
-rendering_config['jinja_extensions'] = []
-{{endif}}
-{{if kajiki}}
-rendering_config['renderers'].append('kajiki')
-# Change this in pyproject.toml too for i18n to work.
-rendering_config['templating.kajiki.strip_text'] = False
-{{endif}}
-{{if genshi}}
-rendering_config['renderers'].append('genshi')
-rendering_config['templating.genshi.name_constant_patch'] = True
-{{endif}}
-base_config.update_blueprint(rendering_config)
+base_config.update_blueprint({
+    'renderers': ['json', 'kajiki'],
+    'default_renderer': 'kajiki',
+    # Change this in pyproject.toml too for i18n to work.
+    'templating.kajiki.strip_text': False,
+})
 
 # Configure Sessions, store data as JSON to avoid pickle security issues
 base_config.update_blueprint({
@@ -220,12 +205,9 @@ base_config.update_blueprint({
 })
 {{endif}}
 
-{{if kajiki or genshi}}
 try:
     # Enable DebugBar if available, install tgext.debugbar to turn it on
     from tgext.debugbar import enable_debugbar
     enable_debugbar(base_config)
 except ImportError:
     pass
-{{endif}}
-

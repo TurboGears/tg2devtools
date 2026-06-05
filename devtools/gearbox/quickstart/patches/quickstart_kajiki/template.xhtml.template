@@ -1,16 +1,14 @@
 <html py:extends="master.xhtml" py:strip="True">
-    <head py:block="head" py:strip="True">
-        <title py:block="master_title">{{target.capitalize()}}</title>
-    </head>
+  <head py:block="head" py:strip="True">
+    <title py:block="master_title">{{target.capitalize()}}</title>
+  </head>
 
-    <body py:block="body" py:strip="True">
-      <div class="row">
-        <div class="col-md-12">
-          <h2>{{target.capitalize()}}</h2>
-          <p>
-            Template page for {{target.capitalize()}}
-          </p>
-        </div>
+  <body py:block="body" py:strip="True">
+    <section class="card">
+      <div class="card-body">
+        <h1 class="h3">{{target.capitalize()}}</h1>
+        <p class="text-muted mb-0">Generated Kajiki page scaffold.</p>
       </div>
-    </body>
+    </section>
+  </body>
 </html>

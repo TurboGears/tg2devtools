@@ -1,0 +1,29 @@
+<div id="todo-demo" class="card">
+  <div class="card-body">
+    <h2 class="h4">Todo demo</h2>
+    <p class="text-muted">Items are stored with SQLAlchemy and refreshed with server-rendered htmx responses.</p>
+
+    <form id="new-todo" method="post" action="${tg.url('/demo/add')}" hx-post="${tg.url('/demo/add')}" hx-target="#todo-demo" hx-swap="outerHTML" class="row gy-2 gx-2 align-items-end">
+      <div class="col-md-9">
+        <label class="form-label" for="title">Title</label>
+        <input class="form-control" id="title" name="title" value="${values.get('title', '')}" />
+        <div py:if="'title' in errors" class="invalid-feedback d-block">${errors.get('title')}</div>
+      </div>
+      <div class="col-md-3">
+        <button class="btn btn-primary w-100" type="submit">Add</button>
+      </div>
+    </form>
+
+    <ul py:if="todos" class="list-group mt-4">
+      <li py:for="item in todos" class="list-group-item d-flex justify-content-between align-items-center">
+        <span class="${'text-decoration-line-through text-muted' if item.done else ''}">${item.title}</span>
+        <form method="post" action="${tg.url('/demo/toggle')}" hx-post="${tg.url('/demo/toggle')}" hx-target="#todo-demo" hx-swap="outerHTML">
+          <input type="hidden" name="todo_id" value="${item.id}" />
+          <input type="hidden" name="done" value="${'false' if item.done else 'true'}" />
+          <button class="btn btn-sm btn-outline-secondary" type="submit">${'Reopen' if item.done else 'Done'}</button>
+        </form>
+      </li>
+    </ul>
+    <p py:if="not todos" class="text-muted mt-4 mb-0">No todos yet.</p>
+  </div>
+</div>

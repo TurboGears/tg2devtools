@@ -1,0 +1,24 @@
+# -*- coding: utf-8 -*-
+{{if sqlalchemy}}
+"""Todo model used by the generated demo."""
+
+from datetime import datetime
+
+from sqlalchemy import Column
+from sqlalchemy.types import Boolean, DateTime, Integer, Unicode
+
+from {{package}}.model import DeclarativeBase
+
+__all__ = ['TodoItem']
+
+
+class TodoItem(DeclarativeBase):
+    """A small SQLAlchemy-backed todo item for the demo page."""
+
+    __tablename__ = 'todo_item'
+
+    id = Column(Integer, autoincrement=True, primary_key=True)
+    title = Column(Unicode(255), nullable=False)
+    done = Column(Boolean, nullable=False, default=False)
+    created = Column(DateTime, default=datetime.now)
+{{endif}}

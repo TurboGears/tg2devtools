@@ -2,7 +2,7 @@
 #
 # sqlalchemy: {{sqlalchemy}}
 # auth:       {{auth}}
-# mako:       {{mako}}
+# kajiki:     True
 
 [build-system]
 requires = ["setuptools>=61.0", "wheel"]
@@ -18,17 +18,9 @@ authors = [
 urls = { Homepage = "http://unknown.org" }
 readme = { file = "README.rst", content-type = "text/x-rst" }
 dependencies = [
-  "TurboGears2 >= 2.5.0",
+  "TurboGears2 >= 2.5.1dev1",
   "Beaker >= 1.8.0",
-  {{if kajiki}}
   "Kajiki >= 0.6.3",
-  {{endif}}
-  {{if genshi}}
-  "Genshi",
-  {{endif}}
-  {{if mako}}
-  "Mako",
-  {{endif}}
   {{if sqlalchemy}}
   "zope.sqlalchemy >= 1.2",
   "sqlalchemy < 3.0",
@@ -40,13 +32,10 @@ dependencies = [
   "ming>=0.4.3",
   {{endif}}
   {{if auth}}
-  "repoze.who",
+  "repoze.who>=3.2.0rc1",
   {{endif}}
   "WebHelpers2",
   "Babel >= 2.16.0",
-  {{if jinja}}
-  "jinja2",
-  {{endif}}
 ]
 
 [project.optional-dependencies]
@@ -67,6 +56,7 @@ exclude = []
 [tool.setuptools.package-data]
 {{package}} = [
   "i18n/*/LC_MESSAGES/*.mo",
+  "templates/*",
   "templates/*/*",
   "public/*/*"
 ]
@@ -98,31 +88,11 @@ pattern = "**.py"
 method = "ignore"
 pattern = "public/**"
 
-{{if mako}}
-[[tool.babel.mappings]]
-method = "mako"
-pattern = "**/templates/**.mak"
-{{endif}}
-
-{{if kajiki}}
 [[tool.babel.mappings]]
 method = "kajiki"
 pattern = "**/templates/**.xhtml"
 strip_text = false
 extract_python = true
-{{endif}}
-
-{{if jinja}}
-[[tool.babel.mappings]]
-method = "jinja2"
-pattern = "**/templates/**.jinja"
-{{endif}}
-
-{{if genshi}}
-[[tool.babel.mappings]]
-method = "genshi"
-pattern = "**/templates/**.html"
-{{endif}}
 
 [project.entry-points."paste.app_factory"]
 main = "{{package}}.config.application:make_app"
