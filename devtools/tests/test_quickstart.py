@@ -159,6 +159,29 @@ class TestQuickstartGeneration(unittest.TestCase):
         self.assertIn('has_todos=False', demo)
         self.assertFalse(os.path.exists(os.path.join(project_dir, 'migration')))
 
+    def test_ming_generates_persistent_todo_demo(self):
+        project_dir, package = self.quickstart('--ming')
+
+        with open(os.path.join(project_dir, package, 'controllers', 'demo.py')) as f:
+            demo = f.read()
+        with open(os.path.join(project_dir, package, 'model', 'todo.py')) as f:
+            todo = f.read()
+        with open(os.path.join(project_dir, package, 'model', '__init__.py')) as f:
+            model_init = f.read()
+        with open(os.path.join(project_dir, package, 'tests', 'functional', 'test_demo.py')) as f:
+            demo_tests = f.read()
+
+        self.assertIn('from bson import ObjectId', demo)
+        self.assertIn('def toggle(self, todo_id: str, done: bool = False):', demo)
+        self.assertIn('TodoItem.query.get(_id=ObjectId(todo_id))', demo)
+        self.assertIn('has_todos=True', demo)
+        self.assertIn('class TodoItem(MappedClass)', todo)
+        self.assertIn("name = 'todo_item'", todo)
+        self.assertIn('from %s.model.todo import TodoItem' % package, model_init)
+        self.assertIn('test_todo_demo_stores_items', demo_tests)
+        self.assertIn('test_todo_demo_toggles_done_state', demo_tests)
+        self.assertFalse(os.path.exists(os.path.join(project_dir, 'migration')))
+
 
 class BaseTestQuickStart(object):
 
@@ -528,6 +551,13 @@ class TestNoAuthQuickStart(CommonTestQuickStart, unittest.TestCase):
 class TestMingBQuickStart(CommonTestQuickStartWithAuth, unittest.TestCase):
 
     args = '--ming'
+    pass_tests = [
+        '/tests/functional/test_authentication.',
+        '/tests/functional/test_demo.py::TestDemoController::test_todo_demo_stores_items',
+        '/tests/functional/test_demo.py::TestDemoController::test_todo_demo_toggles_done_state',
+        '/tests/functional/test_demo.py::TestDemoController::test_protected_demo_with_manager',
+        '/tests/models/test_auth.',
+    ]
     # preinstall = ['Paste', 'PasteScript']  # Ming doesn't require those anymore
 
     @classmethod

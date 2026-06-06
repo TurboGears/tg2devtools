@@ -11,7 +11,7 @@ class TestDemoController(TestController):
         assert 'Welcome to TurboGears' in response
         assert 'Create your own actions, controllers, templates, and models' in response
 
-{{if sqlalchemy}}
+{{if sqlalchemy or ming}}
     def test_todo_demo_stores_items(self):
         response = self.app.get('/demo')
         form = response.forms['new-todo']

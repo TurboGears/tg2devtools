@@ -1,15 +1,17 @@
 # -*- coding: utf-8 -*-
-{{if sqlalchemy}}
+{{if sqlalchemy or ming}}
 """Todo model used by the generated demo."""
 
 from datetime import datetime
 
+__all__ = ['TodoItem']
+{{endif}}
+
+{{if sqlalchemy}}
 from sqlalchemy import Column
 from sqlalchemy.types import Boolean, DateTime, Integer, Unicode
 
 from {{package}}.model import DeclarativeBase
-
-__all__ = ['TodoItem']
 
 
 class TodoItem(DeclarativeBase):
@@ -21,4 +23,27 @@ class TodoItem(DeclarativeBase):
     title = Column(Unicode(255), nullable=False)
     done = Column(Boolean, nullable=False, default=False)
     created = Column(DateTime, default=datetime.now)
+{{elif ming}}
+from ming import schema as s
+from ming.odm import FieldProperty
+from ming.odm.declarative import MappedClass
+
+from {{package}}.model import DBSession
+
+
+class TodoItem(MappedClass):
+    """A small Ming-backed todo item for the demo page."""
+
+    class __mongometa__:
+        session = DBSession
+        name = 'todo_item'
+
+    _id = FieldProperty(s.ObjectId)
+    title = FieldProperty(s.String(required=True))
+    done = FieldProperty(s.Bool(if_missing=False))
+    created = FieldProperty(s.DateTime(if_missing=datetime.now))
+
+    @property
+    def id(self):
+        return str(self._id)
 {{endif}}

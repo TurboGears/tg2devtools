@@ -10,6 +10,11 @@ from tg.i18n import lazy_ugettext as l_
 from {{package}}.lib.base import BaseController
 {{if sqlalchemy}}
 from {{package}}.model import DBSession
+{{elif ming}}
+from bson import ObjectId
+from {{package}}.model import DBSession
+{{endif}}
+{{if sqlalchemy or ming}}
 from {{package}}.model.todo import TodoItem
 {{endif}}
 
@@ -27,7 +32,7 @@ class DemoController(BaseController):
         """Show the demo landing page."""
         return self._todo_data()
 
-{{if sqlalchemy}}
+{{if sqlalchemy or ming}}
 
     @expose('{{package}}.templates.demo.todo_list')
     def todos(self, **kw):
@@ -42,14 +47,25 @@ class DemoController(BaseController):
     @validate(error_handler=todos)
     def add(self, title: str):
         """Store a todo item using TurboGears type-hint validation."""
+{{if sqlalchemy}}
         DBSession.add(TodoItem(title=title))
+{{elif ming}}
+        TodoItem(title=title)
+        DBSession.flush()
+{{endif}}
         return self._todo_data()
 
     @expose('{{package}}.templates.demo.todo_list')
     @validate(error_handler=todos)
+{{if sqlalchemy}}
     def toggle(self, todo_id: int, done: bool = False):
         """Toggle a todo item using TurboGears bool conversion."""
         item = DBSession.query(TodoItem).filter_by(id=todo_id).first()
+{{elif ming}}
+    def toggle(self, todo_id: str, done: bool = False):
+        """Toggle a todo item using TurboGears bool conversion."""
+        item = TodoItem.query.get(_id=ObjectId(todo_id))
+{{endif}}
         if item is not None:
             item.done = done
         return self._todo_data()
@@ -64,13 +80,17 @@ class DemoController(BaseController):
         return dict(page='demo')
 {{endif}}
 
-{{if sqlalchemy}}
+{{if sqlalchemy or ming}}
 
     def _todo_data(self, values=None, errors=None):
         return dict(
             page='demo',
             has_todos=True,
+{{if sqlalchemy}}
             todos=DBSession.query(TodoItem).order_by(TodoItem.id).all(),
+{{elif ming}}
+            todos=TodoItem.query.find().sort([('created', 1)]).all(),
+{{endif}}
             values=values or {},
             errors=errors or {},
         )

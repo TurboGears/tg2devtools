@@ -1,7 +1,7 @@
 <div id="todo-demo" class="card">
   <div class="card-body">
     <h2 class="h4">Todo demo</h2>
-    <p class="text-muted">Items are stored with SQLAlchemy and refreshed with server-rendered htmx responses.</p>
+    <p class="text-muted">Items are stored in the configured model layer and refreshed with server-rendered htmx responses.</p>
 
     <form id="new-todo" method="post" action="${tg.url('/demo/add')}" hx-post="${tg.url('/demo/add')}" hx-target="#todo-demo" hx-swap="outerHTML" class="row gy-2 gx-2 align-items-end">
       <div class="col-md-9">
