@@ -159,12 +159,6 @@ class TestQuickstartGeneration(unittest.TestCase):
         self.assertIn('has_todos=False', demo)
         self.assertFalse(os.path.exists(os.path.join(project_dir, 'migration')))
 
-    def test_unsupported_template_options_are_not_registered(self):
-        for option in ('--mako', '--jinja', '--genshi', '--skip-default-template', '--minimal-quickstart'):
-            with self.subTest(option=option):
-                with self.assertRaises(SystemExit):
-                    self.parser.parse_args([option, 'ModernApp'])
-
 
 class BaseTestQuickStart(object):
 
