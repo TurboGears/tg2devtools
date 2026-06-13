@@ -1,0 +1,125 @@
+# -*- coding: utf-8 -*-
+"""Setup the {{project}} API application"""
+{{if sqlalchemy}}
+import transaction
+{{endif}}
+from {{package}} import model
+
+
+def bootstrap(command, conf, vars):
+    """Place any commands to setup {{package}} here"""
+    
+    # Hardcoded tokens that match the index.xhtml template
+    MANAGER_TOKEN = "abc123def456ghi789jkl012mno345"
+    EDITOR_TOKEN = "pqr678stu901vwx234yz567abc890"
+    
+    # <websetup.bootstrap.before.auth>
+    {{if auth == "sqlalchemy"}}
+    from sqlalchemy.exc import IntegrityError
+    try:
+        # Create manager user
+        u = model.User()
+        u.user_name = 'manager'
+        u.display_name = 'Example manager'
+        u.email_address = 'manager@somedomain.com'
+        u.password = 'managepass'
+        u.api_token = MANAGER_TOKEN
+
+        model.DBSession.add(u)
+
+        # Create manager group
+        g = model.Group()
+        g.group_name = 'managers'
+        g.display_name = 'Managers Group'
+        g.users.append(u)
+
+        model.DBSession.add(g)
+
+        # Create manage permission
+        p = model.Permission()
+        p.permission_name = 'manage'
+        p.description = 'This permission gives an administrative right'
+        p.groups.append(g)
+
+        model.DBSession.add(p)
+
+        # Create editor user
+        u1 = model.User()
+        u1.user_name = 'editor'
+        u1.display_name = 'Example editor'
+        u1.email_address = 'editor@somedomain.com'
+        u1.password = 'editpass'
+        u1.api_token = EDITOR_TOKEN
+
+        model.DBSession.add(u1)
+        model.DBSession.flush()
+        transaction.commit()
+
+        print("✓ Created users:")
+        print(f"  - manager: password=managepass, token={MANAGER_TOKEN}")
+        print(f"  - editor: password=editpass, token={EDITOR_TOKEN}")
+    except IntegrityError:
+        print('Warning, there was a problem adding your auth data, '
+              'it may have already been added:')
+        import traceback
+        print(traceback.format_exc())
+        transaction.abort()
+        print('Continuing with bootstrapping...')
+    {{elif auth == "ming"}}
+    # Create manager user
+    g = model.Group()
+    g.group_name = 'managers'
+    g.display_name = 'Managers Group'
+
+    p = model.Permission()
+    p.permission_name = 'manage'
+    p.description = 'This permission gives an administrative right'
+    p.groups = [g]
+
+    u = model.User()
+    u.user_name = 'manager'
+    u.display_name = 'Example manager'
+    u.email_address = 'manager@somedomain.com'
+    u.groups = [g]
+    u.password = 'managepass'
+    u.api_token = MANAGER_TOKEN
+
+    u1 = model.User()
+    u1.user_name = 'editor'
+    u1.display_name = 'Example editor'
+    u1.email_address = 'editor@somedomain.com'
+    u1.password = 'editpass'
+    u1.api_token = EDITOR_TOKEN
+
+    model.DBSession.flush()
+    model.DBSession.clear()
+
+    print("✓ Created users:")
+    print(f"  - manager: password=managepass, token={MANAGER_TOKEN}")
+    print(f"  - editor: password=editpass, token={EDITOR_TOKEN}")
+    {{endif}}
+
+    # Create sample movies for the demo
+    {{if sqlalchemy or ming}}
+    from {{package}}.model.movie import Movie
+    
+    try:
+        inception = Movie(title="Inception", year=2010, description="A mind-bending movie about dreams within dreams")
+        matrix = Movie(title="The Matrix", year=1999, description="Red pill or blue pill?")
+        pulp = Movie(title="Pulp Fiction", year=1994, description="A nonlinear crime film")
+        
+        model.DBSession.add_all([inception, matrix, pulp])
+        {{if sqlalchemy}}
+        model.DBSession.flush()
+        transaction.commit()
+        {{else}}
+        model.DBSession.flush()
+        model.DBSession.clear()
+        {{endif}}
+        
+        print("✓ Created sample movies: Inception, The Matrix, Pulp Fiction")
+    except Exception as e:
+        print(f"⚠ Could not create sample movies: {e}")
+    {{endif}}
+
+    # <websetup.bootstrap.after.auth>

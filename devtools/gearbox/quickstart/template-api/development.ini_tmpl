@@ -1,0 +1,20 @@
+[DEFAULT]
+# Server configuration
+server.socket_host = 0.0.0.0
+server.socket_port = 8080
+
+# Application configuration
+full_stack = true
+
+# SQLAlchemy configuration (SQLite in-memory for development)
+sqlalchemy.url = sqlite:///:memory:
+sqlalchemy.echo = false
+
+# Authentication
+sa_auth.cookie_secret = {{cookiesecret}}
+
+# Debug mode
+debug = true
+
+# Enable debug toolbar if installed
+# debugbar.enabled = true

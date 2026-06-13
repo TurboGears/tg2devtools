@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - ${project}</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        h1 { color: #2c3e50; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        input[type="submit"] { background: #3498db; color: white; border: none; cursor: pointer; }
+        input[type="submit"]:hover { background: #2980b9; }
+        .error { color: #e74c3c; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+    <h1>Login</h1>
+
+    <py:if test="failure">
+        <div class="error">
+            <py:choose>
+                <py:when test="failure == 'user-not-found'">User not found</py:when>
+                <py:when test="failure == 'invalid-password'">Invalid Password</py:when>
+                <py:otherwise>Wrong credentials</py:otherwise>
+            </py:choose>
+        </div>
+    </py:if>
+
+    <form action="${tg.url('/login_handler')}" method="post">
+        <input type="hidden" name="came_from" value="${came_from}" />
+        
+        <div class="form-group">
+            <label for="login">Username:</label>
+            <input type="text" id="login" name="login" value="${login}" placeholder="Enter username" required />
+        </div>
+        
+        <div class="form-group">
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" placeholder="Enter password" required />
+        </div>
+        
+        <div class="form-group">
+            <input type="submit" value="Login" />
+        </div>
+    </form>
+
+    <p><a href="/">← Back to API Demo</a></p>
+</body>
+</html>

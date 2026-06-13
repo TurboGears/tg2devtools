@@ -1,13 +1,17 @@
 # -*- coding: utf-8 -*-
-"""Main Controller"""
+"""Main Controller for {{project}} API."""
 
-from tg import expose, flash, request, redirect, lurl
-from tg.i18n import ugettext as _
+from tg import expose, flash, request, lurl
 from tg.exceptions import HTTPFound
+{{if auth}}
+from tg import predicates, require
+from tg.i18n import ugettext as _, lazy_ugettext as l_
+{{endif}}
 
 from {{package}}.lib.base import BaseController
+from {{package}}.controllers.api import APIController
 from {{package}}.controllers.demo import DemoController
-from {{package}}.controllers.error import ErrorController
+
 
 __all__ = ['RootController']
 
@@ -15,13 +19,14 @@ __all__ = ['RootController']
 class RootController(BaseController):
     """The root controller for the {{project}} application."""
 
+    api = APIController()
     demo = DemoController()
-    error = ErrorController()
 
-    @expose()
-    def index(self):
-        """Send visitors to the generated demo."""
-        redirect('/demo')
+    @expose('{{package}}.templates.index')
+    def index(self, **kw):
+        """API demo landing page."""
+        return dict(page='index', project='{{package}}')
+
 
 {{if auth == "sqlalchemy" or auth == "ming"}}
 
@@ -46,7 +51,6 @@ class RootController(BaseController):
         """
         Redirect the user to the initially requested page on successful
         authentication or redirect her back to the login page if login failed.
-
         """
         if not request.identity:
             login_counter = request.environ.get('repoze.who.logins', 0) + 1
@@ -64,7 +68,6 @@ class RootController(BaseController):
         """
         Redirect the user to the initially requested page on logout and say
         goodbye as well.
-
         """
         flash(_('We hope to see you soon!'))
         return HTTPFound(location=came_from)

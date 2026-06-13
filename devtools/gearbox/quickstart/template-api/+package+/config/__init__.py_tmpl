@@ -1,0 +1,6 @@
+# -*- coding: utf-8 -*-
+"""Configuration for the {{project}} application."""
+
+from {{package}}.config.application import config
+
+__all__ = ['config']

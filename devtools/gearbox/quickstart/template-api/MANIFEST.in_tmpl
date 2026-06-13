@@ -1,0 +1,2 @@
+include *
+recursive-include {{package}} *.py *.xhtml *.html *.txt *.js *.css

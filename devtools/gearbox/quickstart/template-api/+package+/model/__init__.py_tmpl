@@ -1,0 +1,55 @@
+# -*- coding: utf-8 -*-
+"""
+Model package for {{project}}.
+
+This package contains the application models.
+"""
+
+{{if sqlalchemy}}
+from sqlalchemy import metadata
+from sqlalchemy.orm import declarative_base
+
+# SQLAlchemy metadata
+metadata = metadata.MetaData()
+DeclarativeBase = declarative_base(metadata=metadata)
+
+# Global database session
+from sqlalchemy.orm import scoped_session, sessionmaker
+DBSession = scoped_session(sessionmaker())
+
+__all__ = ['DBSession', 'DeclarativeBase', 'metadata']
+{{elif ming}}
+from ming.odm import ThreadLocalODMSession
+
+# Ming database session
+DBSession = ThreadLocalODMSession()
+
+__all__ = ['DBSession']
+{{else}}
+# No database configured
+DBSession = None
+
+__all__ = ['DBSession']
+{{endif}}
+
+
+def init_model(app):
+    """Initialize the model for a TurboGears application."""
+    {{if sqlalchemy}}
+    from tg import config
+    
+    # Bind the session to the engine
+    engine = config['sqlalchemy.engine']
+    DBSession.configure(bind=engine)
+    
+    # Import all model modules to register them with SQLAlchemy
+    from {{package}}.model import auth, movie
+    {{elif ming}}
+    from tg import config
+    
+    # Configure Ming
+    DBSession.bind = config.get('ming.url', 'mongodb://localhost:27017/{{package}}')
+    
+    # Import all model modules to register them with Ming
+    from {{package}}.model import auth, movie
+    {{endif}}

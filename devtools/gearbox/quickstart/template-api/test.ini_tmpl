@@ -1,0 +1,14 @@
+[DEFAULT]
+# Test configuration
+sqlalchemy.url = sqlite:///:memory:
+sqlalchemy.echo = false
+
+# Authentication
+sa_auth.cookie_secret = {{cookiesecret}}
+
+# Debug mode
+debug = false
+
+# Testing specific
+# Use in-memory database for tests
+# sqlalchemy.url = sqlite:///:memory:

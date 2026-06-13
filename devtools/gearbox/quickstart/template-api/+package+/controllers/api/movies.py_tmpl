@@ -1,0 +1,176 @@
+# -*- coding: utf-8 -*-
+"""REST controller for movies."""
+
+from tg import expose, request, validate
+from tg.controllers import RestController
+from tg.validation import Convert, RequireValue
+from tg import validation_errors_response, abort
+{{if sqlalchemy or ming}}
+from {{package}}.model import DBSession
+from {{package}}.model.movie import Movie
+{{endif}}
+
+
+class MoviesController(RestController):
+    """REST controller for movies."""
+
+    @expose('json')
+    def get_all(self, **kw):
+        """GET /api/movies - List all movies.
+
+        ---
+        tags: [movies]
+        responses:
+          200:
+            description: List of all movies
+        """
+        {{if sqlalchemy or ming}}
+        movies = DBSession.query(Movie).all()
+        {{else}}
+        movies = []
+        {{endif}}
+        return dict(movies=movies)
+
+    @expose('json')
+    @validate({
+        'title': RequireValue(),
+        'year': Convert(int, if_empty=None),
+        'description': str
+    }, error_handler=validation_errors_response)
+    def post(self, title, year=None, description=None, **kw):
+        """POST /api/movies - Create a new movie.
+
+        ---
+        tags: [movies]
+        requestBody:
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  title:
+                    type: string
+                  year:
+                    type: integer
+                  description:
+                    type: string
+                required: [title]
+        responses:
+          201:
+            description: Movie created
+          412:
+            description: Validation error
+        """
+        {{if sqlalchemy or ming}}
+        movie = Movie(title=title, year=year, description=description)
+        DBSession.add(movie)
+        DBSession.flush()
+        return dict(movie=movie), 201
+        {{else}}
+        return dict(movie={'title': title, 'year': year, 'description': description}), 201
+        {{endif}}
+
+    @expose('json')
+    def get_one(self, movie_id, **kw):
+        """GET /api/movies/{movie_id} - Get a specific movie.
+
+        ---
+        tags: [movies]
+        parameters:
+          - name: movie_id
+            in: path
+            required: true
+            schema:
+              type: integer
+        responses:
+          200:
+            description: Movie details
+          404:
+            description: Movie not found
+        """
+        {{if sqlalchemy or ming}}
+        movie = DBSession.query(Movie).get(movie_id)
+        {{else}}
+        movie = None
+        {{endif}}
+        if not movie:
+            abort(404, "Movie not found")
+        return dict(movie=movie)
+
+    @expose('json')
+    @validate({
+        'title': RequireValue(),
+        'year': Convert(int, if_empty=None),
+        'description': str
+    }, error_handler=validation_errors_response)
+    def put(self, movie_id, title, year=None, description=None, **kw):
+        """PUT /api/movies/{movie_id} - Update a movie.
+
+        ---
+        tags: [movies]
+        parameters:
+          - name: movie_id
+            in: path
+            required: true
+            schema:
+              type: integer
+        requestBody:
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  title:
+                    type: string
+                  year:
+                    type: integer
+                  description:
+                    type: string
+                required: [title]
+        responses:
+          200:
+            description: Movie updated
+          404:
+            description: Movie not found
+          412:
+            description: Validation error
+        """
+        {{if sqlalchemy or ming}}
+        movie = DBSession.query(Movie).get(movie_id)
+        {{else}}
+        movie = None
+        {{endif}}
+        if not movie:
+            abort(404, "Movie not found")
+        movie.title = title
+        movie.year = year
+        movie.description = description
+        return dict(movie=movie)
+
+    @expose('json')
+    def post_delete(self, movie_id, **kw):
+        """DELETE /api/movies/{movie_id} - Delete a movie.
+
+        ---
+        tags: [movies]
+        parameters:
+          - name: movie_id
+            in: path
+            required: true
+            schema:
+              type: integer
+        responses:
+          200:
+            description: Movie deleted
+          404:
+            description: Movie not found
+        """
+        {{if sqlalchemy or ming}}
+        movie = DBSession.query(Movie).get(movie_id)
+        {{else}}
+        movie = None
+        {{endif}}
+        if not movie:
+            abort(404, "Movie not found")
+        DBSession.delete(movie)
+        return dict(status='deleted', movie_id=movie_id)

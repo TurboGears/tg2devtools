@@ -1,0 +1,58 @@
+# -*- coding: utf-8 -*-
+"""
+Movie model for {{project}} API.
+
+This is a demo model that can be safely removed.
+"""
+
+{{if sqlalchemy}}
+from sqlalchemy import Column, Integer, String, Text
+from {{package}}.model import DeclarativeBase
+
+
+class Movie(DeclarativeBase):
+    """Movie model for the API demo."""
+    
+    __tablename__ = 'movie'
+    
+    id = Column(Integer, primary_key=True)
+    title = Column(String(100), nullable=False)
+    year = Column(Integer, nullable=True)
+    description = Column(Text, nullable=True)
+    
+    def __repr__(self):
+        return f'<Movie: title={self.title!r}, year={self.year}>'
+    
+    def __unicode__(self):
+        return self.title
+
+
+__all__ = ['Movie']
+{{elif ming}}
+from ming import schema as s
+from ming.odm import FieldProperty
+from ming.odm.declarative import MappedClass
+from {{package}}.model import DBSession
+
+
+class Movie(MappedClass):
+    """Movie model for the API demo."""
+    
+    class __mongometa__:
+        session = DBSession
+        name = 'movie'
+    
+    _id = FieldProperty(s.ObjectId)
+    title = FieldProperty(s.String)
+    year = FieldProperty(s.Int)
+    description = FieldProperty(s.String)
+    
+    def __repr__(self):
+        return f'<Movie: title={self.title!r}, year={self.year}>'
+    
+    def __unicode__(self):
+        return self.title
+
+
+__all__ = ['Movie']
+{{endif}}

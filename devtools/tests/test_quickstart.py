@@ -13,6 +13,7 @@ from venv import EnvBuilder
 from tg.util import Bunch
 
 from devtools.gearbox.quickstart import QuickstartCommand
+from devtools.gearbox.quickstart.command import QuickstartAPICommand
 from gearbox.commands.setup_app import SetupAppCommand
 
 
@@ -94,6 +95,8 @@ class TestQuickstartGeneration(unittest.TestCase):
             test_ini = f.read()
 
         self.assertIn('redirect(\'/demo\')', root)
+        self.assertIn("request.identity['user']", root)
+        self.assertNotIn("request.identity['repoze.who.userid']", root)
         self.assertIn(f"@expose('{package}.templates.demo.index')", demo)
         self.assertIn(f"@expose('{package}.templates.demo.todo_list')", demo)
         self.assertIn(f"@expose('{package}.templates.demo.protected')", demo)
@@ -145,6 +148,54 @@ class TestQuickstartGeneration(unittest.TestCase):
         self.assertFalse(os.path.exists(os.path.join(project_dir, package, 'templates', 'demo.xhtml')))
         self.assertFalse(os.path.exists(os.path.join(project_dir, package, 'templates', 'todo_list.xhtml')))
         self.assertFalse(os.path.exists(os.path.join(project_dir, package, 'templates', 'about.xhtml')))
+
+    def test_api_quickstart_does_not_generate_default_routes(self):
+        old_cwd = os.getcwd()
+        tmpdir = tempfile.TemporaryDirectory()
+        self.addCleanup(tmpdir.cleanup)
+        os.chdir(tmpdir.name)
+        self.addCleanup(os.chdir, old_cwd)
+
+        command = QuickstartAPICommand(None, {})
+        parser = command.get_parser('tg2devtools-api-test')
+        opts = parser.parse_args(['ModernAPI'])
+        command.run(opts)
+
+        project_dir = os.path.join(tmpdir.name, 'ModernAPI')
+        with open(os.path.join(project_dir, 'modernapi', 'controllers', 'root.py')) as f:
+            root = f.read()
+        with open(os.path.join(project_dir, 'modernapi', 'controllers', 'api', '__init__.py')) as f:
+            api = f.read()
+        with open(os.path.join(project_dir, 'modernapi', 'controllers', 'demo.py')) as f:
+            demo = f.read()
+
+        fallback_name = '_' + 'default'
+        generated_fallbacks = []
+        for base, _dirs, files in os.walk(project_dir):
+            for filename in files:
+                if filename.endswith('.py'):
+                    path = os.path.join(base, filename)
+                    with open(path) as f:
+                        if 'def %s(' % fallback_name in f.read():
+                            generated_fallbacks.append(os.path.relpath(path, project_dir))
+
+        self.assertIn('def index(self):', api)
+        self.assertIn('def openapi(self):', api)
+        self.assertIn('def docs(self):', api)
+        self.assertNotIn('OpenAPIController', api)
+        self.assertNotIn('DocsController', api)
+        self.assertNotIn('DemoController', api)
+        self.assertIn('demo = DemoController()', root)
+        self.assertIn("request.identity['user']", root)
+        self.assertNotIn("request.identity['repoze.who.userid']", root)
+        self.assertIn('def admin(self, **kw):', demo)
+        self.assertIn("request.identity['user'].user_name", demo)
+        self.assertNotIn("request.identity['repoze.who.userid']", demo)
+        self.assertNotIn('AdminController', demo)
+        self.assertFalse(os.path.exists(os.path.join(project_dir, 'modernapi', 'controllers', 'api', 'openapi.py')))
+        self.assertFalse(os.path.exists(os.path.join(project_dir, 'modernapi', 'controllers', 'api', 'docs.py')))
+        self.assertFalse(os.path.exists(os.path.join(project_dir, 'modernapi', 'controllers', 'api', 'demo')))
+        self.assertEqual([], generated_fallbacks)
 
     def test_nosa_omits_persistent_todo_demo(self):
         project_dir, package = self.quickstart('--nosa')

@@ -1,0 +1,14 @@
+# -*- coding: utf-8 -*-
+"""
+The application's Globals object.
+
+This module is used for global variables that are used across the application.
+"""
+
+from tg import AppGlobals
+
+
+class Globals(AppGlobals):
+    """Global object for the application."""
+    
+    pass

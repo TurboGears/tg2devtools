@@ -1,0 +1,41 @@
+# -*- coding: utf-8 -*-
+"""API controllers for {{project}}."""
+
+import json
+
+from tg import expose, request
+from tgext.apispec import get_spec
+from {{package}}.lib.base import BaseController
+from .movies import MoviesController
+
+
+class APIController(BaseController):
+    """API root controller."""
+
+    movies = MoviesController()
+
+    @expose('json')
+    def openapi(self):
+        """GET /api/openapi.json - OpenAPI schema."""
+        spec = get_spec(request.app)
+        return spec.to_dict()
+
+    @expose('{{package}}.templates.api_docs')
+    def docs(self):
+        """GET /api/docs - Redoc API documentation."""
+        spec = get_spec(request.app)
+        return dict(schema=json.dumps(spec.to_dict(), indent=2))
+
+    @expose('json')
+    def index(self):
+        """API root endpoint."""
+        return dict(
+            name="{{package}} API",
+            version="1.0.0",
+            description="API server for {{project}}",
+            endpoints={
+                "movies": "/api/movies",
+                "openapi": "/api/openapi.json",
+                "docs": "/api/docs"
+            }
+        )
