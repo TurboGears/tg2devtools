@@ -34,3 +34,6 @@ exclude = ["ez_setup", "examples", "tests"]
 [tool.setuptools]
 include-package-data = true
 zip-safe = false
+
+[project.entry-points."paste.app_factory"]
+main = "{{package}}.config.application:make_app"

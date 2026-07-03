@@ -168,6 +168,14 @@ class TestQuickstartGeneration(unittest.TestCase):
             api = f.read()
         with open(os.path.join(project_dir, 'modernapi', 'controllers', 'demo.py')) as f:
             demo = f.read()
+        with open(os.path.join(project_dir, 'modernapi', 'config', '__init__.py')) as f:
+            config_init = f.read()
+        with open(os.path.join(project_dir, 'modernapi', 'config', 'app_cfg.py')) as f:
+            app_cfg = f.read()
+        with open(os.path.join(project_dir, 'modernapi', 'config', 'application.py')) as f:
+            application = f.read()
+        with open(os.path.join(project_dir, 'pyproject.toml')) as f:
+            pyproject = f.read()
 
         fallback_name = '_' + 'default'
         generated_fallbacks = []
@@ -192,6 +200,11 @@ class TestQuickstartGeneration(unittest.TestCase):
         self.assertIn("request.identity['user'].user_name", demo)
         self.assertNotIn("request.identity['repoze.who.userid']", demo)
         self.assertNotIn('AdminController', demo)
+        self.assertEqual('# -*- coding: utf-8 -*-\n', config_init)
+        self.assertIn('base_config = FullStackApplicationConfigurator()', app_cfg)
+        self.assertIn('def make_app(global_conf, **app_conf):', application)
+        self.assertIn('from modernapi.config.app_cfg import base_config', application)
+        self.assertIn('main = "modernapi.config.application:make_app"', pyproject)
         self.assertFalse(os.path.exists(os.path.join(project_dir, 'modernapi', 'controllers', 'api', 'openapi.py')))
         self.assertFalse(os.path.exists(os.path.join(project_dir, 'modernapi', 'controllers', 'api', 'docs.py')))
         self.assertFalse(os.path.exists(os.path.join(project_dir, 'modernapi', 'controllers', 'api', 'demo')))
