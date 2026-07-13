@@ -1,0 +1,14 @@
+# -*- coding: utf-8 -*-
+"""Test helpers for {{project}}."""
+
+from os import getcwd
+
+from paste.deploy import loadapp
+from webtest import TestApp
+
+
+class TestController(object):
+    """Base functional test case for generated controllers."""
+
+    def setup_method(self, method):
+        self.app = TestApp(loadapp('config:test.ini', relative_to=getcwd()))

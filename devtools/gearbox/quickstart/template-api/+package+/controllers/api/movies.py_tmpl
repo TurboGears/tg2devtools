@@ -5,7 +5,11 @@ from tg import expose, request, validate
 from tg.controllers import RestController
 from tg.validation import Convert, RequireValue
 from tg import validation_errors_response, abort
-{{if sqlalchemy or ming}}
+{{if sqlalchemy}}
+from {{package}}.model import DBSession
+from {{package}}.model.movie import Movie
+{{elif ming}}
+from bson import ObjectId
 from {{package}}.model import DBSession
 from {{package}}.model.movie import Movie
 {{endif}}
@@ -24,8 +28,18 @@ class MoviesController(RestController):
           200:
             description: List of all movies
         """
-        {{if sqlalchemy or ming}}
+        {{if sqlalchemy}}
         movies = DBSession.query(Movie).all()
+        {{elif ming}}
+        movies = [
+            dict(
+                id=str(movie._id),
+                title=movie.title,
+                year=movie.year,
+                description=movie.description,
+            )
+            for movie in Movie.query.find().all()
+        ]
         {{else}}
         movies = []
         {{endif}}
@@ -34,7 +48,7 @@ class MoviesController(RestController):
     @expose('json')
     @validate({
         'title': RequireValue(),
-        'year': Convert(int, if_empty=None),
+        'year': Convert(int, default=None),
         'description': str
     }, error_handler=validation_errors_response)
     def post(self, title, year=None, description=None, **kw):
@@ -61,9 +75,13 @@ class MoviesController(RestController):
           412:
             description: Validation error
         """
-        {{if sqlalchemy or ming}}
+        {{if sqlalchemy}}
         movie = Movie(title=title, year=year, description=description)
         DBSession.add(movie)
+        DBSession.flush()
+        return dict(movie=movie), 201
+        {{elif ming}}
+        movie = Movie(title=title, year=year, description=description)
         DBSession.flush()
         return dict(movie=movie), 201
         {{else}}
@@ -88,19 +106,30 @@ class MoviesController(RestController):
           404:
             description: Movie not found
         """
-        {{if sqlalchemy or ming}}
+        {{if sqlalchemy}}
         movie = DBSession.query(Movie).get(movie_id)
+        {{elif ming}}
+        movie = Movie.query.get(_id=ObjectId(movie_id))
         {{else}}
         movie = None
         {{endif}}
         if not movie:
             abort(404, "Movie not found")
+        {{if ming}}
+        return dict(movie=dict(
+            id=str(movie._id),
+            title=movie.title,
+            year=movie.year,
+            description=movie.description,
+        ))
+        {{else}}
         return dict(movie=movie)
+        {{endif}}
 
     @expose('json')
     @validate({
         'title': RequireValue(),
-        'year': Convert(int, if_empty=None),
+        'year': Convert(int, default=None),
         'description': str
     }, error_handler=validation_errors_response)
     def put(self, movie_id, title, year=None, description=None, **kw):
@@ -135,8 +164,10 @@ class MoviesController(RestController):
           412:
             description: Validation error
         """
-        {{if sqlalchemy or ming}}
+        {{if sqlalchemy}}
         movie = DBSession.query(Movie).get(movie_id)
+        {{elif ming}}
+        movie = Movie.query.get(_id=ObjectId(movie_id))
         {{else}}
         movie = None
         {{endif}}
@@ -165,8 +196,10 @@ class MoviesController(RestController):
           404:
             description: Movie not found
         """
-        {{if sqlalchemy or ming}}
+        {{if sqlalchemy}}
         movie = DBSession.query(Movie).get(movie_id)
+        {{elif ming}}
+        movie = Movie.query.get(_id=ObjectId(movie_id))
         {{else}}
         movie = None
         {{endif}}

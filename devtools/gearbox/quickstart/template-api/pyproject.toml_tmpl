@@ -16,10 +16,17 @@ authors = [
 license = { text = "MIT" }
 urls = { Homepage = "http://www.turbogears.org" }
 dependencies = [
-    "TurboGears2 >= 2.5.1",
+    "TurboGears2 >= 2.5.1dev1",
     "tgext.apispec",
     "kajiki",
+    {{if sqlalchemy}}
     "sqlalchemy",
+    {{elif ming}}
+    "ming>=0.4.3",
+    {{endif}}
+    {{if auth}}
+    "repoze.who>=3.2.0rc1",
+    {{endif}}
 ]
 
 [project.optional-dependencies]

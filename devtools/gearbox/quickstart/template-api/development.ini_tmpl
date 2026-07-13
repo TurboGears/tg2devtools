@@ -18,3 +18,11 @@ debug = true
 
 # Enable debug toolbar if installed
 # debugbar.enabled = true
+
+[server:main]
+use = egg:gearbox#wsgiref
+host = 127.0.0.1
+port = 8080
+
+[app:main]
+use = egg:{{project}}

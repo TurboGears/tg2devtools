@@ -1,0 +1,19 @@
+# -*- coding: utf-8 -*-
+"""Functional tests for the generated root controller."""
+
+from {{package}}.tests import TestController
+
+
+class TestRootController(TestController):
+    """Tests for the generated root controller."""
+
+    def test_index_renders_api_demo(self):
+        response = self.app.get('/')
+
+        assert 'API Demo' in response
+
+    def test_docs_renders_openapi_schema(self):
+        response = self.app.get('/api/docs')
+
+        assert 'redoc-container' in response
+        assert '"openapi"' in response

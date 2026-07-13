@@ -66,37 +66,42 @@ def bootstrap(command, conf, vars):
         transaction.abort()
         print('Continuing with bootstrapping...')
     {{elif auth == "ming"}}
-    # Create manager user
-    g = model.Group()
-    g.group_name = 'managers'
-    g.display_name = 'Managers Group'
+    from pymongo.errors import DuplicateKeyError
 
-    p = model.Permission()
-    p.permission_name = 'manage'
-    p.description = 'This permission gives an administrative right'
-    p.groups = [g]
+    try:
+        # Create manager user
+        g = model.Group()
+        g.group_name = 'managers'
+        g.display_name = 'Managers Group'
 
-    u = model.User()
-    u.user_name = 'manager'
-    u.display_name = 'Example manager'
-    u.email_address = 'manager@somedomain.com'
-    u.groups = [g]
-    u.password = 'managepass'
-    u.api_token = MANAGER_TOKEN
+        p = model.Permission()
+        p.permission_name = 'manage'
+        p.description = 'This permission gives an administrative right'
+        p.groups = [g]
 
-    u1 = model.User()
-    u1.user_name = 'editor'
-    u1.display_name = 'Example editor'
-    u1.email_address = 'editor@somedomain.com'
-    u1.password = 'editpass'
-    u1.api_token = EDITOR_TOKEN
+        u = model.User()
+        u.user_name = 'manager'
+        u.display_name = 'Example manager'
+        u.email_address = 'manager@somedomain.com'
+        u.groups = [g]
+        u.password = 'managepass'
+        u.api_token = MANAGER_TOKEN
 
-    model.DBSession.flush()
-    model.DBSession.clear()
+        u1 = model.User()
+        u1.user_name = 'editor'
+        u1.display_name = 'Example editor'
+        u1.email_address = 'editor@somedomain.com'
+        u1.password = 'editpass'
+        u1.api_token = EDITOR_TOKEN
 
-    print("✓ Created users:")
-    print(f"  - manager: password=managepass, token={MANAGER_TOKEN}")
-    print(f"  - editor: password=editpass, token={EDITOR_TOKEN}")
+        model.DBSession.flush()
+        print("✓ Created users:")
+        print(f"  - manager: password=managepass, token={MANAGER_TOKEN}")
+        print(f"  - editor: password=editpass, token={EDITOR_TOKEN}")
+    except DuplicateKeyError:
+        print('Users already exist, continuing with bootstrapping...')
+    finally:
+        model.DBSession.clear()
     {{endif}}
 
     # Create sample movies for the demo
@@ -104,20 +109,28 @@ def bootstrap(command, conf, vars):
     from {{package}}.model.movie import Movie
     
     try:
-        inception = Movie(title="Inception", year=2010, description="A mind-bending movie about dreams within dreams")
-        matrix = Movie(title="The Matrix", year=1999, description="Red pill or blue pill?")
-        pulp = Movie(title="Pulp Fiction", year=1994, description="A nonlinear crime film")
-        
-        model.DBSession.add_all([inception, matrix, pulp])
         {{if sqlalchemy}}
-        model.DBSession.flush()
-        transaction.commit()
-        {{else}}
-        model.DBSession.flush()
-        model.DBSession.clear()
+        has_sample_movies = model.DBSession.query(Movie).filter_by(title="Inception").first()
+        {{elif ming}}
+        has_sample_movies = Movie.query.get(title="Inception")
         {{endif}}
-        
-        print("✓ Created sample movies: Inception, The Matrix, Pulp Fiction")
+        if has_sample_movies:
+            print('Sample movies already exist, continuing with bootstrapping...')
+        else:
+            inception = Movie(title="Inception", year=2010, description="A mind-bending movie about dreams within dreams")
+            matrix = Movie(title="The Matrix", year=1999, description="Red pill or blue pill?")
+            pulp = Movie(title="Pulp Fiction", year=1994, description="A nonlinear crime film")
+
+            {{if sqlalchemy}}
+            model.DBSession.add_all([inception, matrix, pulp])
+            model.DBSession.flush()
+            transaction.commit()
+            {{else}}
+            model.DBSession.flush()
+            model.DBSession.clear()
+            {{endif}}
+
+            print("✓ Created sample movies: Inception, The Matrix, Pulp Fiction")
     except Exception as e:
         print(f"⚠ Could not create sample movies: {e}")
     {{endif}}

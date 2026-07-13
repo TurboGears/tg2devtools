@@ -13,3 +13,4 @@ TGTest-*
 devtools/tests/data/
 dist/
 build/
+.pi-subagents/

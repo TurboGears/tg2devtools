@@ -3,8 +3,9 @@
 
 import json
 
-from tg import expose, request
-from tgext.apispec import get_spec
+from markupsafe import Markup
+from tg import expose
+from tgext.apispec.openapi import get_spec
 from {{package}}.lib.base import BaseController
 from .movies import MoviesController
 
@@ -17,14 +18,12 @@ class APIController(BaseController):
     @expose('json')
     def openapi(self):
         """GET /api/openapi.json - OpenAPI schema."""
-        spec = get_spec(request.app)
-        return spec.to_dict()
+        return self._openapi_schema()
 
     @expose('{{package}}.templates.api_docs')
     def docs(self):
         """GET /api/docs - Redoc API documentation."""
-        spec = get_spec(request.app)
-        return dict(schema=json.dumps(spec.to_dict(), indent=2))
+        return dict(schema=Markup(json.dumps(self._openapi_schema(), indent=2)))
 
     @expose('json')
     def index(self):
@@ -39,3 +38,14 @@ class APIController(BaseController):
                 "docs": "/api/docs"
             }
         )
+
+    def _openapi_schema(self):
+        """Build the public API schema for Redoc and OpenAPI clients."""
+        schema = get_spec(self).to_dict()
+        schema['servers'] = [{'url': '/'}]
+        schema['paths'] = {
+            '/api' if path == '/' else f'/api{path}': operations
+            for path, operations in schema['paths'].items()
+            if path != '/openapi'
+        }
+        return schema

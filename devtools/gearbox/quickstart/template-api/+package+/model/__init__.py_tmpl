@@ -6,25 +6,32 @@ This package contains the application models.
 """
 
 {{if sqlalchemy}}
-from sqlalchemy import metadata
+from sqlalchemy import MetaData
 from sqlalchemy.orm import declarative_base
 
 # SQLAlchemy metadata
-metadata = metadata.MetaData()
+metadata = MetaData()
 DeclarativeBase = declarative_base(metadata=metadata)
 
 # Global database session
 from sqlalchemy.orm import scoped_session, sessionmaker
 DBSession = scoped_session(sessionmaker())
 
-__all__ = ['DBSession', 'DeclarativeBase', 'metadata']
+{{if auth}}
+from .auth import Group, Permission, User
+{{endif}}
+from .movie import Movie
+
+__all__ = ['DBSession', 'DeclarativeBase', 'metadata', {{if auth}}'User', 'Group', 'Permission', {{endif}}'Movie']
 {{elif ming}}
-from ming.odm import ThreadLocalODMSession
+from .session import mainsession, DBSession
 
-# Ming database session
-DBSession = ThreadLocalODMSession()
+{{if auth}}
+from .auth import Group, Permission, User
+{{endif}}
+from .movie import Movie
 
-__all__ = ['DBSession']
+__all__ = ['DBSession', {{if auth}}'User', 'Group', 'Permission', {{endif}}'Movie']
 {{else}}
 # No database configured
 DBSession = None
@@ -33,23 +40,17 @@ __all__ = ['DBSession']
 {{endif}}
 
 
-def init_model(app):
-    """Initialize the model for a TurboGears application."""
+def init_model(engine):
+    """Configure the model for the application engine."""
     {{if sqlalchemy}}
-    from tg import config
-    
-    # Bind the session to the engine
-    engine = config['sqlalchemy.engine']
     DBSession.configure(bind=engine)
-    
-    # Import all model modules to register them with SQLAlchemy
-    from {{package}}.model import auth, movie
     {{elif ming}}
-    from tg import config
-    
-    # Configure Ming
-    DBSession.bind = config.get('ming.url', 'mongodb://localhost:27017/{{package}}')
-    
-    # Import all model modules to register them with Ming
-    from {{package}}.model import auth, movie
+    import ming.odm
+
+    mainsession.bind = engine
+    ming.odm.Mapper.compile_all()
+
+    for mapper in ming.odm.Mapper.all_mappers():
+        mainsession.ensure_indexes(mapper.collection)
     {{endif}}
+    return DBSession
