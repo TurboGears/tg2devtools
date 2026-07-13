@@ -1,15 +1,12 @@
 import gettext
 import importlib
-import json
 import os
 import shutil
 import subprocess
 import sys
 import site
 import tempfile
-import types
 import unittest
-from unittest.mock import MagicMock, call, patch
 
 from webtest import TestApp
 from itertools import count
@@ -218,71 +215,6 @@ class TestQuickstartGeneration(unittest.TestCase):
         self.assertFalse(os.path.exists(os.path.join(project_dir, 'modernapi', 'controllers', 'api', 'docs.py')))
         self.assertFalse(os.path.exists(os.path.join(project_dir, 'modernapi', 'controllers', 'api', 'demo')))
         self.assertEqual([], generated_fallbacks)
-
-    def test_api_quickstart_uses_released_apispec_api(self):
-        class Spec:
-            def __init__(self):
-                self.options = {}
-
-            def to_dict(self):
-                return {
-                    'paths': {'/movies': {}},
-                    'servers': self.options['servers'],
-                }
-
-        old_cwd = os.getcwd()
-        tmpdir = tempfile.TemporaryDirectory()
-        self.addCleanup(tmpdir.cleanup)
-        os.chdir(tmpdir.name)
-        self.addCleanup(os.chdir, old_cwd)
-
-        command = QuickstartAPICommand(None, {})
-        parser = command.get_parser('tg2devtools-api-test')
-        opts = parser.parse_args(['--nosa', 'ModernAPI'])
-        command.run(opts)
-
-        project_dir = os.path.join(tmpdir.name, 'ModernAPI')
-        with open(os.path.join(project_dir, 'modernapi', 'controllers', 'root.py')) as f:
-            root = f.read()
-
-        openapi_spec, docs_spec = Spec(), Spec()
-        get_spec = MagicMock(side_effect=[openapi_spec, docs_spec])
-        tgext = types.ModuleType('tgext')
-        apispec = types.ModuleType('tgext.apispec')
-        openapi = types.ModuleType('tgext.apispec.openapi')
-        openapi.get_spec = get_spec
-        tgext.apispec = apispec
-        apispec.openapi = openapi
-        movies = types.ModuleType('modernapi.controllers.api.movies')
-        movies.MoviesController = type('MoviesController', (), {})
-        sys.path.insert(0, project_dir)
-        try:
-            with patch.dict(sys.modules, {
-                'tgext': tgext,
-                'tgext.apispec': apispec,
-                'tgext.apispec.openapi': openapi,
-                'modernapi.controllers.api.movies': movies,
-            }):
-                api = importlib.import_module('modernapi.controllers.api')
-                controller = api.APIController()
-                expected_schema = {
-                    'paths': {'/movies': {}},
-                    'servers': [{'url': '/api'}],
-                }
-
-                self.assertIn('api = APIController()', root)
-                self.assertIsInstance(controller.movies, api.MoviesController)
-                self.assertEqual(controller.openapi(), expected_schema)
-                self.assertEqual(
-                    controller.docs(),
-                    {'schema': json.dumps(expected_schema, indent=2)},
-                )
-                self.assertEqual(get_spec.call_args_list, [call(controller), call(controller)])
-        finally:
-            sys.path.remove(project_dir)
-            for module_name in list(sys.modules):
-                if module_name == 'modernapi' or module_name.startswith('modernapi.'):
-                    del sys.modules[module_name]
 
     def test_nosa_omits_persistent_todo_demo(self):
         project_dir, package = self.quickstart('--nosa')
@@ -649,6 +581,8 @@ class TestAPIQuickStart(BaseTestQuickStart, unittest.TestCase):
         tests = [
             '/tests/functional/test_root.py::TestRootController::test_index_renders_api_demo',
             '/tests/functional/test_root.py::TestRootController::test_docs_renders_openapi_schema',
+            '/tests/functional/test_root.py::TestRootController::test_openapi_schema_lists_api_paths',
+            '/tests/functional/test_root.py::TestRootController::test_openapi_schema_honors_script_name',
         ]
 
         for test in tests:
@@ -659,14 +593,11 @@ class TestAPIQuickStart(BaseTestQuickStart, unittest.TestCase):
         command = SetupAppCommand(Bunch(options=Bunch(verbose_level=1)), Bunch())
         command.run(Bunch(config_file='config:test.ini', section_name=None))
 
-    def test_api_endpoints(self):
+    def test_movies_endpoint(self):
         self.init_database()
 
-        spec = self.app.get('/api/openapi.json').json
         movies = self.app.get('/api/movies').json['movies']
 
-        assert spec['servers'] == [{'url': '/api'}]
-        assert '/movies' in spec['paths']
         assert isinstance(movies, list)
 
 
@@ -683,20 +614,15 @@ class TestAPIMingQuickStart(TestAPIQuickStart):
 
         assert len(movie.query.find({'title': 'Inception'}).all()) == 1
 
-    def test_api_endpoints(self):
+    def test_movies_endpoints(self):
         self.init_database()
 
         package = os.path.basename(self.proj_dir).lower().replace('-', '')
         movie = importlib.import_module(f'{package}.model.movie').Movie
         movie_id = movie.query.get(title='Inception')._id
-        api = self.app.get('/api').json
-        spec = self.app.get('/api/openapi.json').json
         movies = self.app.get('/api/movies').json['movies']
         detail = self.app.get(f'/api/movies/{movie_id}').json['movie']
 
-        assert api['name'].endswith('API')
-        assert spec['servers'] == [{'url': '/api'}]
-        assert '/movies' in spec['paths']
         assert any(item['title'] == 'Inception' for item in movies)
         assert detail['title'] == 'Inception'
 

@@ -20,7 +20,9 @@ class MoviesController(RestController):
 
     @expose('json')
     def get_all(self, **kw):
-        """GET /api/movies - List all movies.
+        """Return the movies available in the catalog.
+
+        Each movie includes its title, release year, and description.
 
         ---
         tags: [movies]
@@ -52,23 +54,12 @@ class MoviesController(RestController):
         'description': str
     }, error_handler=validation_errors_response)
     def post(self, title, year=None, description=None, **kw):
-        """POST /api/movies - Create a new movie.
+        """Add a movie to the catalog.
+
+        A title is required; the release year and description are optional.
 
         ---
         tags: [movies]
-        requestBody:
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  title:
-                    type: string
-                  year:
-                    type: integer
-                  description:
-                    type: string
-                required: [title]
         responses:
           201:
             description: Movie created
@@ -90,16 +81,12 @@ class MoviesController(RestController):
 
     @expose('json')
     def get_one(self, movie_id, **kw):
-        """GET /api/movies/{movie_id} - Get a specific movie.
+        """Return one movie from the catalog.
+
+        Use the movie identifier returned by the catalog endpoint.
 
         ---
         tags: [movies]
-        parameters:
-          - name: movie_id
-            in: path
-            required: true
-            schema:
-              type: integer
         responses:
           200:
             description: Movie details
@@ -133,29 +120,12 @@ class MoviesController(RestController):
         'description': str
     }, error_handler=validation_errors_response)
     def put(self, movie_id, title, year=None, description=None, **kw):
-        """PUT /api/movies/{movie_id} - Update a movie.
+        """Update a movie's catalog details.
+
+        Supply the title and any changed release year or description.
 
         ---
         tags: [movies]
-        parameters:
-          - name: movie_id
-            in: path
-            required: true
-            schema:
-              type: integer
-        requestBody:
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  title:
-                    type: string
-                  year:
-                    type: integer
-                  description:
-                    type: string
-                required: [title]
         responses:
           200:
             description: Movie updated
@@ -180,16 +150,12 @@ class MoviesController(RestController):
 
     @expose('json')
     def post_delete(self, movie_id, **kw):
-        """DELETE /api/movies/{movie_id} - Delete a movie.
+        """Remove a movie from the catalog.
+
+        The deleted movie is no longer returned by catalog requests.
 
         ---
         tags: [movies]
-        parameters:
-          - name: movie_id
-            in: path
-            required: true
-            schema:
-              type: integer
         responses:
           200:
             description: Movie deleted

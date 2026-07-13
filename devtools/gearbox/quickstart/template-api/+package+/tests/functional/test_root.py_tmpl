@@ -16,4 +16,39 @@ class TestRootController(TestController):
         response = self.app.get('/api/docs')
 
         assert 'redoc-container' in response
-        assert '"openapi"' in response
+        assert '"/api"' in response
+        assert '"/api/movies"' in response
+        assert '"/api/openapi"' not in response
+        assert 'Return the movies available in the catalog.' in response
+
+    def test_openapi_schema_lists_api_paths(self):
+        spec = self.app.get('/api/openapi.json').json
+
+        assert spec['servers'] == [{'url': '/'}]
+        assert '/api' in spec['paths']
+        assert '/api/movies' in spec['paths']
+        assert '/api/openapi' not in spec['paths']
+
+        movie_schema = spec['paths']['/api/movies']
+        request_body = movie_schema['post']['requestBody']['content']['application/json']['schema']
+        movie_parameter = spec['paths']['/api/movies/{movie_id}']['get']['parameters'][0]
+
+        assert request_body['properties']['title'] == {'type': 'string'}
+        assert request_body['properties']['year'] == {'type': 'integer'}
+        assert request_body['properties']['description'] == {'type': 'string'}
+        assert request_body['required'] == ['title']
+        assert movie_parameter == {
+            'name': 'movie_id',
+            'in': 'path',
+            'required': True,
+            'schema': {'type': 'string'},
+        }
+
+    def test_openapi_schema_honors_script_name(self):
+        spec = self.app.get(
+            '/api/openapi.json', extra_environ={'SCRIPT_NAME': '/prefix'},
+        ).json
+
+        assert '/prefix/api' in spec['paths']
+        assert '/prefix/api/movies' in spec['paths']
+        assert '/prefix/api/openapi' not in spec['paths']
