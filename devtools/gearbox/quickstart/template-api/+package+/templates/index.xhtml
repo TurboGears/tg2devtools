@@ -104,7 +104,7 @@ curl -H "Authorization: Bearer abc123def456ghi789jkl012mno345" \
         <p><strong>Note:</strong> Once you're ready to build your own API, you can remove the demo parts.</p>
         <p>Run these commands from your project root:</p>
         <pre><code>cd ${project}
-rm -rf controllers/api/movies.py controllers/demo.py model/movie.py
+rm -rf controllers/api/movies.py controllers/demo.py model/movie.py tests/functional/test_movies.py
 gearbox patch controllers/root.py DemoController -d
 gearbox patch controllers/api/__init__.py Movie -d
 gearbox patch model/__init__.py movie -d
