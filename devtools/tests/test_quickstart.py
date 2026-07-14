@@ -329,6 +329,9 @@ class BaseTestQuickStart(object):
         # so we can load app in tests which are not executed inside
         # the newly created virtualenv.
         site.addsitedir(site_packages)
+        
+        # Mark that setup completed successfully so tearDownClass can run cleanup
+        cls.past_working_set_state = True
 
     def setUp(self):
         os.chdir(self.proj_dir)
@@ -347,6 +350,8 @@ class BaseTestQuickStart(object):
 
     @classmethod
     def tearDownClass(cls):
+        if not hasattr(cls, 'past_working_set_state'):
+            return
         cls.exit_virtualenv()
 
         os.chdir(cls.base_dir)
