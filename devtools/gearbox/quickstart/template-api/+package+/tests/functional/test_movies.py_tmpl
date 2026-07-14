@@ -60,7 +60,7 @@ class TestMoviesController(TestController):
             f"/api/movies/{title_only.json['movie']['id']}",
             {'title': 'Arrival', 'year': 'unknown'},
             headers=self.headers,
-            status=412,
+            status=422,
         )
         missing_movie = self.app.delete(
             '/api/movies/000000000000000000000000', headers=self.headers, status=404,

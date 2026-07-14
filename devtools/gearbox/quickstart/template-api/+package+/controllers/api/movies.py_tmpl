@@ -59,7 +59,7 @@ class MoviesController(RestController):
         responses:
           201:
             description: Movie created
-          412:
+          422:
             description: Validation error
         """
         {{if sqlalchemy}}
@@ -125,7 +125,7 @@ class MoviesController(RestController):
             description: Movie updated
           404:
             description: Movie not found
-          412:
+          422:
             description: Validation error
         """
         {{if sqlalchemy}}
