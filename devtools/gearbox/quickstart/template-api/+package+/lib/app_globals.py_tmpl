@@ -1,14 +1,17 @@
 # -*- coding: utf-8 -*-
-"""
-The application's Globals object.
+"""The application's Globals object"""
 
-This module is used for global variables that are used across the application.
-"""
-
-from tg import AppGlobals
+__all__ = ['Globals']
 
 
-class Globals(AppGlobals):
-    """Global object for the application."""
-    
-    pass
+class Globals(object):
+    """Container for objects available throughout the life of the application.
+
+    One instance of Globals is created during application initialization and
+    is available during requests via the 'app_globals' variable.
+
+    """
+
+    def __init__(self):
+        """Do nothing, by default."""
+        pass

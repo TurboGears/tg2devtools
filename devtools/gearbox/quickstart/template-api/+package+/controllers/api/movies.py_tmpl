@@ -101,7 +101,7 @@ class MoviesController(RestController):
             description: Movie not found
         """
         {{if sqlalchemy}}
-        movie = DBSession.query(Movie).get(movie_id)
+        movie = DBSession.get(Movie, movie_id)
         {{elif ming}}
         movie = Movie.query.get(_id=ObjectId(movie_id))
         {{else}}
@@ -129,7 +129,7 @@ class MoviesController(RestController):
             description: Validation error
         """
         {{if sqlalchemy}}
-        movie = DBSession.query(Movie).get(movie_id)
+        movie = DBSession.get(Movie, movie_id)
         {{elif ming}}
         movie = Movie.query.get(_id=ObjectId(movie_id))
         {{else}}
@@ -158,7 +158,7 @@ class MoviesController(RestController):
             description: Movie not found
         """
         {{if sqlalchemy}}
-        movie = DBSession.query(Movie).get(movie_id)
+        movie = DBSession.get(Movie, movie_id)
         {{elif ming}}
         movie = Movie.query.get(_id=ObjectId(movie_id))
         {{else}}
