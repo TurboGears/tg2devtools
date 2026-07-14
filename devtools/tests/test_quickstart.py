@@ -347,10 +347,6 @@ class BaseTestQuickStart(object):
 
     @classmethod
     def tearDownClass(cls):
-        # This is in case the tests have been skipped
-        if not hasattr(cls, 'past_working_set_state'):
-            return
-
         cls.exit_virtualenv()
 
         os.chdir(cls.base_dir)
