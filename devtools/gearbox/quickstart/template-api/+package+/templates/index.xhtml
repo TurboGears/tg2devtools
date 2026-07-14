@@ -99,22 +99,11 @@ curl -X POST \
 curl -H "Authorization: Bearer abc123def456ghi789jkl012mno345" \
      http://localhost:8080/demo/admin</code></pre>
 
-    <h3>Using Cookie Authentication</h3>
-    <p>You can also authenticate using the standard TurboGears cookie-based authentication:</p>
-    <pre><code># First, login to get a session cookie
-curl -v --cookie-jar cookies.txt \
-     -d "login=manager&amp;password=managepass" \
-     http://localhost:8080/login_handler?came_from=/demo/admin
-
-# Then use the cookie to access the API
-curl --cookie cookies.txt --cookie-jar cookies.txt \
-     http://localhost:8080/demo/admin</code></pre>
-
     <h2>🧹 Cleanup Demo Parts</h2>
     <div class="note">
         <p><strong>Note:</strong> Once you're ready to build your own API, you can remove the demo parts.</p>
         <p>Run these commands from your project root:</p>
-        <pre><code>cd {{project}}
+        <pre><code>cd ${project}
 rm -rf controllers/api/movies.py controllers/demo.py model/movie.py
 gearbox patch controllers/root.py DemoController -d
 gearbox patch controllers/api/__init__.py Movie -d
