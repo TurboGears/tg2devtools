@@ -15,6 +15,7 @@ base_config = FullStackApplicationConfigurator()
 # General configuration
 base_config.update_blueprint({
     'disable_request_extensions': False,
+    'decode_json_params': True,
     'dispatch_path_translator': True,
     'package': {{package}},
 })

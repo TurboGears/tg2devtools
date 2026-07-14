@@ -21,6 +21,7 @@ dependencies = [
     "kajiki",
     {{if sqlalchemy}}
     "sqlalchemy",
+    "zope.sqlalchemy >= 1.2",
     {{elif ming}}
     "ming>=0.4.3",
     {{endif}}

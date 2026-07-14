@@ -583,6 +583,8 @@ class TestAPIQuickStart(BaseTestQuickStart, unittest.TestCase):
             '/tests/functional/test_root.py::TestRootController::test_docs_renders_openapi_schema',
             '/tests/functional/test_root.py::TestRootController::test_openapi_schema_lists_api_paths',
             '/tests/functional/test_root.py::TestRootController::test_openapi_schema_honors_script_name',
+            '/tests/functional/test_movies.py::TestMoviesController::test_movie_crud_returns_json',
+            '/tests/functional/test_movies.py::TestMoviesController::test_movie_validation_returns_json',
         ]
 
         for test in tests:

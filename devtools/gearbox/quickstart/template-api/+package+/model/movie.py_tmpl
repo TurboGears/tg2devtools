@@ -12,13 +12,32 @@ from {{package}}.model import DeclarativeBase
 
 class Movie(DeclarativeBase):
     """Movie model for the API demo."""
-    
+
+    __API_SCHEMA__ = {
+        'type': 'object',
+        'properties': {
+            'id': {'type': 'string'},
+            'title': {'type': 'string'},
+            'year': {'type': 'integer', 'nullable': True},
+            'description': {'type': 'string', 'nullable': True},
+        },
+        'required': ['id', 'title'],
+    }
+
     __tablename__ = 'movie'
     
     id = Column(Integer, primary_key=True)
     title = Column(String(100), nullable=False)
     year = Column(Integer, nullable=True)
     description = Column(Text, nullable=True)
+
+    def __json__(self):
+        return dict(
+            id=str(self.id),
+            title=self.title,
+            year=self.year,
+            description=self.description,
+        )
     
     def __repr__(self):
         return f'<Movie: title={self.title!r}, year={self.year}>'
@@ -37,7 +56,18 @@ from {{package}}.model import DBSession
 
 class Movie(MappedClass):
     """Movie model for the API demo."""
-    
+
+    __API_SCHEMA__ = {
+        'type': 'object',
+        'properties': {
+            'id': {'type': 'string'},
+            'title': {'type': 'string'},
+            'year': {'type': 'integer', 'nullable': True},
+            'description': {'type': 'string', 'nullable': True},
+        },
+        'required': ['id', 'title'],
+    }
+
     class __mongometa__:
         session = DBSession
         name = 'movie'
@@ -46,6 +76,14 @@ class Movie(MappedClass):
     title = FieldProperty(s.String)
     year = FieldProperty(s.Int)
     description = FieldProperty(s.String)
+
+    def __json__(self):
+        return dict(
+            id=str(self._id),
+            title=self.title,
+            year=self.year,
+            description=self.description,
+        )
     
     def __repr__(self):
         return f'<Movie: title={self.title!r}, year={self.year}>'

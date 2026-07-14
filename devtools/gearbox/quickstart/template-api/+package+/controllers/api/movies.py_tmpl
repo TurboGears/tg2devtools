@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 """REST controller for movies."""
 
-from tg import expose, request, validate
+from tg import abort, expose, response, validate, validation_errors_response
 from tg.controllers import RestController
-from tg.validation import Convert, RequireValue
-from tg import validation_errors_response, abort
 {{if sqlalchemy}}
 from {{package}}.model import DBSession
 from {{package}}.model.movie import Movie
@@ -29,31 +27,29 @@ class MoviesController(RestController):
         responses:
           200:
             description: List of all movies
+            content:
+              application/json:
+                schema:
+                  type: object
+                  required: [movies]
+                  properties:
+                    movies:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Movie'
         """
         {{if sqlalchemy}}
         movies = DBSession.query(Movie).all()
         {{elif ming}}
-        movies = [
-            dict(
-                id=str(movie._id),
-                title=movie.title,
-                year=movie.year,
-                description=movie.description,
-            )
-            for movie in Movie.query.find().all()
-        ]
+        movies = Movie.query.find().all()
         {{else}}
         movies = []
         {{endif}}
         return dict(movies=movies)
 
     @expose('json')
-    @validate({
-        'title': RequireValue(),
-        'year': Convert(int, default=None),
-        'description': str
-    }, error_handler=validation_errors_response)
-    def post(self, title, year=None, description=None, **kw):
+    @validate(error_handler=validation_errors_response)
+    def post(self, title: str, year: int = None, description: str = None, **kw):
         """Add a movie to the catalog.
 
         A title is required; the release year and description are optional.
@@ -70,13 +66,16 @@ class MoviesController(RestController):
         movie = Movie(title=title, year=year, description=description)
         DBSession.add(movie)
         DBSession.flush()
-        return dict(movie=movie), 201
+        response.status_int = 201
+        return dict(movie=movie)
         {{elif ming}}
         movie = Movie(title=title, year=year, description=description)
         DBSession.flush()
-        return dict(movie=movie), 201
+        response.status_int = 201
+        return dict(movie=movie)
         {{else}}
-        return dict(movie={'title': title, 'year': year, 'description': description}), 201
+        response.status_int = 201
+        return dict(movie={'title': title, 'year': year, 'description': description})
         {{endif}}
 
     @expose('json')
@@ -90,6 +89,14 @@ class MoviesController(RestController):
         responses:
           200:
             description: Movie details
+            content:
+              application/json:
+                schema:
+                  type: object
+                  required: [movie]
+                  properties:
+                    movie:
+                      $ref: '#/components/schemas/Movie'
           404:
             description: Movie not found
         """
@@ -102,24 +109,11 @@ class MoviesController(RestController):
         {{endif}}
         if not movie:
             abort(404, "Movie not found")
-        {{if ming}}
-        return dict(movie=dict(
-            id=str(movie._id),
-            title=movie.title,
-            year=movie.year,
-            description=movie.description,
-        ))
-        {{else}}
         return dict(movie=movie)
-        {{endif}}
 
     @expose('json')
-    @validate({
-        'title': RequireValue(),
-        'year': Convert(int, default=None),
-        'description': str
-    }, error_handler=validation_errors_response)
-    def put(self, movie_id, title, year=None, description=None, **kw):
+    @validate(error_handler=validation_errors_response)
+    def put(self, movie_id, title: str, year: int = None, description: str = None, **kw):
         """Update a movie's catalog details.
 
         Supply the title and any changed release year or description.
@@ -146,6 +140,7 @@ class MoviesController(RestController):
         movie.title = title
         movie.year = year
         movie.description = description
+        DBSession.flush()
         return dict(movie=movie)
 
     @expose('json')
@@ -171,5 +166,11 @@ class MoviesController(RestController):
         {{endif}}
         if not movie:
             abort(404, "Movie not found")
+        {{if sqlalchemy}}
         DBSession.delete(movie)
+        {{elif ming}}
+        movie.delete()
+        DBSession.flush()
+        {{endif}}
         return dict(status='deleted', movie_id=movie_id)
+

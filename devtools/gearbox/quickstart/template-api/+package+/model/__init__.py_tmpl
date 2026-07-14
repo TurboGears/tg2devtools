@@ -6,6 +6,7 @@ This package contains the application models.
 """
 
 {{if sqlalchemy}}
+import zope.sqlalchemy
 from sqlalchemy import MetaData
 from sqlalchemy.orm import declarative_base
 
@@ -16,6 +17,7 @@ DeclarativeBase = declarative_base(metadata=metadata)
 # Global database session
 from sqlalchemy.orm import scoped_session, sessionmaker
 DBSession = scoped_session(sessionmaker())
+zope.sqlalchemy.register(DBSession)
 
 {{if auth}}
 from .auth import Group, Permission, User
