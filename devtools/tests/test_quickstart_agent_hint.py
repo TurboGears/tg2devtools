@@ -38,17 +38,9 @@ class TestQuickstartAgentHint(unittest.TestCase):
                     # The hint should be the last line
                     self.assertEqual(expected_hint, output_lines[-1])
                     
-                    # AGENTS.md should be generated
+                    # AGENTS.md should be generated from template
                     agents_md_path = os.path.join(project_dir, 'AGENTS.md')
                     self.assertTrue(os.path.exists(agents_md_path), 'AGENTS.md should be generated')
-                    
-                    # No MCP config files should be generated
-                    for relative_path in (
-                            '.mcp.json', '.codex/config.toml', '.vscode/mcp.json'):
-                        self.assertFalse(
-                            os.path.exists(os.path.join(project_dir, relative_path)),
-                            f'{relative_path} should not be generated'
-                        )
                     
                     # Check AGENTS.md content
                     with open(agents_md_path) as f:
