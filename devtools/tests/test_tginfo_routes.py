@@ -13,7 +13,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from devtools.gearbox.tginfo_summary import collect_project_routes
+from devtools.gearbox.tginfo import collect_project_routes
 
 
 class FakeDecoration:

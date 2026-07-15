@@ -12,7 +12,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from devtools.gearbox.tginfo_summary import (
+from devtools.gearbox.tginfo import (
     collect_project_scaffolds,
     collect_project_summary,
     format_project_scaffolds,
