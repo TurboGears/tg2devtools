@@ -11,7 +11,7 @@ from devtools.gearbox.quickstart import QuickstartCommand
 
 class TestQuickstartAgentHint(unittest.TestCase):
 
-    def test_quickstart_prints_agent_hint_without_generating_agent_config(self):
+    def test_quickstart_generates_agents_md_and_prints_hint(self):
         base_dir = os.getcwd()
         temp_dir = tempfile.mkdtemp()
         cases = (
@@ -32,14 +32,31 @@ class TestQuickstartAgentHint(unittest.TestCase):
                     project_dir = os.path.join(temp_dir, project_dir_name)
                     expected_hint = (
                         'To enable TurboGears-aware coding agents for this project, run: '
-                        'cd %s; gearbox tgmcp init claude # or codex, vscode, pi, all' % hint_dir
+                        'cd %s; gearbox tgskills' % hint_dir
                     )
-                    self.assertTrue(os.path.isdir(project_dir))
-                    self.assertEqual(expected_hint, stdout.getvalue().rstrip().splitlines()[-1])
+                    output_lines = stdout.getvalue().rstrip().splitlines()
+                    # The hint should be the last line
+                    self.assertEqual(expected_hint, output_lines[-1])
+                    
+                    # AGENTS.md should be generated
+                    agents_md_path = os.path.join(project_dir, 'AGENTS.md')
+                    self.assertTrue(os.path.exists(agents_md_path), 'AGENTS.md should be generated')
+                    
+                    # No MCP config files should be generated
                     for relative_path in (
-                            '.mcp.json', '.codex/config.toml', '.vscode/mcp.json', 'AGENTS.md'):
-                        self.assertFalse(os.path.exists(os.path.join(project_dir, relative_path)),
-                                         relative_path)
+                            '.mcp.json', '.codex/config.toml', '.vscode/mcp.json'):
+                        self.assertFalse(
+                            os.path.exists(os.path.join(project_dir, relative_path)),
+                            f'{relative_path} should not be generated'
+                        )
+                    
+                    # Check AGENTS.md content
+                    with open(agents_md_path) as f:
+                        content = f.read()
+                    self.assertIn('gearbox tgskills', content)
+                    self.assertIn('tg-inspect', content)
+                    self.assertIn('tg-scaffold', content)
+                    self.assertIn('tg-shell', content)
         finally:
             os.chdir(base_dir)
             shutil.rmtree(temp_dir, ignore_errors=True)
