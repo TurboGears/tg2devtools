@@ -1,0 +1,58 @@
+# -*- coding: utf-8 -*-
+"""
+Model package for {{project}}.
+
+This package contains the application models.
+"""
+
+{{if sqlalchemy}}
+import zope.sqlalchemy
+from sqlalchemy import MetaData
+from sqlalchemy.orm import declarative_base
+
+# SQLAlchemy metadata
+metadata = MetaData()
+DeclarativeBase = declarative_base(metadata=metadata)
+
+# Global database session
+from sqlalchemy.orm import scoped_session, sessionmaker
+DBSession = scoped_session(sessionmaker())
+zope.sqlalchemy.register(DBSession)
+
+{{if auth}}
+from .auth import Group, Permission, User
+{{endif}}
+from .movie import Movie
+
+__all__ = ['DBSession', 'DeclarativeBase', 'metadata', {{if auth}}'User', 'Group', 'Permission', {{endif}}'Movie']
+{{elif ming}}
+from .session import mainsession, DBSession
+
+{{if auth}}
+from .auth import Group, Permission, User
+{{endif}}
+from .movie import Movie
+
+__all__ = ['DBSession', {{if auth}}'User', 'Group', 'Permission', {{endif}}'Movie']
+{{else}}
+# No database configured
+DBSession = None
+
+__all__ = ['DBSession']
+{{endif}}
+
+
+def init_model(engine):
+    """Configure the model for the application engine."""
+    {{if sqlalchemy}}
+    DBSession.configure(bind=engine)
+    {{elif ming}}
+    import ming.odm
+
+    mainsession.bind = engine
+    ming.odm.Mapper.compile_all()
+
+    for mapper in ming.odm.Mapper.all_mappers():
+        mainsession.ensure_indexes(mapper.collection)
+    {{endif}}
+    return DBSession

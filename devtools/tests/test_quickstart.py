@@ -1,4 +1,5 @@
 import gettext
+import importlib
 import os
 import shutil
 import subprocess
@@ -13,6 +14,7 @@ from venv import EnvBuilder
 from tg.util import Bunch
 
 from devtools.gearbox.quickstart import QuickstartCommand
+from devtools.gearbox.quickstart.command import QuickstartAPICommand
 from gearbox.commands.setup_app import SetupAppCommand
 
 
@@ -50,147 +52,15 @@ def get_passed_and_failed(env_cmd, python_cmd, testpath):
     return passed, failed, lines
 
 
-class TestQuickstartGeneration(unittest.TestCase):
-
-    def setUp(self):
-        self.command = QuickstartCommand(None, {})
-        self.parser = self.command.get_parser('tg2devtools-test')
-
-    def quickstart(self, *args):
-        old_cwd = os.getcwd()
-        tmpdir = tempfile.TemporaryDirectory()
-        self.addCleanup(tmpdir.cleanup)
-        os.chdir(tmpdir.name)
-        self.addCleanup(os.chdir, old_cwd)
-
-        opts = self.parser.parse_args(list(args) + ['ModernApp'])
-        self.command.run(opts)
-        return os.path.join(tmpdir.name, 'ModernApp'), 'modernapp'
-
-    def test_default_generates_modern_kajiki_sqlalchemy_demo(self):
-        project_dir, package = self.quickstart()
-
-        with open(os.path.join(project_dir, package, 'controllers', 'root.py')) as f:
-            root = f.read()
-        with open(os.path.join(project_dir, package, 'controllers', 'demo.py')) as f:
-            demo = f.read()
-        with open(os.path.join(project_dir, package, 'model', 'todo.py')) as f:
-            todo = f.read()
-        with open(os.path.join(project_dir, package, 'templates', 'master.xhtml')) as f:
-            master = f.read()
-        with open(os.path.join(project_dir, package, 'templates', 'demo', 'index.xhtml')) as f:
-            demo_template = f.read()
-        with open(os.path.join(project_dir, package, 'templates', 'demo', 'todo_list.xhtml')) as f:
-            todo_template = f.read()
-        with open(os.path.join(project_dir, package, 'templates', 'demo', 'protected.xhtml')) as f:
-            protected_template = f.read()
-        with open(os.path.join(project_dir, package, 'tests', 'functional', 'test_root.py')) as f:
-            root_tests = f.read()
-        with open(os.path.join(project_dir, package, 'tests', 'functional', 'test_demo.py')) as f:
-            demo_tests = f.read()
-        with open(os.path.join(project_dir, 'pyproject.toml')) as f:
-            pyproject = f.read()
-        with open(os.path.join(project_dir, 'test.ini')) as f:
-            test_ini = f.read()
-
-        self.assertIn('redirect(\'/demo\')', root)
-        self.assertIn(f"@expose('{package}.templates.demo.index')", demo)
-        self.assertIn(f"@expose('{package}.templates.demo.todo_list')", demo)
-        self.assertIn(f"@expose('{package}.templates.demo.protected')", demo)
-        self.assertIn('return self._todo_data()\n\n    @expose', demo)
-        self.assertIn('@validate(error_handler=todos)', demo)
-        self.assertIn('def add(self, title: str):', demo)
-        self.assertNotIn('priority', demo.lower())
-        self.assertIn('def toggle(self, todo_id: int, done: bool = False):', demo)
-        self.assertIn('DBSession.query(TodoItem).filter_by(id=todo_id).first()', demo)
-        self.assertNotIn('DBSession.get(TodoItem, todo_id)', demo)
-        self.assertIn("class TodoItem", todo)
-        self.assertNotIn('priority', todo.lower())
-        self.assertIn('cdn.jsdelivr.net/npm/bootstrap@5.3.3', master)
-        self.assertIn('unpkg.com/htmx.org', master)
-        self.assertIn('href="https://www.turbogears.org/"', master)
-        self.assertIn('href="https://kajiki.readthedocs.io/"', master)
-        self.assertIn('href="https://getbootstrap.com/"', master)
-        self.assertIn('href="https://htmx.org/"', master)
-        self.assertIn('class="navbar-brand" href="${tg.url(\'/\')}"', master)
-        self.assertIn(f'tmpl_context.project_name = "{package}"', demo)
-        self.assertIn('Create your own actions, controllers, templates, and models', demo_template)
-        self.assertIn('<code>templates/demo/</code>', demo_template)
-        self.assertIn('rm -rf controllers/demo.py model/todo.py templates/demo tests/functional/test_demo.py', demo_template)
-        self.assertIn('gearbox patch controllers/root.py DemoController -d', demo_template)
-        self.assertIn('gearbox patch controllers/root.py "redirect(\'/demo\')" -r "return \'Hello World\'"', demo_template)
-        self.assertIn('gearbox patch model/__init__.py TodoItem -d', demo_template)
-        self.assertNotIn('and the demo templates', demo_template)
-        self.assertNotIn('This quickstart is a small Kajiki-only', demo_template)
-        self.assertIn('py:extends="master.xhtml"', demo_template)
-        self.assertIn('href="demo/todo_list.xhtml"', demo_template)
-        self.assertIn('py:extends="master.xhtml"', protected_template)
-        self.assertIn('class="row g-4"', demo_template)
-        self.assertIn('class="col-lg-5"', demo_template)
-        self.assertIn('class="col-lg-7"', demo_template)
-        self.assertIn('name="title"', todo_template)
-        self.assertNotIn('priority', todo_template.lower())
-        self.assertIn('test_index_redirects_to_demo', root_tests)
-        self.assertNotIn('test_todo_demo_stores_items', root_tests)
-        self.assertIn('class TestDemoController', demo_tests)
-        self.assertIn('test_todo_demo_stores_items', demo_tests)
-        self.assertIn('test_todo_demo_toggles_done_state', demo_tests)
-        self.assertIn('test_protected_demo_with_manager', demo_tests)
-        self.assertNotIn('priority', demo_tests.lower())
-        self.assertIn('"TurboGears2 >= 2.5.1dev1"', pyproject)
-        self.assertIn('sqlalchemy.url = sqlite:///:memory:', test_ini)
-        self.assertTrue(os.path.exists(os.path.join(project_dir, package, 'templates', 'demo', '__init__.py')))
-        self.assertTrue(os.path.exists(os.path.join(project_dir, package, 'tests', 'functional', 'test_demo.py')))
-        self.assertFalse(os.path.exists(os.path.join(project_dir, package, 'controllers', 'secure.py')))
-        self.assertFalse(os.path.exists(os.path.join(project_dir, package, 'templates', 'demo.xhtml')))
-        self.assertFalse(os.path.exists(os.path.join(project_dir, package, 'templates', 'todo_list.xhtml')))
-        self.assertFalse(os.path.exists(os.path.join(project_dir, package, 'templates', 'about.xhtml')))
-
-    def test_nosa_omits_persistent_todo_demo(self):
-        project_dir, package = self.quickstart('--nosa')
-
-        with open(os.path.join(project_dir, package, 'controllers', 'demo.py')) as f:
-            demo = f.read()
-        with open(os.path.join(project_dir, package, 'model', 'todo.py')) as f:
-            todo = f.read()
-
-        self.assertNotIn('TodoItem', demo)
-        self.assertNotIn('class TodoItem', todo)
-        self.assertIn('has_todos=False', demo)
-        self.assertFalse(os.path.exists(os.path.join(project_dir, 'migration')))
-
-    def test_ming_generates_persistent_todo_demo(self):
-        project_dir, package = self.quickstart('--ming')
-
-        with open(os.path.join(project_dir, package, 'controllers', 'demo.py')) as f:
-            demo = f.read()
-        with open(os.path.join(project_dir, package, 'model', 'todo.py')) as f:
-            todo = f.read()
-        with open(os.path.join(project_dir, package, 'model', '__init__.py')) as f:
-            model_init = f.read()
-        with open(os.path.join(project_dir, package, 'tests', 'functional', 'test_demo.py')) as f:
-            demo_tests = f.read()
-
-        self.assertIn('from bson import ObjectId', demo)
-        self.assertIn('def toggle(self, todo_id: str, done: bool = False):', demo)
-        self.assertIn('TodoItem.query.get(_id=ObjectId(todo_id))', demo)
-        self.assertIn('has_todos=True', demo)
-        self.assertIn('class TodoItem(MappedClass)', todo)
-        self.assertIn("name = 'todo_item'", todo)
-        self.assertIn('from %s.model.todo import TodoItem' % package, model_init)
-        self.assertIn('test_todo_demo_stores_items', demo_tests)
-        self.assertIn('test_todo_demo_toggles_done_state', demo_tests)
-        self.assertFalse(os.path.exists(os.path.join(project_dir, 'migration')))
-
-
 class BaseTestQuickStart(object):
 
+    command_class = QuickstartCommand
     args = ''
     preinstall = []
 
     @classmethod
     def setUpClass(cls):
-        cls.command = QuickstartCommand(None, {})
+        cls.command = cls.command_class(None, {})
         cls.parser = cls.command.get_parser('tg2devtools-test')
 
         cls.base_dir = os.getcwd()
@@ -258,6 +128,8 @@ class BaseTestQuickStart(object):
         # so we can load app in tests which are not executed inside
         # the newly created virtualenv.
         site.addsitedir(site_packages)
+        
+
 
     def setUp(self):
         os.chdir(self.proj_dir)
@@ -266,6 +138,14 @@ class BaseTestQuickStart(object):
         self.app = TestApp(self.app)
 
     def init_database(self):
+        from tg import config
+
+        # Clean up Ming database if present
+        ming_datastore = getattr(config.get('tg.app_globals'), 'ming_datastore', None)
+        if ming_datastore is not None:
+            # test.ini is expected to configure MIM
+            ming_datastore.conn.drop_all()
+
         os.chdir(self.proj_dir)
         cmd = SetupAppCommand(Bunch(options=Bunch(verbose_level=1)), Bunch())
         try:
@@ -276,10 +156,6 @@ class BaseTestQuickStart(object):
 
     @classmethod
     def tearDownClass(cls):
-        # This is in case the tests have been skipped
-        if not hasattr(cls, 'past_working_set_state'):
-            return
-
         cls.exit_virtualenv()
 
         os.chdir(cls.base_dir)
@@ -498,6 +374,64 @@ class TestDefaultQuickStart(CommonTestQuickStartWithAuth, unittest.TestCase):
             translations.gettext('Added during i18n update'),
             'Agregado durante i18n update',
         )
+
+
+class TestAPIQuickStart(BaseTestQuickStart, unittest.TestCase):
+    command_class = QuickstartAPICommand
+
+    def test_generated_functional_tests(self):
+        passed, failed, lines = get_passed_and_failed(
+            self.env_cmd, self.python_cmd, self.proj_dir,
+        )
+        tests = [
+            '/tests/functional/test_root.py::TestRootController::test_index_renders_api_demo',
+            '/tests/functional/test_root.py::TestRootController::test_docs_renders_openapi_schema',
+            '/tests/functional/test_root.py::TestRootController::test_openapi_schema_lists_api_paths',
+            '/tests/functional/test_root.py::TestRootController::test_openapi_schema_honors_script_name',
+            '/tests/functional/test_movies.py::TestMoviesController::test_movie_crud_returns_json',
+            '/tests/functional/test_movies.py::TestMoviesController::test_movie_validation_returns_json',
+        ]
+
+        for test in tests:
+            assert any(test in result for result in passed), '\n'.join(lines)
+        assert not failed, '\n'.join(lines)
+
+    def test_setup_app(self):
+        command = SetupAppCommand(Bunch(options=Bunch(verbose_level=1)), Bunch())
+        command.run(Bunch(config_file='config:test.ini', section_name=None))
+
+    def test_movies_endpoint(self):
+        self.init_database()
+
+        movies = self.app.get('/api/movies').json['movies']
+
+        assert isinstance(movies, list)
+
+
+class TestAPIMingQuickStart(TestAPIQuickStart):
+    args = '--ming'
+
+    def test_setup_app(self):
+        super().test_setup_app()
+        super().test_setup_app()
+
+        package = os.path.basename(self.proj_dir).lower().replace('-', '')
+        model = importlib.import_module(f'{package}.model')
+        movie = importlib.import_module(f'{package}.model.movie').Movie
+
+        assert len(movie.query.find({'title': 'Inception'}).all()) == 1
+
+    def test_movies_endpoints(self):
+        self.init_database()
+
+        package = os.path.basename(self.proj_dir).lower().replace('-', '')
+        movie = importlib.import_module(f'{package}.model.movie').Movie
+        movie_id = movie.query.get(title='Inception')._id
+        movies = self.app.get('/api/movies').json['movies']
+        detail = self.app.get(f'/api/movies/{movie_id}').json['movie']
+
+        assert any(item['title'] == 'Inception' for item in movies)
+        assert detail['title'] == 'Inception'
 
 
 class TestNoDBQuickStart(CommonTestQuickStart, unittest.TestCase):

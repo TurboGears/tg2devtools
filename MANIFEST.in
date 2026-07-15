@@ -1,4 +1,5 @@
 recursive-include devtools/gearbox/*/template *
+recursive-include devtools/gearbox/quickstart/template-api *
 recursive-include devtools/gearbox/quickstart/patches *
 
 global-exclude __pycache__/*

@@ -1,0 +1,35 @@
+# -*- coding: utf-8 -*-
+"""Functional tests for the generated root controller."""
+
+from {{package}}.tests import TestController
+
+
+class TestRootController(TestController):
+    """Tests for the generated root controller."""
+
+    def test_index_renders_api_demo(self):
+        response = self.app.get('/')
+
+        assert 'API Demo' in response
+
+    def test_docs_renders_openapi_schema(self):
+        response = self.app.get('/api/docs')
+
+        assert 'redoc-container' in response
+        assert '"/api"' in response
+        assert '"/api/openapi"' not in response
+
+    def test_openapi_schema_lists_api_paths(self):
+        spec = self.app.get('/api/openapi.json').json
+
+        assert spec['servers'] == [{'url': '/'}]
+        assert '/api' in spec['paths']
+        assert '/api/openapi' not in spec['paths']
+
+    def test_openapi_schema_honors_script_name(self):
+        spec = self.app.get(
+            '/api/openapi.json', extra_environ={'SCRIPT_NAME': '/prefix'},
+        ).json
+
+        assert '/prefix/api' in spec['paths']
+        assert '/prefix/api/openapi' not in spec['paths']

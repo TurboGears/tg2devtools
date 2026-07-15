@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "{{name}}"
+version = "0.0.1"
+description = "{{project}} API server"
+requires-python = ">=3.10"
+readme = { file = "README.rst", content-type = "text/x-rst" }
+keywords = ["turbogears", "api", "rest"]
+classifiers = []
+authors = [
+    { name = "TurboGears Team", email = "turbogears@groups.google.com" }
+]
+license = { text = "MIT" }
+urls = { Homepage = "http://www.turbogears.org" }
+dependencies = [
+    "TurboGears2 >= 2.5.1dev1",
+    "tgext.apispec >= 0.1.1",
+    "kajiki",
+    {{if sqlalchemy}}
+    "sqlalchemy",
+    "zope.sqlalchemy >= 1.2",
+    {{elif ming}}
+    "ming>=0.4.3",
+    {{endif}}
+    {{if auth}}
+    "repoze.who>=3.2.0rc1",
+    {{endif}}
+]
+
+[project.optional-dependencies]
+testing = [
+    "webtest",
+    "pytest",
+]
+
+[tool.setuptools.packages.find]
+exclude = ["ez_setup", "examples", "tests"]
+
+[tool.setuptools]
+include-package-data = true
+zip-safe = false
+
+[project.entry-points."paste.app_factory"]
+main = "{{package}}.config.application:make_app"

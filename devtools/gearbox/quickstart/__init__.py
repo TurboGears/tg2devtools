@@ -1,1 +1,1 @@
-from .command import QuickstartCommand
+from .command import QuickstartAPICommand, QuickstartCommand

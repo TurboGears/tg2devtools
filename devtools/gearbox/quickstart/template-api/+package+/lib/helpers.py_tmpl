@@ -1,0 +1,5 @@
+# -*- coding: utf-8 -*-
+"""Template Helpers used in {{project}}."""
+
+# Import commonly used helpers from TG
+from tg.util.html import script_json_encode

@@ -1,0 +1,32 @@
+# -*- coding: utf-8 -*-
+"""Test helpers for {{project}}."""
+
+from os import getcwd
+
+from paste.deploy import loadapp
+from webtest import TestApp
+{{if sqlalchemy or ming}}
+from tg import config
+from {{package}} import model
+{{endif}}
+
+
+def setup_database():
+    """Create the database schema for a functional test."""
+    {{if sqlalchemy}}
+    engine = config['tg.app_globals'].sa_engine
+    model.init_model(engine)
+    model.metadata.create_all(engine)
+    {{elif ming}}
+    datastore = config['tg.app_globals'].ming_datastore
+    model.init_model(datastore)
+    {{else}}
+    pass
+    {{endif}}
+
+
+class TestController(object):
+    """Base functional test case for generated controllers."""
+
+    def setup_method(self, method):
+        self.app = TestApp(loadapp('config:test.ini', relative_to=getcwd()))

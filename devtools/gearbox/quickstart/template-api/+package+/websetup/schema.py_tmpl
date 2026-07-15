@@ -1,0 +1,19 @@
+# -*- coding: utf-8 -*-
+"""Create the {{project}} database schema."""
+
+{{if sqlalchemy}}
+import transaction
+
+from tg import config
+
+
+def setup_schema(command, conf, vars):
+    """Create the SQLAlchemy tables."""
+    from {{package}} import model
+
+    model.metadata.create_all(bind=config['tg.app_globals'].sa_engine)
+    transaction.commit()
+{{else}}
+def setup_schema(command, conf, vars):
+    """Set up the {{project}} database."""
+{{endif}}

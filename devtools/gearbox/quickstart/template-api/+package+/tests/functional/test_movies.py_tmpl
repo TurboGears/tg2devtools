@@ -1,0 +1,76 @@
+# -*- coding: utf-8 -*-
+"""Functional tests for the generated movie API."""
+
+from {{package}}.tests import TestController, setup_database
+
+
+class TestMoviesController(TestController):
+    """Tests for the generated movie API."""
+
+    headers = {'Accept': 'application/json'}
+
+    def setup_method(self, method):
+        super().setup_method(method)
+        setup_database()
+
+    def test_movie_crud_returns_json(self):
+        api = self.app.get('/api', headers=self.headers).json
+        movies = self.app.get('/api/movies', headers=self.headers).json['movies']
+        created = self.app.post_json(
+            '/api/movies',
+            {'title': 'Arrival', 'year': 2016, 'description': 'First contact'},
+            headers=self.headers,
+            status=201,
+        )
+        movie = created.json['movie']
+        movie_id = movie['id']
+        detail = self.app.get(f'/api/movies/{movie_id}', headers=self.headers).json
+        updated = self.app.put_json(
+            f'/api/movies/{movie_id}',
+            {'title': 'Arrival', 'year': 2016, 'description': 'Science fiction'},
+            headers=self.headers,
+        )
+        deleted = self.app.delete(f'/api/movies/{movie_id}', headers=self.headers).json
+        missing = self.app.get(f'/api/movies/{movie_id}', headers=self.headers, status=404)
+
+        assert api['endpoints']['movies'] == '/api/movies'
+        assert isinstance(movies, list)
+        assert created.content_type == 'application/json'
+        assert movie['title'] == 'Arrival'
+        assert detail['movie'] == movie
+        assert updated.json['movie']['description'] == 'Science fiction'
+        assert deleted == {'status': 'deleted', 'movie_id': movie_id}
+        assert missing.content_type == 'application/json'
+        assert missing.json['code'] == '404 Not Found'
+
+    def test_movie_validation_returns_json(self):
+        missing_title = self.app.post_json(
+            '/api/movies', {}, headers=self.headers, status=400,
+        )
+        title_only = self.app.post_json(
+            '/api/movies', {'title': 'Arrival'}, headers=self.headers, status=201,
+        )
+        missing_update_title = self.app.put_json(
+            f"/api/movies/{title_only.json['movie']['id']}",
+            {},
+            headers=self.headers,
+            status=400,
+        )
+        invalid_year = self.app.put_json(
+            f"/api/movies/{title_only.json['movie']['id']}",
+            {'title': 'Arrival', 'year': 'unknown'},
+            headers=self.headers,
+            status=422,
+        )
+        missing_movie = self.app.delete(
+            '/api/movies/000000000000000000000000', headers=self.headers, status=404,
+        )
+
+        assert missing_title.status_int == 400
+        assert missing_update_title.status_int == 400
+        assert title_only.json['movie']['year'] is None
+        assert title_only.json['movie']['description'] is None
+        assert invalid_year.content_type == 'application/json'
+        assert invalid_year.json['errors']['year']
+        assert missing_movie.content_type == 'application/json'
+        assert missing_movie.json['code'] == '404 Not Found'
