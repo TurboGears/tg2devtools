@@ -1,4 +1,3 @@
-import argparse
 import contextlib
 import importlib
 import inspect
@@ -11,10 +10,8 @@ import textwrap
 import types
 import unittest
 from pathlib import Path
-from unittest.mock import patch
 
-from devtools.gearbox.tginfo import collect_project_routes
-
+from devtools.gearbox.tginfo import TgInfoCommand
 
 class FakeDecoration:
     def __init__(self, engines=None, custom_engines=None, requirements=None, validations=None):
@@ -188,6 +185,21 @@ class TgInfoRoutesTests(unittest.TestCase):
                 sys.modules[name] = module
         self.tempdir.cleanup()
 
+    def take_tginfo(self, subcommand, *args):
+        command = TgInfoCommand(None, {})
+        opts = command.get_parser('gearbox tginfo').parse_args([
+            subcommand, '--project', str(self.project_root), *args,
+        ])
+        stdout = io.StringIO()
+        stderr = io.StringIO()
+        with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+            command.take_action(opts)
+        return stdout.getvalue(), stderr.getvalue()
+
+    def run_tginfo(self, subcommand):
+        stdout, _ = self.take_tginfo(subcommand, '--json')
+        return json.loads(stdout)
+
     def install_fake_tg(self):
         tg = types.ModuleType('tg')
         self.dotted_finder = FakeDottedFilenameFinder(self.project_root)
@@ -223,7 +235,7 @@ class TgInfoRoutesTests(unittest.TestCase):
     def test_routes_collects_flat_static_object_dispatch_rows(self):
         calls, app_requests = self.install_fake_tg()
 
-        routes = collect_project_routes(str(self.project_root))
+        routes = self.run_tginfo('routes')
 
         self.assertEqual(calls, [
             ('config:development.ini', str(self.project_root), str(self.project_root), True),
@@ -386,6 +398,14 @@ class TgInfoRoutesTests(unittest.TestCase):
         self.assertEqual(mounted['controller'], 'sampleapp.controllers.root.WSGIAppController')
         json.dumps(routes, sort_keys=True)
 
+    def test_routes_subcommand_prints_human_rows(self):
+        self.install_fake_tg()
+
+        output, _ = self.take_tginfo('routes')
+
+        self.assertIn('/ [index] sampleapp.controllers.root.RootController.index', output)
+        self.assertIn('/secc/* [dynamic_default] sampleapp.controllers.root.SecureController._default', output)
+
     def test_route_metadata_uses_static_attributes_without_calling_descriptors(self):
         side_effects = []
 
@@ -478,7 +498,7 @@ class TgInfoRoutesTests(unittest.TestCase):
         self.root_module.RootController.metadata_side_effects.decoration = NoisyDecoration()
         self.install_fake_tg()
 
-        routes = collect_project_routes(str(self.project_root))
+        routes = self.run_tginfo('routes')
 
         by_path_action = {(row['path'], row['action']): row for row in routes}
         route = by_path_action[('/metadata_side_effects', 'metadata_side_effects')]
@@ -519,7 +539,7 @@ class TgInfoRoutesTests(unittest.TestCase):
     def test_routes_collects_aliased_static_mounts_once_per_path(self):
         calls, app_requests = self.install_fake_tg()
 
-        routes = collect_project_routes(str(self.project_root))
+        routes = self.run_tginfo('routes')
 
         self.assertEqual(len(calls), 1)
         self.assertEqual(app_requests, [])
@@ -586,65 +606,6 @@ class TgInfoRoutesTests(unittest.TestCase):
         })
 
 
-class TgInfoRoutesCommandTests(unittest.TestCase):
-    def setUp(self):
-        self.previous_modules = {
-            name: sys.modules.get(name)
-            for name in ('gearbox', 'gearbox.command', 'devtools.gearbox.tginfo')
-        }
-        gearbox = types.ModuleType('gearbox')
-        command = types.ModuleType('gearbox.command')
-
-        class Command(object):
-            def __init__(self, *args, **kwargs):
-                pass
-
-            def get_parser(self, prog_name):
-                return argparse.ArgumentParser(prog=prog_name)
-
-        command.Command = Command
-        gearbox.command = command
-        sys.modules['gearbox'] = gearbox
-        sys.modules['gearbox.command'] = command
-        sys.modules.pop('devtools.gearbox.tginfo', None)
-        self.module = importlib.import_module('devtools.gearbox.tginfo')
-
-    def tearDown(self):
-        sys.modules.pop('devtools.gearbox.tginfo', None)
-        for name, module in self.previous_modules.items():
-            if module is None:
-                sys.modules.pop(name, None)
-            else:
-                sys.modules[name] = module
-
-    def test_routes_subcommand_prints_json_rows(self):
-        command = self.module.TgInfoCommand(None, {})
-        opts = command.get_parser('gearbox tginfo').parse_args([
-            'routes', '--project', '/project', '--config', 'test.ini', '--json',
-        ])
-        routes = [{
-            'path': '/',
-            'kind': 'index',
-            'controller': 'sampleapp.controllers.root.RootController',
-            'controller_source': 'sampleapp/controllers/root.py:1',
-            'controller_doc': None,
-            'controller_allow_only': None,
-            'action': 'index',
-            'action_source': 'sampleapp/controllers/root.py:8',
-            'action_doc': None,
-            'params': [],
-            'action_requires': [],
-            'validations': [],
-            'exposes': [],
-        }]
-
-        with patch.object(self.module, 'collect_project_routes', return_value=routes) as collector:
-            output = io.StringIO()
-            with contextlib.redirect_stdout(output):
-                command.take_action(opts)
-
-        collector.assert_called_once_with(project='/project', config='test.ini')
-        self.assertEqual(json.loads(output.getvalue()), routes)
 
 
 if __name__ == '__main__':

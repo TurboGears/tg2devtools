@@ -1,4 +1,3 @@
-import argparse
 import contextlib
 import importlib
 import io
@@ -10,10 +9,8 @@ import textwrap
 import types
 import unittest
 from pathlib import Path
-from unittest.mock import patch
 
-from devtools.gearbox.tginfo import collect_project_models
-
+from devtools.gearbox.tginfo import TgInfoCommand
 
 class TgInfoModelsTests(unittest.TestCase):
     def setUp(self):
@@ -83,6 +80,21 @@ class TgInfoModelsTests(unittest.TestCase):
                 sys.modules[name] = module
         self.tempdir.cleanup()
 
+    def take_tginfo(self, subcommand, *args):
+        command = TgInfoCommand(None, {})
+        opts = command.get_parser('gearbox tginfo').parse_args([
+            subcommand, '--project', str(self.project_root), *args,
+        ])
+        stdout = io.StringIO()
+        stderr = io.StringIO()
+        with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+            command.take_action(opts)
+        return stdout.getvalue(), stderr.getvalue()
+
+    def run_tginfo(self, subcommand):
+        stdout, _ = self.take_tginfo(subcommand, '--json')
+        return json.loads(stdout)
+
     def install_app_loading_sentinels(self):
         tg = types.ModuleType('tg')
         sys.modules['tg'] = tg
@@ -104,7 +116,7 @@ class TgInfoModelsTests(unittest.TestCase):
     def test_models_lists_exported_sqlalchemy_ming_and_unknown_project_classes(self):
         calls = self.install_app_loading_sentinels()
 
-        models = collect_project_models(str(self.project_root))
+        models = self.run_tginfo('models')
 
         self.assertEqual(calls, [])
         expected_row_keys = {'name', 'class', 'module', 'source', 'orm', 'docstring'}
@@ -124,6 +136,14 @@ class TgInfoModelsTests(unittest.TestCase):
         self.assertEqual(by_name['PlainModel']['orm'], 'unknown')
         self.assertEqual(by_name['PlainModel']['docstring'], 'Plain project model docs.')
         json.dumps(models, sort_keys=True)
+
+    def test_models_subcommand_prints_human_rows(self):
+        self.install_app_loading_sentinels()
+
+        output, _ = self.take_tginfo('models')
+
+        self.assertIn('User [sqlalchemy] sampleapp.model.auth.User (sampleapp/model/auth.py:1)', output)
+        self.assertIn('WikiPage [ming] sampleapp.model.docs.WikiPage (sampleapp/model/docs.py:1)', output)
 
     def write_nested_pyproject_app(self):
         (self.project_root / 'pyproject.toml').write_text(textwrap.dedent('''\
@@ -156,7 +176,7 @@ class TgInfoModelsTests(unittest.TestCase):
         self.write_nested_pyproject_app()
         calls = self.install_app_loading_sentinels()
 
-        models = collect_project_models(str(self.project_root))
+        models = self.run_tginfo('models')
 
         self.assertEqual(calls, [])
         self.assertEqual({row['name'] for row in models}, {'NestedModel'})
@@ -171,7 +191,7 @@ class TgInfoModelsTests(unittest.TestCase):
         '''))
         calls = self.install_app_loading_sentinels()
 
-        models = collect_project_models(str(self.project_root))
+        models = self.run_tginfo('models')
 
         self.assertEqual(calls, [])
         self.assertEqual(
@@ -183,7 +203,7 @@ class TgInfoModelsTests(unittest.TestCase):
         (self.project_root / 'pyproject.toml').unlink()
         calls = self.install_app_loading_sentinels()
 
-        models = collect_project_models(str(self.project_root))
+        models = self.run_tginfo('models')
 
         self.assertEqual(calls, [])
         self.assertEqual({row['name'] for row in models}, {'PlainModel', 'User', 'WikiPage'})
@@ -195,64 +215,12 @@ class TgInfoModelsTests(unittest.TestCase):
         (package / 'model').rmdir()
         calls = self.install_app_loading_sentinels()
 
-        models = collect_project_models(str(self.project_root))
+        models = self.run_tginfo('models')
 
         self.assertEqual(calls, [])
         self.assertEqual(models, [])
 
 
-class TgInfoModelsCommandTests(unittest.TestCase):
-    def setUp(self):
-        self.previous_modules = {
-            name: sys.modules.get(name)
-            for name in ('gearbox', 'gearbox.command', 'devtools.gearbox.tginfo')
-        }
-        gearbox = types.ModuleType('gearbox')
-        command = types.ModuleType('gearbox.command')
-
-        class Command(object):
-            def __init__(self, *args, **kwargs):
-                pass
-
-            def get_parser(self, prog_name):
-                return argparse.ArgumentParser(prog=prog_name)
-
-        command.Command = Command
-        gearbox.command = command
-        sys.modules['gearbox'] = gearbox
-        sys.modules['gearbox.command'] = command
-        sys.modules.pop('devtools.gearbox.tginfo', None)
-        self.module = importlib.import_module('devtools.gearbox.tginfo')
-
-    def tearDown(self):
-        sys.modules.pop('devtools.gearbox.tginfo', None)
-        for name, module in self.previous_modules.items():
-            if module is None:
-                sys.modules.pop(name, None)
-            else:
-                sys.modules[name] = module
-
-    def test_models_subcommand_prints_json_rows(self):
-        command = self.module.TgInfoCommand(None, {})
-        opts = command.get_parser('gearbox tginfo').parse_args([
-            'models', '--project', '/project', '--config', 'test.ini', '--json',
-        ])
-        models = [{
-            'name': 'User',
-            'class': 'sampleapp.model.auth.User',
-            'module': 'sampleapp.model.auth',
-            'source': 'sampleapp/model/auth.py:1',
-            'orm': 'sqlalchemy',
-            'docstring': 'User model docs.',
-        }]
-
-        with patch.object(self.module, 'collect_project_models', return_value=models) as collector:
-            output = io.StringIO()
-            with contextlib.redirect_stdout(output):
-                command.take_action(opts)
-
-        collector.assert_called_once_with(project='/project', config='test.ini')
-        self.assertEqual(json.loads(output.getvalue()), models)
 
 
 if __name__ == '__main__':

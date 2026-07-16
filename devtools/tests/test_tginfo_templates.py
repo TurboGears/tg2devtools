@@ -1,4 +1,3 @@
-import argparse
 import contextlib
 import importlib
 import io
@@ -10,10 +9,8 @@ import textwrap
 import types
 import unittest
 from pathlib import Path
-from unittest.mock import patch
 
-from devtools.gearbox.tginfo import collect_project_templates, format_project_templates
-
+from devtools.gearbox.tginfo import TgInfoCommand
 
 class FakeDecoration:
     def __init__(self, engines=None):
@@ -104,6 +101,21 @@ class TgInfoTemplatesTests(unittest.TestCase):
                 sys.modules[name] = module
         self.tempdir.cleanup()
 
+    def take_tginfo(self, subcommand, *args):
+        command = TgInfoCommand(None, {})
+        opts = command.get_parser('gearbox tginfo').parse_args([
+            subcommand, '--project', str(self.project_root), *args,
+        ])
+        stdout = io.StringIO()
+        stderr = io.StringIO()
+        with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+            command.take_action(opts)
+        return stdout.getvalue(), stderr.getvalue()
+
+    def run_tginfo(self, subcommand):
+        stdout, _ = self.take_tginfo(subcommand, '--json')
+        return json.loads(stdout)
+
     def install_fake_tg(self):
         tg = types.ModuleType('tg')
         tg.config = {
@@ -135,7 +147,7 @@ class TgInfoTemplatesTests(unittest.TestCase):
     def test_templates_lists_all_recognized_files_with_route_backlinks(self):
         calls = self.install_fake_tg()
 
-        templates = collect_project_templates(str(self.project_root))
+        templates = self.run_tginfo('templates')
 
         self.assertEqual(calls, [
             ('config:development.ini', str(self.project_root), str(self.project_root), True),
@@ -179,94 +191,25 @@ class TgInfoTemplatesTests(unittest.TestCase):
         })
         json.dumps(templates, sort_keys=True)
 
-    def test_human_templates_output_mentions_unexposed_templates(self):
-        output = format_project_templates([
-            {
-                'name': 'sampleapp.templates.index',
-                'file': 'sampleapp/templates/index.xhtml',
-                'renderer': 'kajiki',
-                'exposed_by': ['/'],
-            },
-            {
-                'name': 'sampleapp.templates.partials._widget',
-                'file': 'sampleapp/templates/partials/_widget.xhtml',
-                'renderer': 'kajiki',
-                'exposed_by': [],
-            },
+    def test_templates_action_loads_config_parsed_from_command_line(self):
+        calls = self.install_fake_tg()
+
+        self.take_tginfo('templates', '--config', 'test.ini')
+
+        self.assertEqual(calls, [
+            ('config:test.ini', str(self.project_root), str(self.project_root), True),
         ])
+
+    def test_human_templates_output_mentions_unexposed_templates(self):
+        self.install_fake_tg()
+
+        output, _ = self.take_tginfo('templates')
 
         self.assertIn('sampleapp/templates/index.xhtml [kajiki] sampleapp.templates.index exposed by /', output)
         self.assertIn('sampleapp/templates/partials/_widget.xhtml [kajiki]', output)
         self.assertIn('not exposed by static routes', output)
 
 
-class TgInfoTemplatesCommandTests(unittest.TestCase):
-    def setUp(self):
-        self.previous_modules = {
-            name: sys.modules.get(name)
-            for name in ('gearbox', 'gearbox.command', 'devtools.gearbox.tginfo')
-        }
-        gearbox = types.ModuleType('gearbox')
-        command = types.ModuleType('gearbox.command')
-
-        class Command(object):
-            def __init__(self, *args, **kwargs):
-                pass
-
-            def get_parser(self, prog_name):
-                return argparse.ArgumentParser(prog=prog_name)
-
-        command.Command = Command
-        gearbox.command = command
-        sys.modules['gearbox'] = gearbox
-        sys.modules['gearbox.command'] = command
-        sys.modules.pop('devtools.gearbox.tginfo', None)
-        self.module = importlib.import_module('devtools.gearbox.tginfo')
-
-    def tearDown(self):
-        sys.modules.pop('devtools.gearbox.tginfo', None)
-        for name, module in self.previous_modules.items():
-            if module is None:
-                sys.modules.pop(name, None)
-            else:
-                sys.modules[name] = module
-
-    def test_templates_subcommand_prints_json_rows(self):
-        command = self.module.TgInfoCommand(None, {})
-        opts = command.get_parser('gearbox tginfo').parse_args([
-            'templates', '--project', '/project', '--config', 'test.ini', '--json',
-        ])
-        templates = [{
-            'name': 'sampleapp.templates.index',
-            'file': 'sampleapp/templates/index.xhtml',
-            'renderer': 'kajiki',
-            'exposed_by': ['/'],
-        }]
-
-        with patch.object(self.module, 'collect_project_templates', return_value=templates) as collector:
-            output = io.StringIO()
-            with contextlib.redirect_stdout(output):
-                command.take_action(opts)
-
-        collector.assert_called_once_with(project='/project', config='test.ini')
-        self.assertEqual(json.loads(output.getvalue()), templates)
-
-    def test_templates_subcommand_prints_human_rows_by_default(self):
-        command = self.module.TgInfoCommand(None, {})
-        opts = command.get_parser('gearbox tginfo').parse_args(['templates', '--project', '/project'])
-
-        with patch.object(self.module, 'collect_project_templates', return_value=[{
-            'name': 'sampleapp.templates.index',
-            'file': 'sampleapp/templates/index.xhtml',
-            'renderer': 'kajiki',
-            'exposed_by': ['/'],
-        }]) as collector:
-            output = io.StringIO()
-            with contextlib.redirect_stdout(output):
-                command.take_action(opts)
-
-        collector.assert_called_once_with(project='/project', config='development.ini')
-        self.assertIn('sampleapp/templates/index.xhtml [kajiki]', output.getvalue())
 
 
 if __name__ == '__main__':

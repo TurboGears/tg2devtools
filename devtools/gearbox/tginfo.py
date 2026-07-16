@@ -35,26 +35,27 @@ class TgInfoCommand(Command):
         return parser
 
     def take_action(self, opts):
-        subcommand = opts.tginfo_command
-        collector, formatter = {
-            'summary': (collect_project_summary, format_project_summary),
-            'routes': (collect_project_routes, format_project_routes),
-            'models': (collect_project_models, format_project_models),
-            'templates': (collect_project_templates, format_project_templates),
-            'scaffolds': (collect_project_scaffolds, format_project_scaffolds),
-        }.get(subcommand, (None, None))
-
-        if collector is None:
+        if opts.tginfo_command == 'summary':
+            subcommand = _SummarySubcommand(opts.project, opts.config_file)
+        elif opts.tginfo_command == 'routes':
+            subcommand = _RoutesSubcommand(opts.project, opts.config_file)
+        elif opts.tginfo_command == 'models':
+            subcommand = _ModelsSubcommand(opts.project, opts.config_file)
+        elif opts.tginfo_command == 'templates':
+            subcommand = _TemplatesSubcommand(opts.project, opts.config_file)
+        elif opts.tginfo_command == 'scaffolds':
+            subcommand = _ScaffoldsSubcommand(opts.project, opts.config_file)
+        else:
             raise SystemExit(
                 'tginfo requires a subcommand: summary, routes, models, templates, or scaffolds'
             )
 
-        result = collector(project=opts.project, config=opts.config_file)
+        result = subcommand.collect()
         if opts.as_json:
             json.dump(result, sys.stdout, indent=2, sort_keys=True)
             sys.stdout.write('\n')
         else:
-            sys.stdout.write(formatter(result))
+            sys.stdout.write(subcommand.format(result))
 
 
 # ---------------------------------------------------------------------------
@@ -75,200 +76,201 @@ _MISSING = object()
 
 
 # ---------------------------------------------------------------------------
-# Public collection and formatting functions
+# Private subcommand concerns
 # ---------------------------------------------------------------------------
 
 
-def collect_project_summary(project='.', config='development.ini'):
-    project_root = os.path.realpath(os.path.abspath(os.path.expanduser(project)))
-    config_file = _resolve_config_file(project_root, config)
+class _SummarySubcommand:
+    def __init__(self, project, config):
+        self.project_root = os.path.realpath(os.path.abspath(os.path.expanduser(project)))
+        self.config = config
 
-    with _project_import_context(project_root), redirect_stdout(sys.stderr):
-        _load_app(project_root, config)
-        tg_config = _tg_config()
-        package_name = _config_get(tg_config, 'package_name')
-        package = _import_optional(package_name) if package_name else None
+    def collect(self):
+        config_file = _resolve_config_file(self.project_root, self.config)
+        with _project_import_context(self.project_root), redirect_stdout(sys.stderr):
+            _load_app(self.project_root, self.config)
+            tg_config = _tg_config()
+            package_name = _config_get(tg_config, 'package_name')
+            package = _import_optional(package_name) if package_name else None
+            return {
+                'project_root': self.project_root,
+                'config_file': config_file,
+                'package_name': package_name,
+                'default_renderer': _config_get(tg_config, 'default_renderer'),
+                'renderers': list(_config_get(tg_config, 'renderers', []) or []),
+                'paths': _project_paths(self.project_root, package, tg_config),
+                'root_controller': _root_controller_info(self.project_root, package_name, tg_config),
+                'database': _database_info(tg_config),
+                'auth': _auth_info(tg_config),
+            }
 
-        return {
-            'project_root': project_root,
-            'config_file': config_file,
-            'package_name': package_name,
-            'default_renderer': _config_get(tg_config, 'default_renderer'),
-            'renderers': list(_config_get(tg_config, 'renderers', []) or []),
-            'paths': _project_paths(project_root, package, tg_config),
-            'root_controller': _root_controller_info(project_root, package_name, tg_config),
-            'database': _database_info(tg_config),
-            'auth': _auth_info(tg_config),
-        }
+    def format(self, summary):
+        lines = [
+            f"Project root: {summary.get('project_root') or 'unknown'}",
+            f"Config file: {summary.get('config_file') or 'unknown'}",
+            f"Package: {summary.get('package_name') or 'unknown'}",
+            f"Default renderer: {summary.get('default_renderer') or 'unknown'}",
+        ]
+        renderers = summary.get('renderers') or []
+        lines.append('Configured renderers: ' + (', '.join(renderers) if renderers else 'unknown'))
+        paths = summary.get('paths') or {}
+        if paths:
+            lines.append('Paths:')
+            for name in ('controllers', 'model', 'templates'):
+                value = paths.get(name)
+                if not value:
+                    continue
+                if isinstance(value, list):
+                    value = ', '.join(value)
+                lines.append(f"  {name.replace('_', ' ').title()}: {value}")
+        root = summary.get('root_controller') or {}
+        root_text = root.get('class') or 'unknown'
+        if root.get('source'):
+            root_text = f"{root_text} ({root['source']})"
+        lines.append(f'Root controller: {root_text}')
+        database = summary.get('database') or {}
+        if database.get('enabled') is True:
+            database_text = 'enabled'
+            if database.get('orm'):
+                database_text += f" ({database['orm']})"
+        elif database.get('enabled') is False:
+            database_text = 'disabled'
+        else:
+            database_text = 'unknown'
+        lines.append(f'Database: {database_text}')
+        auth = summary.get('auth') or {}
+        auth_text = 'enabled' if auth.get('enabled') is True else 'disabled' if auth.get('enabled') is False else 'unknown'
+        lines.append(f'Auth: {auth_text}')
+        return '\n'.join(lines) + '\n'
 
 
-def collect_project_routes(project='.', config='development.ini'):
-    project_root = os.path.realpath(os.path.abspath(os.path.expanduser(project)))
+class _RoutesSubcommand:
+    def __init__(self, project, config):
+        self.project_root = os.path.realpath(os.path.abspath(os.path.expanduser(project)))
+        self.config = config
 
-    with _project_import_context(project_root), redirect_stdout(sys.stderr):
-        _load_app(project_root, config)
-        tg_config = _tg_config()
-        package_name = _config_get(tg_config, 'package_name')
-        root_controller = _root_controller_object(package_name, tg_config)
-        if root_controller is None:
+    def collect(self):
+        with _project_import_context(self.project_root), redirect_stdout(sys.stderr):
+            _load_app(self.project_root, self.config)
+            tg_config = _tg_config()
+            package_name = _config_get(tg_config, 'package_name')
+            root_controller = _root_controller_object(package_name, tg_config)
+            if root_controller is None:
+                return []
+            return _RouteCollector(self.project_root, tg_config).collect(root_controller)
+
+    def format(self, routes):
+        if not routes:
+            return 'No static routes found.\n'
+        lines = []
+        for row in routes:
+            target = row.get('controller') or 'unknown controller'
+            action = row.get('action')
+            if action:
+                target = f'{target}.{action}'
+            lines.append(f"{row.get('path') or 'unknown'} [{row.get('kind') or 'route'}] {target}")
+        return '\n'.join(lines) + '\n'
+
+
+class _ModelsSubcommand:
+    def __init__(self, project, _config):
+        self.project_root = os.path.realpath(os.path.abspath(os.path.expanduser(project)))
+
+    def collect(self):
+        package_name = _project_package_for_models(self.project_root)
+        if not package_name:
             return []
-        return _RouteCollector(project_root, tg_config).collect(root_controller)
+        with _project_import_context(self.project_root), redirect_stdout(sys.stderr):
+            model_package = _import_project_model_package(f'{package_name}.model')
+            if model_package is None:
+                return []
+            return _model_rows(self.project_root, model_package)
+
+    def format(self, models):
+        if not models:
+            return 'No exported models found.\n'
+        lines = []
+        for row in models:
+            target = row.get('class') or 'unknown class'
+            if row.get('source'):
+                target = f"{target} ({row['source']})"
+            lines.append(f"{row.get('name') or 'unknown'} [{row.get('orm') or 'unknown'}] {target}")
+        return '\n'.join(lines) + '\n'
 
 
-def collect_project_models(project='.', config='development.ini'):
-    project_root = os.path.realpath(os.path.abspath(os.path.expanduser(project)))
-    package_name = _project_package_for_models(project_root)
-    if not package_name:
-        return []
+class _TemplatesSubcommand:
+    def __init__(self, project, config):
+        self.project_root = os.path.realpath(os.path.abspath(os.path.expanduser(project)))
+        self.config = config
 
-    with _project_import_context(project_root), redirect_stdout(sys.stderr):
-        model_package = _import_project_model_package(f'{package_name}.model')
-        if model_package is None:
+    def collect(self):
+        with _project_import_context(self.project_root), redirect_stdout(sys.stderr):
+            _load_app(self.project_root, self.config)
+            tg_config = _tg_config()
+            package_name = _config_get(tg_config, 'package_name')
+            root_controller = _root_controller_object(package_name, tg_config)
+            routes = _RouteCollector(self.project_root, tg_config).collect(root_controller) if root_controller is not None else []
+            return _template_rows(self.project_root, tg_config, routes)
+
+    def format(self, templates):
+        if not templates:
+            return 'No recognized templates found.\n'
+        lines = []
+        for row in templates:
+            name = row.get('name') or 'unknown dotted name'
+            exposed_by = row.get('exposed_by') or []
+            backlinks = ', '.join(exposed_by) if exposed_by else 'not exposed by static routes'
+            lines.append(
+                f"{row.get('file') or 'unknown file'} [{row.get('renderer') or 'unknown'}] "
+                f"{name} exposed by {backlinks}"
+            )
+        return '\n'.join(lines) + '\n'
+
+
+class _ScaffoldsSubcommand:
+    def __init__(self, project, _config):
+        self.project_root = os.path.realpath(os.path.abspath(os.path.expanduser(project)))
+
+    def collect(self):
+        try:
+            import gearbox.scaffolding as scaffolding
+        except ImportError as error:
+            if getattr(error, 'name', None) in ('gearbox', 'gearbox.scaffolding'):
+                return []
+            raise
+        discover_scaffold_templates = getattr(scaffolding, 'discover_scaffold_templates', None)
+        if discover_scaffold_templates is None:
             return []
-        return _model_rows(project_root, model_package)
+        rows = []
+        for template in discover_scaffold_templates(self.project_root):
+            relative_dir = getattr(template, 'relative_dir', '.') or '.'
+            relative_dir = relative_dir.replace(os.path.sep, '/')
+            output_extension = getattr(template, 'output_extension', '') or ''
+            default_output_pattern = (
+                f'{relative_dir}/{{target}}{output_extension}' if relative_dir != '.'
+                else f'{{target}}{output_extension}'
+            )
+            rows.append({
+                'name': getattr(template, 'name', None),
+                'template_path': _relative_path(self.project_root, getattr(template, 'path', '')),
+                'relative_dir': relative_dir,
+                'output_extension': output_extension,
+                'default_output_pattern': default_output_pattern,
+            })
+        return rows
 
-
-def collect_project_templates(project='.', config='development.ini'):
-    project_root = os.path.realpath(os.path.abspath(os.path.expanduser(project)))
-
-    with _project_import_context(project_root), redirect_stdout(sys.stderr):
-        _load_app(project_root, config)
-        tg_config = _tg_config()
-        package_name = _config_get(tg_config, 'package_name')
-        root_controller = _root_controller_object(package_name, tg_config)
-        routes = _RouteCollector(project_root, tg_config).collect(root_controller) if root_controller is not None else []
-        return _template_rows(project_root, tg_config, routes)
-
-
-def collect_project_scaffolds(project='.', config='development.ini'):
-    try:
-        import gearbox.scaffolding as scaffolding
-    except ImportError as error:
-        if getattr(error, 'name', None) in ('gearbox', 'gearbox.scaffolding'):
-            return []
-        raise
-
-    discover_scaffold_templates = getattr(scaffolding, 'discover_scaffold_templates', None)
-    if discover_scaffold_templates is None:
-        return []
-
-    project_root = os.path.realpath(os.path.abspath(os.path.expanduser(project)))
-    rows = []
-    for template in discover_scaffold_templates(project_root):
-        relative_dir = getattr(template, 'relative_dir', '.') or '.'
-        relative_dir = relative_dir.replace(os.path.sep, '/')
-        output_extension = getattr(template, 'output_extension', '') or ''
-        default_output_pattern = (
-            f'{relative_dir}/{{target}}{output_extension}' if relative_dir != '.'
-            else f'{{target}}{output_extension}'
-        )
-        rows.append({
-            'name': getattr(template, 'name', None),
-            'template_path': _relative_path(project_root, getattr(template, 'path', '')),
-            'relative_dir': relative_dir,
-            'output_extension': output_extension,
-            'default_output_pattern': default_output_pattern,
-        })
-    return rows
-
-
-def format_project_summary(summary):
-    lines = [
-        f"Project root: {summary.get('project_root') or 'unknown'}",
-        f"Config file: {summary.get('config_file') or 'unknown'}",
-        f"Package: {summary.get('package_name') or 'unknown'}",
-        f"Default renderer: {summary.get('default_renderer') or 'unknown'}",
-    ]
-
-    renderers = summary.get('renderers') or []
-    lines.append('Configured renderers: ' + (', '.join(renderers) if renderers else 'unknown'))
-
-    paths = summary.get('paths') or {}
-    if paths:
-        lines.append('Paths:')
-        for name in ('controllers', 'model', 'templates'):
-            value = paths.get(name)
-            if not value:
-                continue
-            if isinstance(value, list):
-                value = ', '.join(value)
-            lines.append(f"  {name.replace('_', ' ').title()}: {value}")
-
-    root = summary.get('root_controller') or {}
-    root_text = root.get('class') or 'unknown'
-    if root.get('source'):
-        root_text = f"{root_text} ({root['source']})"
-    lines.append(f'Root controller: {root_text}')
-
-    database = summary.get('database') or {}
-    if database.get('enabled') is True:
-        database_text = 'enabled'
-        if database.get('orm'):
-            database_text += f" ({database['orm']})"
-    elif database.get('enabled') is False:
-        database_text = 'disabled'
-    else:
-        database_text = 'unknown'
-    lines.append(f'Database: {database_text}')
-
-    auth = summary.get('auth') or {}
-    auth_text = 'enabled' if auth.get('enabled') is True else 'disabled' if auth.get('enabled') is False else 'unknown'
-    lines.append(f'Auth: {auth_text}')
-    return '\n'.join(lines) + '\n'
-
-
-def format_project_routes(routes):
-    if not routes:
-        return 'No static routes found.\n'
-    lines = []
-    for row in routes:
-        target = row.get('controller') or 'unknown controller'
-        action = row.get('action')
-        if action:
-            target = f'{target}.{action}'
-        lines.append(f"{row.get('path') or 'unknown'} [{row.get('kind') or 'route'}] {target}")
-    return '\n'.join(lines) + '\n'
-
-
-def format_project_models(models):
-    if not models:
-        return 'No exported models found.\n'
-    lines = []
-    for row in models:
-        target = row.get('class') or 'unknown class'
-        if row.get('source'):
-            target = f"{target} ({row['source']})"
-        lines.append(f"{row.get('name') or 'unknown'} [{row.get('orm') or 'unknown'}] {target}")
-    return '\n'.join(lines) + '\n'
-
-
-def format_project_templates(templates):
-    if not templates:
-        return 'No recognized templates found.\n'
-    lines = []
-    for row in templates:
-        name = row.get('name') or 'unknown dotted name'
-        exposed_by = row.get('exposed_by') or []
-        backlinks = ', '.join(exposed_by) if exposed_by else 'not exposed by static routes'
-        lines.append(
-            f"{row.get('file') or 'unknown file'} [{row.get('renderer') or 'unknown'}] "
-            f"{name} exposed by {backlinks}"
-        )
-    return '\n'.join(lines) + '\n'
-
-
-def format_project_scaffolds(scaffolds):
-    if not scaffolds:
-        return 'No scaffold templates found.\n'
-    lines = []
-    for row in scaffolds:
-        path = row.get('template_path') or 'unknown template'
-        pattern = row.get('default_output_pattern') or 'unknown output'
-        lines.append(
-            f"{row.get('name') or 'unknown'} [{row.get('output_extension') or 'no extension'}] "
-            f"{path} -> {pattern}"
-        )
-    return '\n'.join(lines) + '\n'
+    def format(self, scaffolds):
+        if not scaffolds:
+            return 'No scaffold templates found.\n'
+        lines = []
+        for row in scaffolds:
+            path = row.get('template_path') or 'unknown template'
+            pattern = row.get('default_output_pattern') or 'unknown output'
+            lines.append(
+                f"{row.get('name') or 'unknown'} [{row.get('output_extension') or 'no extension'}] "
+                f"{path} -> {pattern}"
+            )
+        return '\n'.join(lines) + '\n'
 
 
 # ---------------------------------------------------------------------------

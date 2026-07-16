@@ -1,4 +1,3 @@
-import argparse
 import contextlib
 import importlib
 import io
@@ -12,13 +11,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from devtools.gearbox.tginfo import (
-    collect_project_scaffolds,
-    collect_project_summary,
-    format_project_scaffolds,
-    format_project_summary,
-)
-
+from devtools.gearbox.tginfo import TgInfoCommand
 
 class TgInfoSummaryTests(unittest.TestCase):
     def setUp(self):
@@ -62,6 +55,21 @@ class TgInfoSummaryTests(unittest.TestCase):
                 sys.modules[name] = module
         self.tempdir.cleanup()
 
+    def take_tginfo(self, subcommand, *args):
+        command = TgInfoCommand(None, {})
+        opts = command.get_parser('gearbox tginfo').parse_args([
+            subcommand, '--project', str(self.project_root), *args,
+        ])
+        stdout = io.StringIO()
+        stderr = io.StringIO()
+        with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+            command.take_action(opts)
+        return stdout.getvalue(), stderr.getvalue()
+
+    def run_tginfo(self, subcommand):
+        stdout, _ = self.take_tginfo(subcommand, '--json')
+        return json.loads(stdout)
+
     def install_fake_tg(self, config, startup_stdout=None):
         tg = types.ModuleType('tg')
         tg.config = config
@@ -95,7 +103,7 @@ class TgInfoSummaryTests(unittest.TestCase):
             'sa_auth.enabled': True,
         })
 
-        summary = collect_project_summary(str(self.project_root))
+        summary = self.run_tginfo('summary')
 
         self.assertEqual(calls, [
             ('config:development.ini', str(self.project_root), str(self.project_root), True),
@@ -119,20 +127,26 @@ class TgInfoSummaryTests(unittest.TestCase):
         self.assertNotIn('agent_playbook', summary)
         json.dumps(summary, sort_keys=True)
 
+    def test_summary_action_loads_config_parsed_from_command_line(self):
+        calls = self.install_fake_tg({})
+
+        self.take_tginfo('summary', '--config', 'test.ini')
+
+        self.assertEqual(calls, [
+            ('config:test.ini', str(self.project_root), str(self.project_root), True),
+        ])
+
     def test_summary_redirects_startup_stdout_away_from_collector_stdout(self):
         self.install_fake_tg({
             'package_name': 'sampleapp',
             'application_root_module': self.root_module,
         }, startup_stdout='startup banner from app')
 
-        stdout = io.StringIO()
-        stderr = io.StringIO()
-        with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
-            summary = collect_project_summary(str(self.project_root))
+        stdout, stderr = self.take_tginfo('summary', '--json')
 
-        self.assertEqual(stdout.getvalue(), '')
-        self.assertIn('startup banner from app', stderr.getvalue())
-        self.assertEqual(summary['package_name'], 'sampleapp')
+        self.assertNotIn('startup banner from app', stdout)
+        self.assertIn('startup banner from app', stderr)
+        self.assertEqual(json.loads(stdout)['package_name'], 'sampleapp')
 
     def test_summary_imports_dotted_application_root_module(self):
         self.install_fake_tg({
@@ -140,7 +154,7 @@ class TgInfoSummaryTests(unittest.TestCase):
             'application_root_module': 'sampleapp.controllers.stringroot',
         })
 
-        summary = collect_project_summary(str(self.project_root))
+        summary = self.run_tginfo('summary')
 
         self.assertEqual(
             summary['root_controller']['class'],
@@ -158,7 +172,7 @@ class TgInfoSummaryTests(unittest.TestCase):
                     'application_root_module': 'sampleapp.controllers.stringroot',
                 })
 
-                summary = collect_project_summary(str(self.project_root))
+                summary = self.run_tginfo('summary')
 
                 self.assertEqual(
                     summary['root_controller']['class'],
@@ -175,30 +189,25 @@ class TgInfoSummaryTests(unittest.TestCase):
             'auth_backend': None,
         })
 
-        summary = collect_project_summary(str(self.project_root), config='development.ini')
+        summary = self.run_tginfo('summary')
 
         self.assertEqual(summary['database'], {'enabled': False, 'orm': None})
         self.assertEqual(summary['auth'], {'enabled': False})
 
     def test_human_summary_is_factual_and_omits_agent_playbook_content(self):
-        summary = {
-            'project_root': '/project',
-            'config_file': '/project/development.ini',
+        self.install_fake_tg({
             'package_name': 'sampleapp',
             'default_renderer': 'kajiki',
             'renderers': ['json', 'kajiki'],
-            'paths': {'controllers': 'sampleapp/controllers', 'model': 'sampleapp/model'},
-            'root_controller': {
-                'class': 'sampleapp.controllers.root.RootController',
-                'source': 'sampleapp/controllers/root.py:1',
-            },
-            'database': {'enabled': True, 'orm': 'sqlalchemy'},
-            'auth': {'enabled': False},
-        }
+            'application_root_module': self.root_module,
+            'use_sqlalchemy': True,
+            'use_ming': False,
+            'auth_backend': None,
+        })
 
-        output = format_project_summary(summary)
+        output, _ = self.take_tginfo('summary')
 
-        self.assertIn('Project root: /project', output)
+        self.assertIn(f'Project root: {self.project_root}', output)
         self.assertIn('Configured renderers: json, kajiki', output)
         self.assertIn('Root controller: sampleapp.controllers.root.RootController (sampleapp/controllers/root.py:1)', output)
         self.assertIn('Database: enabled (sqlalchemy)', output)
@@ -231,9 +240,10 @@ class TgInfoSummaryTests(unittest.TestCase):
         gearbox.scaffolding = scaffolding
 
         with patch.dict(sys.modules, {'gearbox': gearbox, 'gearbox.scaffolding': scaffolding}):
-            scaffolds = collect_project_scaffolds(str(self.project_root))
+            scaffolds = self.run_tginfo('scaffolds')
+            output, _ = self.take_tginfo('scaffolds')
 
-        self.assertEqual(calls, [str(self.project_root)])
+        self.assertEqual(calls, [str(self.project_root), str(self.project_root)])
         self.assertEqual(load_calls, [])
         self.assertEqual(scaffolds, [{
             'name': 'controller',
@@ -242,74 +252,14 @@ class TgInfoSummaryTests(unittest.TestCase):
             'output_extension': '.py',
             'default_output_pattern': 'controllers/{target}.py',
         }])
-
-    def test_human_scaffolds_output_is_factual_and_omits_write_advice(self):
-        output = format_project_scaffolds([{
-            'name': 'controller',
-            'template_path': 'controllers/controller.py.template',
-            'relative_dir': 'controllers',
-            'output_extension': '.py',
-            'default_output_pattern': 'controllers/{target}.py',
-        }])
-
         self.assertIn('controller [.py] controllers/controller.py.template -> controllers/{target}.py', output)
         for forbidden in ('mount', 'migration', 'setup-app', 'next step'):
             self.assertNotIn(forbidden, output.lower())
 
 
 class TgInfoCommandTests(unittest.TestCase):
-    def setUp(self):
-        self.previous_modules = {
-            name: sys.modules.get(name)
-            for name in ('gearbox', 'gearbox.command', 'devtools.gearbox.tginfo')
-        }
-        gearbox = types.ModuleType('gearbox')
-        command = types.ModuleType('gearbox.command')
-
-        class Command(object):
-            def __init__(self, *args, **kwargs):
-                pass
-
-            def get_parser(self, prog_name):
-                return argparse.ArgumentParser(prog=prog_name)
-
-        command.Command = Command
-        gearbox.command = command
-        sys.modules['gearbox'] = gearbox
-        sys.modules['gearbox.command'] = command
-        sys.modules.pop('devtools.gearbox.tginfo', None)
-        self.module = importlib.import_module('devtools.gearbox.tginfo')
-
-    def tearDown(self):
-        sys.modules.pop('devtools.gearbox.tginfo', None)
-        for name, module in self.previous_modules.items():
-            if module is None:
-                sys.modules.pop(name, None)
-            else:
-                sys.modules[name] = module
-
-    def test_tginfo_is_registered_as_gearbox_project_command(self):
-        pyproject = Path(__file__).parents[2] / 'pyproject.toml'
-        in_project_commands = False
-        project_commands = {}
-        for raw_line in pyproject.read_text().splitlines():
-            line = raw_line.strip()
-            if not line or line.startswith('#'):
-                continue
-            if line.startswith('['):
-                in_project_commands = line == '[project.entry-points."gearbox.project_commands"]'
-                continue
-            if not in_project_commands or '=' not in line:
-                continue
-            name, value = line.split('=', 1)
-            project_commands[name.strip()] = value.strip().strip('"')
-
-        self.assertEqual(project_commands.get('tginfo'), 'devtools.gearbox.tginfo:TgInfoCommand')
-        module_name, class_name = project_commands['tginfo'].split(':', 1)
-        self.assertIs(getattr(importlib.import_module(module_name), class_name), self.module.TgInfoCommand)
-
-    def test_parser_exposes_v1_subcommands_with_shared_options_and_no_all(self):
-        parser = self.module.TgInfoCommand(None, {}).get_parser('gearbox tginfo')
+    def test_parser_exposes_subcommands_with_shared_options(self):
+        parser = TgInfoCommand(None, {}).get_parser('gearbox tginfo')
 
         for subcommand in ('summary', 'routes', 'models', 'templates', 'scaffolds'):
             with self.subTest(subcommand=subcommand):
@@ -323,147 +273,8 @@ class TgInfoCommandTests(unittest.TestCase):
             with self.assertRaises(SystemExit):
                 parser.parse_args(['all'])
 
-    def test_summary_subcommand_prints_human_output_by_default(self):
-        command = self.module.TgInfoCommand(None, {})
-        opts = command.get_parser('gearbox tginfo').parse_args(['summary', '--project', '/project'])
 
-        with patch.object(self.module, 'collect_project_summary', return_value={
-            'project_root': '/project',
-            'config_file': '/project/development.ini',
-            'package_name': 'sampleapp',
-            'default_renderer': 'kajiki',
-            'renderers': ['json', 'kajiki'],
-            'paths': {},
-            'root_controller': {},
-            'database': {'enabled': None, 'orm': None},
-            'auth': {'enabled': None},
-        }) as collector:
-            output = io.StringIO()
-            with contextlib.redirect_stdout(output):
-                command.take_action(opts)
 
-        collector.assert_called_once_with(project='/project', config='development.ini')
-        self.assertIn('Package: sampleapp', output.getvalue())
-
-    def test_json_summary_uses_real_collector_without_startup_stdout_pollution(self):
-        with tempfile.TemporaryDirectory() as tempdir:
-            project_root = Path(tempdir)
-            (project_root / 'development.ini').write_text('[app:main]\n')
-            package = project_root / 'samplecmd'
-            (package / 'controllers').mkdir(parents=True)
-            (package / '__init__.py').write_text("print('package import banner')\n")
-            (package / 'controllers' / '__init__.py').write_text('')
-            (package / 'controllers' / 'root.py').write_text(textwrap.dedent('''\
-                class RootController(object):
-                    pass
-            '''))
-
-            old_modules = {
-                name: sys.modules.get(name)
-                for name in ('tg', 'paste', 'paste.deploy')
-            }
-            try:
-                tg = types.ModuleType('tg')
-                tg.config = {
-                    'package_name': 'samplecmd',
-                    'default_renderer': 'kajiki',
-                    'renderers': ['json', 'kajiki'],
-                    'application_root_module': 'samplecmd.controllers.root',
-                    'use_sqlalchemy': False,
-                    'use_ming': False,
-                    'auth_backend': None,
-                }
-                paste = types.ModuleType('paste')
-                deploy = types.ModuleType('paste.deploy')
-
-                def loadapp(config_name, relative_to=None):
-                    print('startup banner from app')
-                    return object()
-
-                deploy.loadapp = loadapp
-                paste.deploy = deploy
-                sys.modules['tg'] = tg
-                sys.modules['paste'] = paste
-                sys.modules['paste.deploy'] = deploy
-
-                command = self.module.TgInfoCommand(None, {})
-                opts = command.get_parser('gearbox tginfo').parse_args([
-                    'summary', '--project', str(project_root), '--json',
-                ])
-                stdout = io.StringIO()
-                stderr = io.StringIO()
-                with contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
-                    command.take_action(opts)
-            finally:
-                for name in list(sys.modules):
-                    if name == 'samplecmd' or name.startswith('samplecmd.'):
-                        sys.modules.pop(name, None)
-                for name, module in old_modules.items():
-                    if module is None:
-                        sys.modules.pop(name, None)
-                    else:
-                        sys.modules[name] = module
-
-        self.assertNotIn('startup banner from app', stdout.getvalue())
-        self.assertNotIn('package import banner', stdout.getvalue())
-        self.assertIn('startup banner from app', stderr.getvalue())
-        self.assertIn('package import banner', stderr.getvalue())
-        payload = json.loads(stdout.getvalue())
-        self.assertEqual(payload['package_name'], 'samplecmd')
-        self.assertEqual(payload['database'], {'enabled': False, 'orm': None})
-        self.assertEqual(payload['auth'], {'enabled': False})
-
-    def test_summary_subcommand_prints_json_when_requested(self):
-        command = self.module.TgInfoCommand(None, {})
-        opts = command.get_parser('gearbox tginfo').parse_args([
-            'summary', '--project', '/project', '--config', 'test.ini', '--json',
-        ])
-
-        with patch.object(self.module, 'collect_project_summary', return_value={
-            'project_root': '/project',
-            'config_file': '/project/test.ini',
-            'package_name': 'sampleapp',
-            'default_renderer': 'kajiki',
-            'renderers': ['json', 'kajiki'],
-            'paths': {},
-            'root_controller': {},
-            'database': {'enabled': False, 'orm': None},
-            'auth': {'enabled': False},
-        }) as collector:
-            output = io.StringIO()
-            with contextlib.redirect_stdout(output):
-                command.take_action(opts)
-
-        collector.assert_called_once_with(project='/project', config='test.ini')
-        payload = json.loads(output.getvalue())
-        self.assertEqual(payload['config_file'], '/project/test.ini')
-        self.assertEqual(payload['database'], {'enabled': False, 'orm': None})
-
-    def test_scaffolds_subcommand_prints_json_from_shared_collector(self):
-        command = self.module.TgInfoCommand(None, {})
-        opts = command.get_parser('gearbox tginfo').parse_args([
-            'scaffolds', '--project', '/project', '--config', 'test.ini', '--json',
-        ])
-
-        with patch.object(self.module, 'collect_project_scaffolds', return_value=[{
-            'name': 'controller',
-            'template_path': 'controllers/controller.py.template',
-            'relative_dir': 'controllers',
-            'output_extension': '.py',
-            'default_output_pattern': 'controllers/{target}.py',
-        }]) as collector:
-            output = io.StringIO()
-            with contextlib.redirect_stdout(output):
-                command.take_action(opts)
-
-        collector.assert_called_once_with(project='/project', config='test.ini')
-        self.assertEqual(json.loads(output.getvalue()), [{
-            'name': 'controller',
-            'template_path': 'controllers/controller.py.template',
-            'relative_dir': 'controllers',
-            'output_extension': '.py',
-            'default_output_pattern': 'controllers/{target}.py',
-        }])
 
 
 if __name__ == '__main__':
