@@ -40,21 +40,13 @@ class TgInfoCommand(Command):
         return parser
 
     def take_action(self, opts):
-        if opts.tginfo_command == 'summary':
-            subcommand = _SummarySubcommand(opts.project, opts.config_file)
-        elif opts.tginfo_command == 'routes':
-            subcommand = _RoutesSubcommand(opts.project, opts.config_file)
-        elif opts.tginfo_command == 'models':
-            subcommand = _ModelsSubcommand(opts.project, opts.config_file)
-        elif opts.tginfo_command == 'templates':
-            subcommand = _TemplatesSubcommand(opts.project, opts.config_file)
-        elif opts.tginfo_command == 'scaffolds':
-            subcommand = _ScaffoldsSubcommand(opts.project, opts.config_file)
-        else:
+        subcommand_class = _SUBCOMMAND_CLASSES.get(opts.tginfo_command)
+        if subcommand_class is None:
             raise SystemExit(
                 'tginfo requires a subcommand: summary, routes, models, templates, or scaffolds'
             )
 
+        subcommand = subcommand_class(opts.project, opts.config_file)
         result = subcommand.collect()
         if opts.as_json:
             print(json.dumps(result, indent=2, sort_keys=True))
@@ -270,6 +262,15 @@ class _ScaffoldsSubcommand:
                 f"{path} -> {pattern}"
             )
         return '\n'.join(lines)
+
+
+_SUBCOMMAND_CLASSES = {
+    'summary': _SummarySubcommand,
+    'routes': _RoutesSubcommand,
+    'models': _ModelsSubcommand,
+    'templates': _TemplatesSubcommand,
+    'scaffolds': _ScaffoldsSubcommand,
+}
 
 
 # ---------------------------------------------------------------------------
