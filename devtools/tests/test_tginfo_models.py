@@ -144,6 +144,8 @@ class TgInfoModelsTests(unittest.TestCase):
 
         self.assertIn('User [sqlalchemy] sampleapp.model.auth.User (sampleapp/model/auth.py:1)', output)
         self.assertIn('WikiPage [ming] sampleapp.model.docs.WikiPage (sampleapp/model/docs.py:1)', output)
+        self.assertTrue(output.endswith('\n'))
+        self.assertFalse(output.endswith('\n\n'))
 
     def write_nested_pyproject_app(self):
         (self.project_root / 'pyproject.toml').write_text(textwrap.dedent('''\

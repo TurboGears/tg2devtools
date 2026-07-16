@@ -405,6 +405,8 @@ class TgInfoRoutesTests(unittest.TestCase):
 
         self.assertIn('/ [index] sampleapp.controllers.root.RootController.index', output)
         self.assertIn('/secc/* [dynamic_default] sampleapp.controllers.root.SecureController._default', output)
+        self.assertTrue(output.endswith('\n'))
+        self.assertFalse(output.endswith('\n\n'))
 
     def test_route_metadata_uses_static_attributes_without_calling_descriptors(self):
         side_effects = []

@@ -194,6 +194,8 @@ class TgInfoQuickstartCommandTests(unittest.TestCase):
             command.take_action(opts)
         expected_stderr = '' if args[0] in ('models', 'scaffolds') else 'quickstart startup banner\n'
         self.assertEqual(stderr.getvalue(), expected_stderr)
+        self.assertTrue(stdout.getvalue().endswith('\n'))
+        self.assertFalse(stdout.getvalue().endswith('\n\n'))
         return json.loads(stdout.getvalue())
 
     def _write_quickstart_project(self):

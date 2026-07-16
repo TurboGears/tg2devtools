@@ -210,6 +210,8 @@ class TgInfoSummaryTests(unittest.TestCase):
         self.assertIn('Root controller: sampleapp.controllers.root.RootController (sampleapp/controllers/root.py:1)', output)
         self.assertIn('Database: enabled (sqlalchemy)', output)
         self.assertIn('Auth: disabled', output)
+        self.assertTrue(output.endswith('\n'))
+        self.assertFalse(output.endswith('\n\n'))
         for forbidden in ('count', 'pyproject', 'recipe', 'next step', 'agent playbook'):
             self.assertNotIn(forbidden, output.lower())
 
@@ -232,6 +234,8 @@ class TgInfoSummaryTests(unittest.TestCase):
             'default_output_pattern': 'controllers/{target}.py',
         }])
         self.assertIn('controller [.py] controllers/controller.py.template -> controllers/{target}.py', output)
+        self.assertTrue(output.endswith('\n'))
+        self.assertFalse(output.endswith('\n\n'))
         for forbidden in ('mount', 'migration', 'setup-app', 'next step'):
             self.assertNotIn(forbidden, output.lower())
 

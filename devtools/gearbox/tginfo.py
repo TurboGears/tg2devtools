@@ -57,10 +57,9 @@ class TgInfoCommand(Command):
 
         result = subcommand.collect()
         if opts.as_json:
-            json.dump(result, sys.stdout, indent=2, sort_keys=True)
-            sys.stdout.write('\n')
+            print(json.dumps(result, indent=2, sort_keys=True))
         else:
-            sys.stdout.write(subcommand.format(result))
+            print(subcommand.format(result))
 
 
 # ---------------------------------------------------------------------------
@@ -146,7 +145,7 @@ class _SummarySubcommand:
         auth = summary.get('auth') or {}
         auth_text = 'enabled' if auth.get('enabled') is True else 'disabled' if auth.get('enabled') is False else 'unknown'
         lines.append(f'Auth: {auth_text}')
-        return '\n'.join(lines) + '\n'
+        return '\n'.join(lines)
 
 
 class _RoutesSubcommand:
@@ -166,7 +165,7 @@ class _RoutesSubcommand:
 
     def format(self, routes):
         if not routes:
-            return 'No static routes found.\n'
+            return 'No static routes found.'
         lines = []
         for row in routes:
             target = row.get('controller') or 'unknown controller'
@@ -174,7 +173,7 @@ class _RoutesSubcommand:
             if action:
                 target = f'{target}.{action}'
             lines.append(f"{row.get('path') or 'unknown'} [{row.get('kind') or 'route'}] {target}")
-        return '\n'.join(lines) + '\n'
+        return '\n'.join(lines)
 
 
 class _ModelsSubcommand:
@@ -193,14 +192,14 @@ class _ModelsSubcommand:
 
     def format(self, models):
         if not models:
-            return 'No exported models found.\n'
+            return 'No exported models found.'
         lines = []
         for row in models:
             target = row.get('class') or 'unknown class'
             if row.get('source'):
                 target = f"{target} ({row['source']})"
             lines.append(f"{row.get('name') or 'unknown'} [{row.get('orm') or 'unknown'}] {target}")
-        return '\n'.join(lines) + '\n'
+        return '\n'.join(lines)
 
 
 class _TemplatesSubcommand:
@@ -219,7 +218,7 @@ class _TemplatesSubcommand:
 
     def format(self, templates):
         if not templates:
-            return 'No recognized templates found.\n'
+            return 'No recognized templates found.'
         lines = []
         for row in templates:
             name = row.get('name') or 'unknown dotted name'
@@ -229,7 +228,7 @@ class _TemplatesSubcommand:
                 f"{row.get('file') or 'unknown file'} [{row.get('renderer') or 'unknown'}] "
                 f"{name} exposed by {backlinks}"
             )
-        return '\n'.join(lines) + '\n'
+        return '\n'.join(lines)
 
 
 class _ScaffoldsSubcommand:
@@ -261,7 +260,7 @@ class _ScaffoldsSubcommand:
 
     def format(self, scaffolds):
         if not scaffolds:
-            return 'No scaffold templates found.\n'
+            return 'No scaffold templates found.'
         lines = []
         for row in scaffolds:
             path = row.get('template_path') or 'unknown template'
@@ -270,7 +269,7 @@ class _ScaffoldsSubcommand:
                 f"{row.get('name') or 'unknown'} [{row.get('output_extension') or 'no extension'}] "
                 f"{path} -> {pattern}"
             )
-        return '\n'.join(lines) + '\n'
+        return '\n'.join(lines)
 
 
 # ---------------------------------------------------------------------------

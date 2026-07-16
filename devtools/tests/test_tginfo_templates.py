@@ -208,6 +208,8 @@ class TgInfoTemplatesTests(unittest.TestCase):
         self.assertIn('sampleapp/templates/index.xhtml [kajiki] sampleapp.templates.index exposed by /', output)
         self.assertIn('sampleapp/templates/partials/_widget.xhtml [kajiki]', output)
         self.assertIn('not exposed by static routes', output)
+        self.assertTrue(output.endswith('\n'))
+        self.assertFalse(output.endswith('\n\n'))
 
 
 
