@@ -95,7 +95,7 @@ class _SummarySubcommand:
                 'paths': self._project_paths(package, tg_config),
                 'root_controller': self._root_controller_info(package_name, tg_config),
                 'database': self._database_info(tg_config),
-                'auth': self._auth_info(tg_config),
+                'auth': {'enabled': tg_config.get('sa_auth.enabled')},
             }
 
     def format(self, summary):
@@ -183,9 +183,6 @@ class _SummarySubcommand:
         if use_sqlalchemy is False and use_ming is False:
             return {'enabled': False, 'orm': None}
         return {'enabled': None, 'orm': None}
-
-    def _auth_info(self, tg_config):
-        return {'enabled': tg_config.get('sa_auth.enabled')}
 
 
 class _RoutesSubcommand:
@@ -837,27 +834,18 @@ class _TemplateResolver:
     def __init__(self, project_root, tg_config):
         self.project_root = project_root
         self.tg_config = tg_config
-        self.finder = self._dotted_filename_finder(tg_config)
+        self.finder = tg_config.get('tg.app_globals').dotted_filename_finder
 
     def resolve(self, engine, template):
         if not template:
-            return self._not_applicable('exposure has no template')
+            return {'status': 'not_applicable', 'file': None, 'reason': 'exposure has no template'}
         renderer = (engine or '').lower()
         if renderer not in _STANDARD_RENDERERS:
             return self._unresolved(f"renderer {engine!r} does not expose a standard template filename resolver")
-        path = self.finder.get_dotted_filename(template, self._template_extension(renderer))
+        path = self.finder.get_dotted_filename(template, _template_extension(self.tg_config, renderer))
         if os.path.isfile(path):
             return {'status': 'resolved', 'file': _relative_path(self.project_root, path), 'reason': None}
         return self._unresolved('TurboGears dotted filename finder returned a missing file')
-
-    def _template_extension(self, renderer):
-        return _template_extension(self.tg_config, renderer)
-
-    def _dotted_filename_finder(self, tg_config):
-        return tg_config.get('tg.app_globals').dotted_filename_finder
-
-    def _not_applicable(self, reason):
-        return {'status': 'not_applicable', 'file': None, 'reason': reason}
 
     def _unresolved(self, reason):
         return {'status': 'unresolved', 'file': None, 'reason': reason}
