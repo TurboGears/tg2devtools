@@ -1,5 +1,4 @@
 import argparse
-import builtins
 import contextlib
 import importlib
 import io
@@ -158,23 +157,6 @@ class TgInfoModelsTests(unittest.TestCase):
         calls = self.install_app_loading_sentinels()
 
         models = collect_project_models(str(self.project_root))
-
-        self.assertEqual(calls, [])
-        self.assertEqual({row['name'] for row in models}, {'NestedModel'})
-        self.assertEqual(models[0]['class'], 'company.sample.model.things.NestedModel')
-
-    def test_models_uses_nested_pyproject_app_package_without_tomllib(self):
-        self.write_nested_pyproject_app()
-        calls = self.install_app_loading_sentinels()
-        original_import = builtins.__import__
-
-        def import_without_tomllib(name, globals=None, locals=None, fromlist=(), level=0):
-            if name == 'tomllib':
-                raise ImportError(name)
-            return original_import(name, globals, locals, fromlist, level)
-
-        with patch('builtins.__import__', side_effect=import_without_tomllib):
-            models = collect_project_models(str(self.project_root))
 
         self.assertEqual(calls, [])
         self.assertEqual({row['name'] for row in models}, {'NestedModel'})

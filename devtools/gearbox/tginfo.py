@@ -8,19 +8,6 @@ from contextlib import contextmanager, redirect_stdout
 from gearbox.command import Command
 
 
-_STANDARD_TEMPLATE_RENDERERS = {
-    'kajiki': ('templating.kajiki.template_extension', '.xhtml'),
-    'mako': ('templating.mako.template_extension', '.mak'),
-    'jinja': (None, '.jinja'),
-    'jinja2': (None, '.jinja'),
-    'genshi': (None, '.html'),
-}
-
-_DISPATCH_PRIVATE_NAMES = {'_lookup', '_default'}
-_IGNORED_PRIVATE_NAMES = {'_before', '_after', '_visit'}
-_MISSING = object()
-
-
 class TgInfoCommand(Command):
     """Inspect TurboGears project facts."""
 
@@ -68,6 +55,23 @@ class TgInfoCommand(Command):
             sys.stdout.write('\n')
         else:
             sys.stdout.write(formatter(result))
+
+
+# ---------------------------------------------------------------------------
+# Module-level constants
+# ---------------------------------------------------------------------------
+
+_STANDARD_TEMPLATE_RENDERERS = {
+    'kajiki': ('templating.kajiki.template_extension', '.xhtml'),
+    'mako': ('templating.mako.template_extension', '.mak'),
+    'jinja': (None, '.jinja'),
+    'jinja2': (None, '.jinja'),
+    'genshi': (None, '.html'),
+}
+
+_DISPATCH_PRIVATE_NAMES = {'_lookup', '_default'}
+_IGNORED_PRIVATE_NAMES = {'_before', '_after', '_visit'}
+_MISSING = object()
 
 
 # ---------------------------------------------------------------------------
@@ -326,53 +330,37 @@ def _project_paths(project_root, package, tg_config):
     return paths
 
 
-def _root_controller_info(project_root, package_name, tg_config):
-    root_controller = _config_get(tg_config, 'tg.root_controller')
-    if root_controller is None:
-        root_controller = _config_get(tg_config, 'root_controller')
-
-    if root_controller is not None:
-        controller_class = root_controller if inspect.isclass(root_controller) else root_controller.__class__
-    else:
-        root_module = _config_get(tg_config, 'application_root_module')
-        if isinstance(root_module, str):
-            root_module = _import_optional(root_module)
-        if root_module is None and package_name:
-            root_module = _import_optional(f'{package_name}.controllers.root')
-        controller_class = getattr(root_module, 'RootController', None) if root_module else None
-
-    if controller_class is None:
-        return {}
-
-    info = {'class': _class_name(controller_class)}
-    info.update(_source_info(controller_class, project_root))
-    return info
-
-
-def _root_controller_object(package_name, tg_config):
-    root_controller = _config_get(tg_config, 'tg.root_controller')
-    if root_controller is None:
-        root_controller = _config_get(tg_config, 'root_controller')
-    if root_controller is not None:
-        if inspect.isclass(root_controller):
-            try:
-                return root_controller()
-            except Exception:
-                return root_controller
-        return root_controller
+def _resolve_root_controller_class(package_name, tg_config):
+    """Return the root controller class, or None."""
+    root = _config_get(tg_config, 'tg.root_controller') or _config_get(tg_config, 'root_controller')
+    if root is not None:
+        return root if inspect.isclass(root) else root.__class__
 
     root_module = _config_get(tg_config, 'application_root_module')
     if isinstance(root_module, str):
         root_module = _import_optional(root_module)
     if root_module is None and package_name:
         root_module = _import_optional(f'{package_name}.controllers.root')
-    root_class = getattr(root_module, 'RootController', None) if root_module else None
-    if root_class is None:
+    return getattr(root_module, 'RootController', None) if root_module else None
+
+
+def _root_controller_info(project_root, package_name, tg_config):
+    controller_class = _resolve_root_controller_class(package_name, tg_config)
+    if controller_class is None:
+        return {}
+    info = {'class': _class_name(controller_class)}
+    info.update(_source_info(controller_class, project_root))
+    return info
+
+
+def _root_controller_object(package_name, tg_config):
+    controller_class = _resolve_root_controller_class(package_name, tg_config)
+    if controller_class is None:
         return None
     try:
-        return root_class()
+        return controller_class()
     except Exception:
-        return root_class
+        return controller_class
 
 
 def _database_info(tg_config):
@@ -844,20 +832,22 @@ def _pyproject_app_package(project_root):
     if not os.path.isfile(pyproject):
         return None
     try:
-        import tomllib
+        if sys.version_info >= (3, 11):
+            import tomllib
+        else:
+            import tomli as tomllib  # type: ignore
     except ImportError:
-        app_factories = _parse_pyproject_app_factories_without_tomllib(pyproject)
-    else:
-        try:
-            with open(pyproject, 'rb') as handle:
-                data = tomllib.load(handle)
-        except (OSError, tomllib.TOMLDecodeError):
-            return None
-        app_factories = (
-            data.get('project', {})
-            .get('entry-points', {})
-            .get('paste.app_factory', {})
-        )
+        return None
+    try:
+        with open(pyproject, 'rb') as handle:
+            data = tomllib.load(handle)
+    except (OSError, ValueError):
+        return None
+    app_factories = (
+        data.get('project', {})
+        .get('entry-points', {})
+        .get('paste.app_factory', {})
+    )
     if not isinstance(app_factories, dict):
         return None
     for value in ([app_factories.get('main')] + list(app_factories.values())):
@@ -868,57 +858,6 @@ def _pyproject_app_package(project_root):
         if package_name:
             return package_name
     return None
-
-
-def _parse_pyproject_app_factories_without_tomllib(pyproject):
-    try:
-        with open(pyproject, encoding='utf-8') as handle:
-            lines = handle.readlines()
-    except OSError:
-        return {}
-    app_factories = {}
-    in_app_factory_section = False
-    for raw_line in lines:
-        line = raw_line.strip()
-        if not line or line.startswith('#'):
-            continue
-        if line.startswith('['):
-            section = ''.join(line.split('#', 1)[0].split())
-            in_app_factory_section = section in (
-                '[project.entry-points."paste.app_factory"]',
-                "[project.entry-points.'paste.app_factory']",
-            )
-            continue
-        if not in_app_factory_section:
-            continue
-        key, separator, value = line.partition('=')
-        if not separator:
-            continue
-        key = key.strip()
-        if len(key) >= 2 and key[0] in ('"', "'") and key[-1] == key[0]:
-            key = key[1:-1]
-        if not key:
-            continue
-        value = value.strip()
-        if len(value) < 2 or value[0] not in ('"', "'"):
-            continue
-        quote = value[0]
-        chars = []
-        escaped = False
-        for index, char in enumerate(value[1:], 1):
-            if escaped:
-                chars.append(char)
-                escaped = False
-            elif quote == '"' and char == '\\':
-                escaped = True
-            elif char == quote:
-                remainder = value[index + 1:].strip()
-                if not remainder or remainder.startswith('#'):
-                    app_factories[key] = ''.join(chars)
-                break
-            else:
-                chars.append(char)
-    return app_factories
 
 
 def _app_package_containing_model(project_root, module_name):
