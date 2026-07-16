@@ -84,14 +84,14 @@ class _SummarySubcommand:
         with _project_import_context(self.project_root), redirect_stdout(sys.stderr):
             _load_app(self.project_root, self.config)
             tg_config = _tg_config()
-            package_name = _config_get(tg_config, 'package_name')
-            package = _import_optional(package_name) if package_name else None
+            package_name = tg_config.get('package_name')
+            package = importlib.import_module(package_name) if package_name else None
             return {
                 'project_root': self.project_root,
                 'config_file': config_file,
                 'package_name': package_name,
-                'default_renderer': _config_get(tg_config, 'default_renderer'),
-                'renderers': list(_config_get(tg_config, 'renderers', []) or []),
+                'default_renderer': tg_config.get('default_renderer'),
+                'renderers': list(tg_config.get('renderers', []) or []),
                 'paths': self._project_paths(package, tg_config),
                 'root_controller': self._root_controller_info(package_name, tg_config),
                 'database': self._database_info(tg_config),
@@ -145,9 +145,9 @@ class _SummarySubcommand:
 
     def _project_paths(self, package, tg_config):
         paths = {}
-        configured = _config_get(tg_config, 'paths', {}) or {}
+        configured = tg_config.get('paths', {}) or {}
         for key in ('controllers', 'templates'):
-            value = _mapping_get(configured, key)
+            value = configured.get(key)
             if value:
                 paths[key] = self._relative_path_value(value)
 
@@ -166,7 +166,7 @@ class _SummarySubcommand:
         return _relative_path(self.project_root, os.fspath(value))
 
     def _root_controller_info(self, package_name, tg_config):
-        controller_class = _resolve_root_controller_class(package_name, tg_config)
+        controller_class = _root_controller_class(package_name, tg_config)
         if controller_class is None:
             return {}
         info = {'class': _class_name(controller_class)}
@@ -174,52 +174,18 @@ class _SummarySubcommand:
         return info
 
     def _database_info(self, tg_config):
-        use_sqlalchemy = self._as_bool(_config_get(tg_config, 'use_sqlalchemy'))
-        use_ming = self._as_bool(_config_get(tg_config, 'use_ming'))
+        use_sqlalchemy = tg_config.get('use_sqlalchemy')
+        use_ming = tg_config.get('use_ming')
         if use_sqlalchemy is True:
             return {'enabled': True, 'orm': 'sqlalchemy'}
         if use_ming is True:
             return {'enabled': True, 'orm': 'ming'}
         if use_sqlalchemy is False and use_ming is False:
             return {'enabled': False, 'orm': None}
-        if _config_get(tg_config, 'sqlalchemy.url'):
-            return {'enabled': True, 'orm': 'sqlalchemy'}
-        if _config_get(tg_config, 'ming.url'):
-            return {'enabled': True, 'orm': 'ming'}
-        if _config_get(tg_config, 'DBSession') is not None:
-            return {'enabled': True, 'orm': 'unknown'}
         return {'enabled': None, 'orm': None}
 
     def _auth_info(self, tg_config):
-        enabled = self._as_bool(_config_get(tg_config, 'sa_auth.enabled'))
-        if enabled is None:
-            auth_backend = _config_get(tg_config, 'auth_backend')
-            if auth_backend is None and self._config_contains(tg_config, 'auth_backend'):
-                enabled = False
-            elif auth_backend is not None:
-                enabled = True
-            elif _config_get(tg_config, 'sa_auth.authmetadata') is not None:
-                enabled = True
-        return {'enabled': enabled}
-
-    def _config_contains(self, config, key):
-        try:
-            return key in config
-        except TypeError:
-            return hasattr(config, key)
-
-    def _as_bool(self, value):
-        if value is None:
-            return None
-        if isinstance(value, bool):
-            return value
-        if isinstance(value, str):
-            lowered = value.strip().lower()
-            if lowered in ('true', 'yes', 'on', '1'):
-                return True
-            if lowered in ('false', 'no', 'off', '0', 'none'):
-                return False
-        return bool(value)
+        return {'enabled': tg_config.get('sa_auth.enabled')}
 
 
 class _RoutesSubcommand:
@@ -231,7 +197,7 @@ class _RoutesSubcommand:
         with _project_import_context(self.project_root), redirect_stdout(sys.stderr):
             _load_app(self.project_root, self.config)
             tg_config = _tg_config()
-            package_name = _config_get(tg_config, 'package_name')
+            package_name = tg_config.get('package_name')
             root_controller = _root_controller_object(package_name, tg_config)
             if root_controller is None:
                 return []
@@ -285,18 +251,12 @@ class _ModelsSubcommand:
         pyproject = os.path.join(self.project_root, 'pyproject.toml')
         if not os.path.isfile(pyproject):
             return None
-        try:
-            if sys.version_info >= (3, 11):
-                import tomllib
-            else:
-                import tomli as tomllib  # type: ignore
-        except ImportError:
-            return None
-        try:
-            with open(pyproject, 'rb') as handle:
-                data = tomllib.load(handle)
-        except (OSError, ValueError):
-            return None
+        if sys.version_info >= (3, 11):
+            import tomllib
+        else:
+            import tomli as tomllib  # type: ignore
+        with open(pyproject, 'rb') as handle:
+            data = tomllib.load(handle)
         app_factories = (
             data.get('project', {})
             .get('entry-points', {})
@@ -403,7 +363,7 @@ class _TemplatesSubcommand:
         with _project_import_context(self.project_root), redirect_stdout(sys.stderr):
             _load_app(self.project_root, self.config)
             tg_config = _tg_config()
-            package_name = _config_get(tg_config, 'package_name')
+            package_name = tg_config.get('package_name')
             root_controller = _root_controller_object(package_name, tg_config)
             routes = _RouteCollector(self.project_root, tg_config).collect(root_controller) if root_controller is not None else []
             return self._template_rows(tg_config, routes)
@@ -441,11 +401,7 @@ class _TemplatesSubcommand:
         rows = []
         seen = set()
         for template_root in self._template_paths(tg_config):
-            try:
-                walker = os.walk(template_root)
-            except OSError:
-                continue
-            for dirname, _, filenames in walker:
+            for dirname, _, filenames in os.walk(template_root):
                 for filename in filenames:
                     extension = os.path.splitext(filename)[1]
                     renderer = extensions.get(extension)
@@ -470,21 +426,21 @@ class _TemplatesSubcommand:
         return rows
 
     def _template_paths(self, tg_config):
-        configured = _mapping_get(_config_get(tg_config, 'paths', {}) or {}, 'templates')
+        configured = (tg_config.get('paths', {}) or {}).get('templates')
         if configured:
             values = configured if isinstance(configured, (list, tuple, set)) else (configured,)
             return [self._absolute_path(value) for value in values]
-        package_name = _config_get(tg_config, 'package_name')
+        package_name = tg_config.get('package_name')
         if not package_name:
             return []
-        package = _import_optional(package_name)
+        package = importlib.import_module(package_name)
         if not package or not getattr(package, '__file__', None):
             return []
         return [os.path.join(os.path.dirname(os.path.abspath(package.__file__)), 'templates')]
 
     def _recognized_template_extensions(self, tg_config):
         extensions = {}
-        configured_renderers = _config_get(tg_config, 'renderers') or []
+        configured_renderers = tg_config.get('renderers') or []
         standard_renderers = [r for r in configured_renderers if r in _STANDARD_RENDERERS]
         if not standard_renderers:
             standard_renderers = list(_STANDARD_RENDERERS)
@@ -493,7 +449,7 @@ class _TemplatesSubcommand:
         return extensions
 
     def _template_fallback_extensions(self, tg_config, renderer):
-        renderer = renderer or _config_get(tg_config, 'default_renderer')
+        renderer = renderer or tg_config.get('default_renderer')
         if not renderer:
             return tuple(self._recognized_template_extensions(tg_config))
         renderer = str(renderer).lower()
@@ -601,28 +557,36 @@ def _tg_config():
     return tg.config
 
 
-def _resolve_root_controller_class(package_name, tg_config):
-    """Return the root controller class, or None."""
-    root = _config_get(tg_config, 'tg.root_controller') or _config_get(tg_config, 'root_controller')
-    if root is not None:
-        return root if inspect.isclass(root) else root.__class__
+def _root_controller_class(package_name, tg_config):
+    root_controller = tg_config.get('tg.root_controller')
+    if root_controller is not None:
+        return root_controller if inspect.isclass(root_controller) else root_controller.__class__
 
-    root_module = _config_get(tg_config, 'application_root_module')
-    if isinstance(root_module, str):
-        root_module = _import_optional(root_module)
-    if root_module is None and package_name:
-        root_module = _import_optional(f'{package_name}.controllers.root')
-    return getattr(root_module, 'RootController', None) if root_module else None
+    root_module = _root_controller_module(package_name, tg_config)
+    return root_module.RootController if root_module is not None else None
 
 
 def _root_controller_object(package_name, tg_config):
-    controller_class = _resolve_root_controller_class(package_name, tg_config)
-    if controller_class is None:
+    root_controller = tg_config.get('tg.root_controller')
+    if root_controller is not None:
+        return root_controller
+
+    root_module = _root_controller_module(package_name, tg_config)
+    if root_module is None:
         return None
-    try:
-        return controller_class()
-    except Exception:
-        return controller_class
+    root_controller = root_module.RootController
+    return root_controller() if inspect.isclass(root_controller) else root_controller
+
+
+def _root_controller_module(package_name, tg_config):
+    root_module = tg_config.get('application_root_module')
+    if isinstance(root_module, str):
+        return importlib.import_module(root_module)
+    if root_module is not None:
+        return root_module
+    if package_name:
+        return importlib.import_module(f'{package_name}.controllers.root')
+    return None
 
 
 # ---------------------------------------------------------------------------
@@ -645,7 +609,6 @@ class _RouteCollector:
         return self.rows
 
     def _walk(self, controller, segments, active):
-        controller = self._controller_instance(controller)
         if controller is None:
             return
 
@@ -737,7 +700,6 @@ class _RouteCollector:
         return members
 
     def _is_controller(self, value):
-        value = self._controller_instance(value)
         if value is None or isinstance(value, (str, bytes, bytearray, int, float, bool, tuple, list, dict, set)):
             return False
         if self._is_wsgi_controller(value):
@@ -748,14 +710,6 @@ class _RouteCollector:
             if not name.startswith('_') and callable(member) and self._is_exposed(member):
                 return True
         return False
-
-    def _controller_instance(self, value):
-        if inspect.isclass(value):
-            try:
-                return value()
-            except Exception:
-                return None
-        return value
 
     def _is_wsgi_controller(self, value):
         return (
@@ -796,14 +750,6 @@ class _RouteCollector:
         decoration = self._plain_static_member(value, 'decoration')
         if decoration is _MISSING:
             return None
-        expositions = self._plain_static_member(decoration, '_expositions')
-        if expositions is not _MISSING and expositions:
-            resolve = self._plain_static_member(decoration, '_resolve_expositions')
-            if resolve is not _MISSING and callable(resolve):
-                try:
-                    resolve()
-                except Exception:
-                    pass
         return decoration
 
     def _action_path(self, segments, name):
@@ -817,10 +763,7 @@ class _RouteCollector:
     def _params(self, action):
         if action is None:
             return []
-        try:
-            signature = inspect.signature(action)
-        except (TypeError, ValueError):
-            return []
+        signature = inspect.signature(action)
         params = []
         for param in signature.parameters.values():
             if param.name == 'self':
@@ -902,12 +845,7 @@ class _TemplateResolver:
         renderer = (engine or '').lower()
         if renderer not in _STANDARD_RENDERERS:
             return self._unresolved(f"renderer {engine!r} does not expose a standard template filename resolver")
-        if self.finder is None:
-            return self._unresolved('TurboGears dotted filename finder is unavailable')
-        try:
-            path = self.finder.get_dotted_filename(template, self._template_extension(renderer))
-        except Exception as error:
-            return self._unresolved(f'TurboGears dotted filename finder failed: {_safe_text(error)}')
+        path = self.finder.get_dotted_filename(template, self._template_extension(renderer))
         if os.path.isfile(path):
             return {'status': 'resolved', 'file': _relative_path(self.project_root, path), 'reason': None}
         return self._unresolved('TurboGears dotted filename finder returned a missing file')
@@ -916,25 +854,7 @@ class _TemplateResolver:
         return _template_extension(self.tg_config, renderer)
 
     def _dotted_filename_finder(self, tg_config):
-        app_globals = _config_get(tg_config, 'tg.app_globals')
-        finder = self._app_globals_finder(app_globals)
-        if finder is not None:
-            return finder
-        try:
-            from tg.util import DottedFileNameFinder
-        except Exception:
-            return None
-        return DottedFileNameFinder()
-
-    def _app_globals_finder(self, app_globals):
-        if app_globals is None:
-            return None
-        finder = _mapping_get(app_globals, 'dotted_filename_finder')
-        if finder is None:
-            finder = getattr(app_globals, 'dotted_filename_finder', None)
-        if getattr(finder, 'get_dotted_filename', None):
-            return finder
-        return None
+        return tg_config.get('tg.app_globals').dotted_filename_finder
 
     def _not_applicable(self, reason):
         return {'status': 'not_applicable', 'file': None, 'reason': reason}
@@ -950,7 +870,7 @@ class _TemplateResolver:
 
 def _template_extension(tg_config, renderer):
     config_key, default = _STANDARD_RENDERERS[renderer]
-    extension = _config_get(tg_config, config_key, default) if config_key else default
+    extension = tg_config.get(config_key, default) if config_key else default
     if not extension:
         extension = default
     return extension if str(extension).startswith('.') else f'.{extension}'
@@ -991,27 +911,6 @@ def _relative_path(project_root, path):
     if relative.startswith(os.pardir + os.path.sep) or relative == os.pardir:
         return os.path.realpath(os.path.abspath(path))
     return relative.replace(os.path.sep, '/')
-
-
-def _config_get(config, key, default=None):
-    try:
-        return config.get(key, default)
-    except AttributeError:
-        return getattr(config, key, default)
-
-
-def _mapping_get(mapping, key, default=None):
-    try:
-        return mapping.get(key, default)
-    except AttributeError:
-        return default
-
-
-def _import_optional(module_name):
-    try:
-        return importlib.import_module(module_name)
-    except ImportError:
-        return None
 
 
 def _class_name(cls):

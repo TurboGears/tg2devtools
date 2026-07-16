@@ -26,8 +26,6 @@ class FakeDottedFilenameFinder:
         self.project_root = project_root
 
     def get_dotted_filename(self, template_name, template_extension='.html'):
-        if template_name == 'sampleapp.templates.fallback':
-            raise LookupError('finder cannot resolve fallback template')
         package, basename = template_name.rsplit('.', 1)
         return str(self.project_root / Path(package.replace('.', '/')) / f'{basename}{template_extension}')
 

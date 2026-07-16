@@ -184,7 +184,7 @@ class TgInfoSummaryTests(unittest.TestCase):
             'renderers': [],
             'use_sqlalchemy': False,
             'use_ming': False,
-            'auth_backend': None,
+            'sa_auth.enabled': False,
         })
 
         summary = self.run_tginfo('summary')
@@ -200,7 +200,7 @@ class TgInfoSummaryTests(unittest.TestCase):
             'application_root_module': self.root_module,
             'use_sqlalchemy': True,
             'use_ming': False,
-            'auth_backend': None,
+            'sa_auth.enabled': False,
         })
 
         output, _ = self.take_tginfo('summary')

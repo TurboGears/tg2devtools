@@ -200,7 +200,7 @@ class TgInfoRoutesTests(unittest.TestCase):
         stdout, _ = self.take_tginfo(subcommand, '--json')
         return json.loads(stdout)
 
-    def install_fake_tg(self):
+    def install_fake_tg(self, root_controller=None):
         tg = types.ModuleType('tg')
         self.dotted_finder = FakeDottedFilenameFinder(self.project_root)
         tg.config = {
@@ -211,6 +211,8 @@ class TgInfoRoutesTests(unittest.TestCase):
             'renderers': ['json', 'kajiki', 'mako', 'jinja', 'genshi'],
             'tg.app_globals': types.SimpleNamespace(dotted_filename_finder=self.dotted_finder),
         }
+        if root_controller is not None:
+            tg.config['tg.root_controller'] = root_controller
         sys.modules['tg'] = tg
 
         paste = types.ModuleType('paste')
@@ -407,6 +409,20 @@ class TgInfoRoutesTests(unittest.TestCase):
         self.assertIn('/secc/* [dynamic_default] sampleapp.controllers.root.SecureController._default', output)
         self.assertTrue(output.endswith('\n'))
         self.assertFalse(output.endswith('\n\n'))
+
+    def test_routes_inspects_explicit_root_controller_instance(self):
+        root_controller = self.root_module.RootController()
+        root_controller.instance_mount = self.root_module.SecureController()
+        self.install_fake_tg(root_controller)
+
+        routes = self.run_tginfo('routes')
+
+        by_path_action = {(row['path'], row['action']): row for row in routes}
+        self.assertIn(('/instance_mount/', 'index'), by_path_action)
+        self.assertEqual(
+            by_path_action[('/instance_mount/', 'index')]['controller'],
+            'sampleapp.controllers.root.SecureController',
+        )
 
     def test_route_metadata_uses_static_attributes_without_calling_descriptors(self):
         side_effects = []
