@@ -31,12 +31,11 @@ class TestQuickstartAgentHint(unittest.TestCase):
 
                     project_dir = os.path.join(temp_dir, project_dir_name)
                     expected_hint = (
-                        'To enable TurboGears-aware coding agents for this project, run: '
+                        'To enable TurboGears-aware coding agents for this project, run:\n'
                         'cd %s; gearbox tgskills' % hint_dir
                     )
                     output_lines = stdout.getvalue().rstrip().splitlines()
-                    # The hint should be the last line
-                    self.assertEqual(expected_hint, output_lines[-1])
+                    self.assertEqual(expected_hint, '\n'.join(output_lines[-2:]))
                     
                     # AGENTS.md should be generated from template
                     agents_md_path = os.path.join(project_dir, 'AGENTS.md')

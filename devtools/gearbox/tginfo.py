@@ -32,6 +32,11 @@ class TgInfoCommand(Command):
                              help='application config file to read (default: development.ini)')
             sub.add_argument('--json', action='store_true', dest='as_json',
                              help='emit JSON output')
+
+        app_args = getattr(self, 'app_args', None)
+        help_args = getattr(app_args, 'cmd', ())
+        if getattr(app_args, 'help', False) and help_args:
+            return subparsers.choices.get(help_args[0], parser)
         return parser
 
     def take_action(self, opts):
@@ -232,32 +237,27 @@ class _ScaffoldsSubcommand:
         self.project_root = os.path.realpath(os.path.abspath(os.path.expanduser(project)))
 
     def collect(self):
-        try:
-            import gearbox.scaffolding as scaffolding
-        except ImportError as error:
-            if getattr(error, 'name', None) in ('gearbox', 'gearbox.scaffolding'):
-                return []
-            raise
-        discover_scaffold_templates = getattr(scaffolding, 'discover_scaffold_templates', None)
-        if discover_scaffold_templates is None:
-            return []
         rows = []
-        for template in discover_scaffold_templates(self.project_root):
-            relative_dir = getattr(template, 'relative_dir', '.') or '.'
-            relative_dir = relative_dir.replace(os.path.sep, '/')
-            output_extension = getattr(template, 'output_extension', '') or ''
-            default_output_pattern = (
-                f'{relative_dir}/{{target}}{output_extension}' if relative_dir != '.'
-                else f'{{target}}{output_extension}'
-            )
-            rows.append({
-                'name': getattr(template, 'name', None),
-                'template_path': _relative_path(self.project_root, getattr(template, 'path', '')),
-                'relative_dir': relative_dir,
-                'output_extension': output_extension,
-                'default_output_pattern': default_output_pattern,
-            })
-        return rows
+        for directory, _, filenames in os.walk(self.project_root):
+            for filename in filenames:
+                if not filename.endswith('.template'):
+                    continue
+                template_name = filename[:-len('.template')]
+                name, output_extension = os.path.splitext(template_name)
+                path = os.path.join(directory, filename)
+                relative_dir = _relative_path(self.project_root, directory)
+                default_output_pattern = (
+                    f'{relative_dir}/{{target}}{output_extension}' if relative_dir != '.'
+                    else f'{{target}}{output_extension}'
+                )
+                rows.append({
+                    'name': name,
+                    'template_path': _relative_path(self.project_root, path),
+                    'relative_dir': relative_dir,
+                    'output_extension': output_extension,
+                    'default_output_pattern': default_output_pattern,
+                })
+        return sorted(rows, key=lambda row: row['template_path'])
 
     def format(self, scaffolds):
         if not scaffolds:

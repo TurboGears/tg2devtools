@@ -65,7 +65,6 @@ class TgInfoQuickstartCommandTests(unittest.TestCase):
         self.load_calls = []
         self.runtime_requests = []
         self.database_writes = []
-        self.scaffold_lookup_calls = []
         self.old_module_names = set(sys.modules)
         self.replaced_modules = {
             name: sys.modules.get(name)
@@ -75,7 +74,6 @@ class TgInfoQuickstartCommandTests(unittest.TestCase):
                 'paste.deploy',
                 'gearbox',
                 'gearbox.command',
-                'gearbox.scaffolding',
                 'devtools.gearbox.tginfo',
                 'quickstart_db_sentinel',
             )
@@ -179,10 +177,9 @@ class TgInfoQuickstartCommandTests(unittest.TestCase):
         self.assertEqual(by_template['quickstartapp/templates/about.xhtml']['exposed_by'], ['/about'])
         self.assertEqual(by_template['quickstartapp/templates/unlinked.xhtml']['exposed_by'], [])
 
-        self.assertEqual(self.scaffold_lookup_calls, [str(self.project_root)])
         self.assertEqual(scaffolds, [{
             'name': 'controller',
-            'template_path': 'quickstartapp/scaffolds/controller.py.template',
+            'template_path': 'quickstartapp/controllers/controller.py.template',
             'relative_dir': 'quickstartapp/controllers',
             'output_extension': '.py',
             'default_output_pattern': 'quickstartapp/controllers/{target}.py',
@@ -297,7 +294,7 @@ class TgInfoQuickstartCommandTests(unittest.TestCase):
         '''))
         for template in ('index', 'about', 'data', 'secure', 'unlinked'):
             (package / 'templates' / f'{template}.xhtml').write_text('<html />')
-        (package / 'scaffolds' / 'controller.py.template').write_text('controller scaffold')
+        (package / 'controllers' / 'controller.py.template').write_text('controller scaffold')
 
     def _decorate_controllers(self):
         root = self.root_module.RootController
@@ -357,7 +354,6 @@ class TgInfoQuickstartCommandTests(unittest.TestCase):
 
         gearbox = types.ModuleType('gearbox')
         command = types.ModuleType('gearbox.command')
-        scaffolding = types.ModuleType('gearbox.scaffolding')
 
         class Command(object):
             def __init__(self, *args, **kwargs):
@@ -366,26 +362,14 @@ class TgInfoQuickstartCommandTests(unittest.TestCase):
             def get_parser(self, prog_name):
                 return argparse.ArgumentParser(prog=prog_name)
 
-        def discover_scaffold_templates(project_root):
-            self.scaffold_lookup_calls.append(project_root)
-            return (types.SimpleNamespace(
-                name='controller',
-                path=str(self.project_root / 'quickstartapp' / 'scaffolds' / 'controller.py.template'),
-                relative_dir='quickstartapp/controllers',
-                output_extension='.py',
-            ),)
-
         command.Command = Command
-        scaffolding.discover_scaffold_templates = discover_scaffold_templates
         gearbox.command = command
-        gearbox.scaffolding = scaffolding
         sys.modules.update({
             'tg': tg,
             'paste': paste,
             'paste.deploy': deploy,
             'gearbox': gearbox,
             'gearbox.command': command,
-            'gearbox.scaffolding': scaffolding,
         })
 
 

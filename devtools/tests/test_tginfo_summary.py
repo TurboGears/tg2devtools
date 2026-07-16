@@ -9,8 +9,6 @@ import textwrap
 import types
 import unittest
 from pathlib import Path
-from unittest.mock import patch
-
 from devtools.gearbox.tginfo import TgInfoCommand
 
 class TgInfoSummaryTests(unittest.TestCase):
@@ -215,35 +213,16 @@ class TgInfoSummaryTests(unittest.TestCase):
         for forbidden in ('count', 'pyproject', 'recipe', 'next step', 'agent playbook'):
             self.assertNotIn(forbidden, output.lower())
 
-    def test_scaffolds_collects_gearbox_discovery_metadata_without_loading_app(self):
+    def test_scaffolds_lists_project_templates_without_loading_app(self):
         scaffold_dir = self.project_root / 'controllers'
         scaffold_dir.mkdir()
         template_file = scaffold_dir / 'controller.py.template'
         template_file.write_text('controller scaffold')
-        calls = []
         load_calls = self.install_fake_tg({'package_name': 'sampleapp'})
-        gearbox = types.ModuleType('gearbox')
-        scaffolding = types.ModuleType('gearbox.scaffolding')
 
-        def discover_scaffold_templates(lookup):
-            calls.append(lookup)
-            return (
-                types.SimpleNamespace(
-                    name='controller',
-                    path=str(template_file),
-                    relative_dir='controllers',
-                    output_extension='.py',
-                ),
-            )
+        scaffolds = self.run_tginfo('scaffolds')
+        output, _ = self.take_tginfo('scaffolds')
 
-        scaffolding.discover_scaffold_templates = discover_scaffold_templates
-        gearbox.scaffolding = scaffolding
-
-        with patch.dict(sys.modules, {'gearbox': gearbox, 'gearbox.scaffolding': scaffolding}):
-            scaffolds = self.run_tginfo('scaffolds')
-            output, _ = self.take_tginfo('scaffolds')
-
-        self.assertEqual(calls, [str(self.project_root), str(self.project_root)])
         self.assertEqual(load_calls, [])
         self.assertEqual(scaffolds, [{
             'name': 'controller',
@@ -272,6 +251,16 @@ class TgInfoCommandTests(unittest.TestCase):
         with contextlib.redirect_stderr(io.StringIO()):
             with self.assertRaises(SystemExit):
                 parser.parse_args(['all'])
+
+    def test_gearbox_help_returns_the_requested_subcommand_parser(self):
+        app_args = types.SimpleNamespace(help=True, cmd=['summary'])
+        parser = TgInfoCommand(None, app_args).get_parser('gearbox tginfo')
+        help_text = parser.format_help()
+
+        self.assertIn('usage: gearbox tginfo summary', help_text)
+        self.assertIn('--project PROJECT', help_text)
+        self.assertIn('--config CONFIG_FILE', help_text)
+        self.assertIn('--json', help_text)
 
 
 
