@@ -58,7 +58,7 @@ class TgInfoCommand(Command):
 # Module-level constants
 # ---------------------------------------------------------------------------
 
-_STANDARD_TEMPLATE_RENDERERS = {
+_STANDARD_RENDERERS = {
     'kajiki': ('templating.kajiki.template_extension', '.xhtml'),
     'mako': ('templating.mako.template_extension', '.mak'),
     'jinja': (None, '.jinja'),
@@ -66,8 +66,6 @@ _STANDARD_TEMPLATE_RENDERERS = {
     'genshi': (None, '.html'),
 }
 
-_DISPATCH_PRIVATE_NAMES = {'_lookup', '_default'}
-_IGNORED_PRIVATE_NAMES = {'_before', '_after', '_visit'}
 _MISSING = object()
 
 
@@ -82,7 +80,7 @@ class _SummarySubcommand:
         self.config = config
 
     def collect(self):
-        config_file = _resolve_config_file(self.project_root, self.config)
+        config_file = self._resolve_config_file(self.config)
         with _project_import_context(self.project_root), redirect_stdout(sys.stderr):
             _load_app(self.project_root, self.config)
             tg_config = _tg_config()
@@ -94,10 +92,10 @@ class _SummarySubcommand:
                 'package_name': package_name,
                 'default_renderer': _config_get(tg_config, 'default_renderer'),
                 'renderers': list(_config_get(tg_config, 'renderers', []) or []),
-                'paths': _project_paths(self.project_root, package, tg_config),
-                'root_controller': _root_controller_info(self.project_root, package_name, tg_config),
-                'database': _database_info(tg_config),
-                'auth': _auth_info(tg_config),
+                'paths': self._project_paths(package, tg_config),
+                'root_controller': self._root_controller_info(package_name, tg_config),
+                'database': self._database_info(tg_config),
+                'auth': self._auth_info(tg_config),
             }
 
     def format(self, summary):
@@ -139,6 +137,90 @@ class _SummarySubcommand:
         lines.append(f'Auth: {auth_text}')
         return '\n'.join(lines)
 
+    def _resolve_config_file(self, config):
+        path = os.path.expanduser(config)
+        if not os.path.isabs(path):
+            path = os.path.join(self.project_root, path)
+        return os.path.realpath(os.path.abspath(path))
+
+    def _project_paths(self, package, tg_config):
+        paths = {}
+        configured = _config_get(tg_config, 'paths', {}) or {}
+        for key in ('controllers', 'templates'):
+            value = _mapping_get(configured, key)
+            if value:
+                paths[key] = self._relative_path_value(value)
+
+        if package and getattr(package, '__file__', None):
+            package_dir = os.path.dirname(os.path.abspath(package.__file__))
+            for key, dirname in (('controllers', 'controllers'), ('model', 'model'), ('templates', 'templates')):
+                if key not in paths:
+                    candidate = os.path.join(package_dir, dirname)
+                    if os.path.isdir(candidate):
+                        paths[key] = _relative_path(self.project_root, candidate)
+        return paths
+
+    def _relative_path_value(self, value):
+        if isinstance(value, (list, tuple, set)):
+            return [self._relative_path_value(item) for item in value]
+        return _relative_path(self.project_root, os.fspath(value))
+
+    def _root_controller_info(self, package_name, tg_config):
+        controller_class = _resolve_root_controller_class(package_name, tg_config)
+        if controller_class is None:
+            return {}
+        info = {'class': _class_name(controller_class)}
+        info.update(_source_info(controller_class, self.project_root))
+        return info
+
+    def _database_info(self, tg_config):
+        use_sqlalchemy = self._as_bool(_config_get(tg_config, 'use_sqlalchemy'))
+        use_ming = self._as_bool(_config_get(tg_config, 'use_ming'))
+        if use_sqlalchemy is True:
+            return {'enabled': True, 'orm': 'sqlalchemy'}
+        if use_ming is True:
+            return {'enabled': True, 'orm': 'ming'}
+        if use_sqlalchemy is False and use_ming is False:
+            return {'enabled': False, 'orm': None}
+        if _config_get(tg_config, 'sqlalchemy.url'):
+            return {'enabled': True, 'orm': 'sqlalchemy'}
+        if _config_get(tg_config, 'ming.url'):
+            return {'enabled': True, 'orm': 'ming'}
+        if _config_get(tg_config, 'DBSession') is not None:
+            return {'enabled': True, 'orm': 'unknown'}
+        return {'enabled': None, 'orm': None}
+
+    def _auth_info(self, tg_config):
+        enabled = self._as_bool(_config_get(tg_config, 'sa_auth.enabled'))
+        if enabled is None:
+            auth_backend = _config_get(tg_config, 'auth_backend')
+            if auth_backend is None and self._config_contains(tg_config, 'auth_backend'):
+                enabled = False
+            elif auth_backend is not None:
+                enabled = True
+            elif _config_get(tg_config, 'sa_auth.authmetadata') is not None:
+                enabled = True
+        return {'enabled': enabled}
+
+    def _config_contains(self, config, key):
+        try:
+            return key in config
+        except TypeError:
+            return hasattr(config, key)
+
+    def _as_bool(self, value):
+        if value is None:
+            return None
+        if isinstance(value, bool):
+            return value
+        if isinstance(value, str):
+            lowered = value.strip().lower()
+            if lowered in ('true', 'yes', 'on', '1'):
+                return True
+            if lowered in ('false', 'no', 'off', '0', 'none'):
+                return False
+        return bool(value)
+
 
 class _RoutesSubcommand:
     def __init__(self, project, config):
@@ -173,14 +255,14 @@ class _ModelsSubcommand:
         self.project_root = os.path.realpath(os.path.abspath(os.path.expanduser(project)))
 
     def collect(self):
-        package_name = _project_package_for_models(self.project_root)
+        package_name = self._project_package_for_models()
         if not package_name:
             return []
         with _project_import_context(self.project_root), redirect_stdout(sys.stderr):
-            model_package = _import_project_model_package(f'{package_name}.model')
+            model_package = self._import_project_model_package(f'{package_name}.model')
             if model_package is None:
                 return []
-            return _model_rows(self.project_root, model_package)
+            return self._model_rows(model_package)
 
     def format(self, models):
         if not models:
@@ -192,6 +274,124 @@ class _ModelsSubcommand:
                 target = f"{target} ({row['source']})"
             lines.append(f"{row.get('name') or 'unknown'} [{row.get('orm') or 'unknown'}] {target}")
         return '\n'.join(lines)
+
+    def _project_package_for_models(self):
+        package_name = self._pyproject_app_package()
+        if package_name:
+            return package_name
+        return self._unique_top_level_model_package()
+
+    def _pyproject_app_package(self):
+        pyproject = os.path.join(self.project_root, 'pyproject.toml')
+        if not os.path.isfile(pyproject):
+            return None
+        try:
+            if sys.version_info >= (3, 11):
+                import tomllib
+            else:
+                import tomli as tomllib  # type: ignore
+        except ImportError:
+            return None
+        try:
+            with open(pyproject, 'rb') as handle:
+                data = tomllib.load(handle)
+        except (OSError, ValueError):
+            return None
+        app_factories = (
+            data.get('project', {})
+            .get('entry-points', {})
+            .get('paste.app_factory', {})
+        )
+        if not isinstance(app_factories, dict):
+            return None
+        for value in ([app_factories.get('main')] + list(app_factories.values())):
+            if not isinstance(value, str):
+                continue
+            module_name = value.split(':', 1)[0].split('[', 1)[0].strip()
+            package_name = self._app_package_containing_model(module_name)
+            if package_name:
+                return package_name
+        return None
+
+    def _app_package_containing_model(self, module_name):
+        parts = module_name.split('.')
+        if not parts or any(not part.isidentifier() for part in parts):
+            return None
+        for end in range(len(parts), 0, -1):
+            model_init = os.path.join(self.project_root, *parts[:end], 'model', '__init__.py')
+            if os.path.isfile(model_init):
+                return '.'.join(parts[:end])
+        return None
+
+    def _unique_top_level_model_package(self):
+        candidates = []
+        try:
+            entries = os.scandir(self.project_root)
+        except OSError:
+            return None
+        with entries:
+            for entry in entries:
+                if not entry.is_dir() or not entry.name.isidentifier():
+                    continue
+                if (
+                    os.path.isfile(os.path.join(entry.path, '__init__.py'))
+                    and os.path.isfile(os.path.join(entry.path, 'model', '__init__.py'))
+                ):
+                    candidates.append(entry.name)
+        return candidates[0] if len(candidates) == 1 else None
+
+    def _import_project_model_package(self, module_name):
+        try:
+            return importlib.import_module(module_name)
+        except ImportError as error:
+            if getattr(error, 'name', None) == module_name:
+                return None
+            raise
+
+    def _model_rows(self, model_package):
+        model_package_name = model_package.__name__
+        exports = getattr(model_package, '__all__', _MISSING)
+        if exports is _MISSING:
+            candidates = ((n, v) for n, v in vars(model_package).items() if not n.startswith('_'))
+        else:
+            export_names = (exports,) if isinstance(exports, str) else tuple(exports) if hasattr(exports, '__iter__') else ()
+            candidates = (
+                (n, getattr(model_package, n, _MISSING))
+                for n in export_names if isinstance(n, str)
+            )
+        rows = []
+        for name, value in candidates:
+            if value is _MISSING or not inspect.isclass(value):
+                continue
+            module = getattr(value, '__module__', '')
+            if module != model_package_name and not module.startswith(f'{model_package_name}.'):
+                continue
+            source = _source_info(value, self.project_root).get('source')
+            rows.append({
+                'name': name,
+                'class': _class_name(value),
+                'module': module,
+                'source': source,
+                'orm': self._model_orm(value),
+                'docstring': inspect.getdoc(value),
+            })
+        rows.sort(key=lambda row: (row['name'], row['class']))
+        return rows
+
+    def _model_orm(self, cls):
+        if self._static_attr(cls, '__mongometa__') is not _MISSING:
+            return 'ming'
+        if self._static_attr(cls, '__mapper__') is not _MISSING or self._static_attr(cls, '__table__') is not _MISSING:
+            return 'sqlalchemy'
+        if self._static_attr(cls, '__tablename__') is not _MISSING and self._static_attr(cls, 'metadata') is not _MISSING:
+            return 'sqlalchemy'
+        return 'unknown'
+
+    def _static_attr(self, value, name):
+        try:
+            return inspect.getattr_static(value, name)
+        except AttributeError:
+            return _MISSING
 
 
 class _TemplatesSubcommand:
@@ -206,7 +406,7 @@ class _TemplatesSubcommand:
             package_name = _config_get(tg_config, 'package_name')
             root_controller = _root_controller_object(package_name, tg_config)
             routes = _RouteCollector(self.project_root, tg_config).collect(root_controller) if root_controller is not None else []
-            return _template_rows(self.project_root, tg_config, routes)
+            return self._template_rows(tg_config, routes)
 
     def format(self, templates):
         if not templates:
@@ -221,6 +421,100 @@ class _TemplatesSubcommand:
                 f"{name} exposed by {backlinks}"
             )
         return '\n'.join(lines)
+
+    def _template_rows(self, tg_config, routes):
+        extensions = self._recognized_template_extensions(tg_config)
+        exposed_by_file = {}
+        exposed_by_name_extension = {}
+        for route in routes:
+            for expose in route.get('exposes') or []:
+                path = expose.get('template_file')
+                if path:
+                    exposed_by_file.setdefault(path, set()).add(route['path'])
+                    continue
+                name = expose.get('template')
+                if not name:
+                    continue
+                for extension in self._template_fallback_extensions(tg_config, expose.get('renderer')):
+                    exposed_by_name_extension.setdefault((name, extension), set()).add(route['path'])
+
+        rows = []
+        seen = set()
+        for template_root in self._template_paths(tg_config):
+            try:
+                walker = os.walk(template_root)
+            except OSError:
+                continue
+            for dirname, _, filenames in walker:
+                for filename in filenames:
+                    extension = os.path.splitext(filename)[1]
+                    renderer = extensions.get(extension)
+                    if renderer is None:
+                        continue
+                    path = os.path.join(dirname, filename)
+                    relative_file = _relative_path(self.project_root, path)
+                    if relative_file in seen:
+                        continue
+                    seen.add(relative_file)
+                    name = self._template_dotted_name(path)
+                    exposed_by = set(exposed_by_file.get(relative_file, ()))
+                    if name:
+                        exposed_by.update(exposed_by_name_extension.get((name, extension), ()))
+                    rows.append({
+                        'name': name,
+                        'file': relative_file,
+                        'renderer': renderer,
+                        'exposed_by': sorted(exposed_by),
+                    })
+        rows.sort(key=lambda row: row['file'])
+        return rows
+
+    def _template_paths(self, tg_config):
+        configured = _mapping_get(_config_get(tg_config, 'paths', {}) or {}, 'templates')
+        if configured:
+            values = configured if isinstance(configured, (list, tuple, set)) else (configured,)
+            return [self._absolute_path(value) for value in values]
+        package_name = _config_get(tg_config, 'package_name')
+        if not package_name:
+            return []
+        package = _import_optional(package_name)
+        if not package or not getattr(package, '__file__', None):
+            return []
+        return [os.path.join(os.path.dirname(os.path.abspath(package.__file__)), 'templates')]
+
+    def _recognized_template_extensions(self, tg_config):
+        extensions = {}
+        configured_renderers = _config_get(tg_config, 'renderers') or []
+        standard_renderers = [r for r in configured_renderers if r in _STANDARD_RENDERERS]
+        if not standard_renderers:
+            standard_renderers = list(_STANDARD_RENDERERS)
+        for renderer in standard_renderers:
+            extensions.setdefault(_template_extension(tg_config, renderer), renderer)
+        return extensions
+
+    def _template_fallback_extensions(self, tg_config, renderer):
+        renderer = renderer or _config_get(tg_config, 'default_renderer')
+        if not renderer:
+            return tuple(self._recognized_template_extensions(tg_config))
+        renderer = str(renderer).lower()
+        if renderer in _STANDARD_RENDERERS:
+            return (_template_extension(tg_config, renderer),)
+        return ()
+
+    def _template_dotted_name(self, path):
+        relative = _relative_path(self.project_root, os.path.splitext(path)[0])
+        if os.path.isabs(relative):
+            return None
+        parts = relative.split('/')
+        if not parts or any(not part.isidentifier() for part in parts):
+            return None
+        return '.'.join(parts)
+
+    def _absolute_path(self, path):
+        path = os.fspath(path)
+        if not os.path.isabs(path):
+            path = os.path.join(self.project_root, path)
+        return os.path.realpath(os.path.abspath(path))
 
 
 class _ScaffoldsSubcommand:
@@ -302,34 +596,9 @@ def _load_app(project_root, config):
 # ---------------------------------------------------------------------------
 
 
-def _resolve_config_file(project_root, config):
-    path = os.path.expanduser(config)
-    if not os.path.isabs(path):
-        path = os.path.join(project_root, path)
-    return os.path.realpath(os.path.abspath(path))
-
-
 def _tg_config():
     import tg
     return tg.config
-
-
-def _project_paths(project_root, package, tg_config):
-    paths = {}
-    configured = _config_get(tg_config, 'paths', {}) or {}
-    for key in ('controllers', 'templates'):
-        value = _mapping_get(configured, key)
-        if value:
-            paths[key] = _relative_path_value(project_root, value)
-
-    if package and getattr(package, '__file__', None):
-        package_dir = os.path.dirname(os.path.abspath(package.__file__))
-        for key, dirname in (('controllers', 'controllers'), ('model', 'model'), ('templates', 'templates')):
-            if key not in paths:
-                candidate = os.path.join(package_dir, dirname)
-                if os.path.isdir(candidate):
-                    paths[key] = _relative_path(project_root, candidate)
-    return paths
 
 
 def _resolve_root_controller_class(package_name, tg_config):
@@ -346,15 +615,6 @@ def _resolve_root_controller_class(package_name, tg_config):
     return getattr(root_module, 'RootController', None) if root_module else None
 
 
-def _root_controller_info(project_root, package_name, tg_config):
-    controller_class = _resolve_root_controller_class(package_name, tg_config)
-    if controller_class is None:
-        return {}
-    info = {'class': _class_name(controller_class)}
-    info.update(_source_info(controller_class, project_root))
-    return info
-
-
 def _root_controller_object(package_name, tg_config):
     controller_class = _resolve_root_controller_class(package_name, tg_config)
     if controller_class is None:
@@ -365,43 +625,15 @@ def _root_controller_object(package_name, tg_config):
         return controller_class
 
 
-def _database_info(tg_config):
-    use_sqlalchemy = _as_bool(_config_get(tg_config, 'use_sqlalchemy'))
-    use_ming = _as_bool(_config_get(tg_config, 'use_ming'))
-    if use_sqlalchemy is True:
-        return {'enabled': True, 'orm': 'sqlalchemy'}
-    if use_ming is True:
-        return {'enabled': True, 'orm': 'ming'}
-    if use_sqlalchemy is False and use_ming is False:
-        return {'enabled': False, 'orm': None}
-    if _config_get(tg_config, 'sqlalchemy.url'):
-        return {'enabled': True, 'orm': 'sqlalchemy'}
-    if _config_get(tg_config, 'ming.url'):
-        return {'enabled': True, 'orm': 'ming'}
-    if _config_get(tg_config, 'DBSession') is not None:
-        return {'enabled': True, 'orm': 'unknown'}
-    return {'enabled': None, 'orm': None}
-
-
-def _auth_info(tg_config):
-    enabled = _as_bool(_config_get(tg_config, 'sa_auth.enabled'))
-    if enabled is None:
-        auth_backend = _config_get(tg_config, 'auth_backend')
-        if auth_backend is None and _config_contains(tg_config, 'auth_backend'):
-            enabled = False
-        elif auth_backend is not None:
-            enabled = True
-        elif _config_get(tg_config, 'sa_auth.authmetadata') is not None:
-            enabled = True
-    return {'enabled': enabled}
-
-
 # ---------------------------------------------------------------------------
 # Route collection
 # ---------------------------------------------------------------------------
 
 
 class _RouteCollector:
+    _DISPATCH_PRIVATE_NAMES = {'_lookup', '_default'}
+    _IGNORED_PRIVATE_NAMES = {'_before', '_after', '_visit'}
+
     def __init__(self, project_root, tg_config):
         self.project_root = project_root
         self.template_resolver = _TemplateResolver(project_root, tg_config)
@@ -427,7 +659,7 @@ class _RouteCollector:
                 return
 
             for name, value in self._dispatch_members(controller):
-                if name in _IGNORED_PRIVATE_NAMES:
+                if name in self._IGNORED_PRIVATE_NAMES:
                     continue
 
                 if name == '_lookup':
@@ -511,7 +743,7 @@ class _RouteCollector:
         if self._is_wsgi_controller(value):
             return True
         for name, member in self._dispatch_members(value):
-            if name in _DISPATCH_PRIVATE_NAMES and callable(member):
+            if name in self._DISPATCH_PRIVATE_NAMES and callable(member):
                 return True
             if not name.startswith('_') and callable(member) and self._is_exposed(member):
                 return True
@@ -668,7 +900,7 @@ class _TemplateResolver:
         if not template:
             return self._not_applicable('exposure has no template')
         renderer = (engine or '').lower()
-        if renderer not in _STANDARD_TEMPLATE_RENDERERS:
+        if renderer not in _STANDARD_RENDERERS:
             return self._unresolved(f"renderer {engine!r} does not expose a standard template filename resolver")
         if self.finder is None:
             return self._unresolved('TurboGears dotted filename finder is unavailable')
@@ -712,233 +944,16 @@ class _TemplateResolver:
 
 
 # ---------------------------------------------------------------------------
-# Template collection
+# Template resolution
 # ---------------------------------------------------------------------------
 
 
-def _template_rows(project_root, tg_config, routes):
-    extensions = _recognized_template_extensions(tg_config)
-    exposed_by_file = {}
-    exposed_by_name_extension = {}
-    for route in routes:
-        for expose in route.get('exposes') or []:
-            path = expose.get('template_file')
-            if path:
-                exposed_by_file.setdefault(path, set()).add(route['path'])
-                continue
-            name = expose.get('template')
-            if not name:
-                continue
-            for extension in _template_fallback_extensions(tg_config, expose.get('renderer')):
-                exposed_by_name_extension.setdefault((name, extension), set()).add(route['path'])
-
-    rows = []
-    seen = set()
-    for template_root in _template_paths(project_root, tg_config):
-        try:
-            walker = os.walk(template_root)
-        except OSError:
-            continue
-        for dirname, _, filenames in walker:
-            for filename in filenames:
-                extension = os.path.splitext(filename)[1]
-                renderer = extensions.get(extension)
-                if renderer is None:
-                    continue
-                path = os.path.join(dirname, filename)
-                relative_file = _relative_path(project_root, path)
-                if relative_file in seen:
-                    continue
-                seen.add(relative_file)
-                name = _template_dotted_name(project_root, path)
-                exposed_by = set(exposed_by_file.get(relative_file, ()))
-                if name:
-                    exposed_by.update(exposed_by_name_extension.get((name, extension), ()))
-                rows.append({
-                    'name': name,
-                    'file': relative_file,
-                    'renderer': renderer,
-                    'exposed_by': sorted(exposed_by),
-                })
-    rows.sort(key=lambda row: row['file'])
-    return rows
-
-
-def _template_paths(project_root, tg_config):
-    configured = _mapping_get(_config_get(tg_config, 'paths', {}) or {}, 'templates')
-    if configured:
-        values = configured if isinstance(configured, (list, tuple, set)) else (configured,)
-        return [_absolute_path(project_root, value) for value in values]
-    package_name = _config_get(tg_config, 'package_name')
-    if not package_name:
-        return []
-    package = _import_optional(package_name)
-    if not package or not getattr(package, '__file__', None):
-        return []
-    return [os.path.join(os.path.dirname(os.path.abspath(package.__file__)), 'templates')]
-
-
-def _recognized_template_extensions(tg_config):
-    extensions = {}
-    configured_renderers = _config_get(tg_config, 'renderers') or []
-    standard_renderers = [r for r in configured_renderers if r in _STANDARD_TEMPLATE_RENDERERS]
-    if not standard_renderers:
-        standard_renderers = list(_STANDARD_TEMPLATE_RENDERERS)
-    for renderer in standard_renderers:
-        extensions.setdefault(_template_extension(tg_config, renderer), renderer)
-    return extensions
-
-
-def _template_fallback_extensions(tg_config, renderer):
-    renderer = renderer or _config_get(tg_config, 'default_renderer')
-    if not renderer:
-        return tuple(_recognized_template_extensions(tg_config))
-    renderer = str(renderer).lower()
-    if renderer in _STANDARD_TEMPLATE_RENDERERS:
-        return (_template_extension(tg_config, renderer),)
-    return ()
-
-
 def _template_extension(tg_config, renderer):
-    config_key, default = _STANDARD_TEMPLATE_RENDERERS[renderer]
+    config_key, default = _STANDARD_RENDERERS[renderer]
     extension = _config_get(tg_config, config_key, default) if config_key else default
     if not extension:
         extension = default
     return extension if str(extension).startswith('.') else f'.{extension}'
-
-
-def _template_dotted_name(project_root, path):
-    relative = _relative_path(project_root, os.path.splitext(path)[0])
-    if os.path.isabs(relative):
-        return None
-    parts = relative.split('/')
-    if not parts or any(not part.isidentifier() for part in parts):
-        return None
-    return '.'.join(parts)
-
-
-# ---------------------------------------------------------------------------
-# Model collection
-# ---------------------------------------------------------------------------
-
-
-def _project_package_for_models(project_root):
-    package_name = _pyproject_app_package(project_root)
-    if package_name:
-        return package_name
-    return _unique_top_level_model_package(project_root)
-
-
-def _pyproject_app_package(project_root):
-    pyproject = os.path.join(project_root, 'pyproject.toml')
-    if not os.path.isfile(pyproject):
-        return None
-    try:
-        if sys.version_info >= (3, 11):
-            import tomllib
-        else:
-            import tomli as tomllib  # type: ignore
-    except ImportError:
-        return None
-    try:
-        with open(pyproject, 'rb') as handle:
-            data = tomllib.load(handle)
-    except (OSError, ValueError):
-        return None
-    app_factories = (
-        data.get('project', {})
-        .get('entry-points', {})
-        .get('paste.app_factory', {})
-    )
-    if not isinstance(app_factories, dict):
-        return None
-    for value in ([app_factories.get('main')] + list(app_factories.values())):
-        if not isinstance(value, str):
-            continue
-        module_name = value.split(':', 1)[0].split('[', 1)[0].strip()
-        package_name = _app_package_containing_model(project_root, module_name)
-        if package_name:
-            return package_name
-    return None
-
-
-def _app_package_containing_model(project_root, module_name):
-    parts = module_name.split('.')
-    if not parts or any(not part.isidentifier() for part in parts):
-        return None
-    for end in range(len(parts), 0, -1):
-        model_init = os.path.join(project_root, *parts[:end], 'model', '__init__.py')
-        if os.path.isfile(model_init):
-            return '.'.join(parts[:end])
-    return None
-
-
-def _unique_top_level_model_package(project_root):
-    candidates = []
-    try:
-        entries = os.scandir(project_root)
-    except OSError:
-        return None
-    with entries:
-        for entry in entries:
-            if not entry.is_dir() or not entry.name.isidentifier():
-                continue
-            if (
-                os.path.isfile(os.path.join(entry.path, '__init__.py'))
-                and os.path.isfile(os.path.join(entry.path, 'model', '__init__.py'))
-            ):
-                candidates.append(entry.name)
-    return candidates[0] if len(candidates) == 1 else None
-
-
-def _import_project_model_package(module_name):
-    try:
-        return importlib.import_module(module_name)
-    except ImportError as error:
-        if getattr(error, 'name', None) == module_name:
-            return None
-        raise
-
-
-def _model_rows(project_root, model_package):
-    model_package_name = model_package.__name__
-    exports = getattr(model_package, '__all__', _MISSING)
-    if exports is _MISSING:
-        candidates = ((n, v) for n, v in vars(model_package).items() if not n.startswith('_'))
-    else:
-        export_names = (exports,) if isinstance(exports, str) else tuple(exports) if hasattr(exports, '__iter__') else ()
-        candidates = (
-            (n, getattr(model_package, n, _MISSING))
-            for n in export_names if isinstance(n, str)
-        )
-    rows = []
-    for name, value in candidates:
-        if value is _MISSING or not inspect.isclass(value):
-            continue
-        module = getattr(value, '__module__', '')
-        if module != model_package_name and not module.startswith(f'{model_package_name}.'):
-            continue
-        source = _source_info(value, project_root).get('source')
-        rows.append({
-            'name': name,
-            'class': _class_name(value),
-            'module': module,
-            'source': source,
-            'orm': _model_orm(value),
-            'docstring': inspect.getdoc(value),
-        })
-    rows.sort(key=lambda row: (row['name'], row['class']))
-    return rows
-
-
-def _model_orm(cls):
-    if _static_attr(cls, '__mongometa__') is not _MISSING:
-        return 'ming'
-    if _static_attr(cls, '__mapper__') is not _MISSING or _static_attr(cls, '__table__') is not _MISSING:
-        return 'sqlalchemy'
-    if _static_attr(cls, '__tablename__') is not _MISSING and _static_attr(cls, 'metadata') is not _MISSING:
-        return 'sqlalchemy'
-    return 'unknown'
 
 
 # ---------------------------------------------------------------------------
@@ -964,12 +979,6 @@ def _source_info(value, project_root):
     return info
 
 
-def _relative_path_value(project_root, value):
-    if isinstance(value, (list, tuple, set)):
-        return [_relative_path_value(project_root, item) for item in value]
-    return _relative_path(project_root, os.fspath(value))
-
-
 def _relative_path(project_root, path):
     if not os.path.isabs(path):
         path = os.path.join(project_root, path)
@@ -984,25 +993,11 @@ def _relative_path(project_root, path):
     return relative.replace(os.path.sep, '/')
 
 
-def _absolute_path(project_root, path):
-    path = os.fspath(path)
-    if not os.path.isabs(path):
-        path = os.path.join(project_root, path)
-    return os.path.realpath(os.path.abspath(path))
-
-
 def _config_get(config, key, default=None):
     try:
         return config.get(key, default)
     except AttributeError:
         return getattr(config, key, default)
-
-
-def _config_contains(config, key):
-    try:
-        return key in config
-    except TypeError:
-        return hasattr(config, key)
 
 
 def _mapping_get(mapping, key, default=None):
@@ -1032,24 +1027,3 @@ def _safe_text(value):
         return repr(value)
     except Exception:
         return f'<{value.__class__.__module__}.{value.__class__.__name__}>'
-
-
-def _static_attr(value, name):
-    try:
-        return inspect.getattr_static(value, name)
-    except AttributeError:
-        return _MISSING
-
-
-def _as_bool(value):
-    if value is None:
-        return None
-    if isinstance(value, bool):
-        return value
-    if isinstance(value, str):
-        lowered = value.strip().lower()
-        if lowered in ('true', 'yes', 'on', '1'):
-            return True
-        if lowered in ('false', 'no', 'off', '0', 'none'):
-            return False
-    return bool(value)
