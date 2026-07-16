@@ -39,8 +39,9 @@ class TgSkillsCommand(Command):
         )
 
         if not os.path.isdir(skills_pkg_path):
-            sys.stderr.write(
-                f'Cannot find skills source directory at {skills_pkg_path}\n'
+            print(
+                f'Cannot find skills source directory at {skills_pkg_path}',
+                file=sys.stderr
             )
             sys.exit(1)
 
@@ -49,17 +50,17 @@ class TgSkillsCommand(Command):
             install_dir = os.path.join(project_dir, target_dir)
             _install_skills(skills_pkg_path, install_dir, project_dir)
 
-        sys.stdout.write(
-            f'TurboGears agent skills installed in {project_dir}\n'
+        print(
+            f'TurboGears agent skills installed in {project_dir}'
         )
-        sys.stdout.write(
-            f'  - .agents/skills/ (Codex, VS Code, Pi, etc.)\n'
+        print(
+            f'  - .agents/skills/ (Codex, VS Code, Pi, etc.)'
         )
-        sys.stdout.write(
-            f'  - .claude/skills/ (Claude Code)\n'
+        print(
+            f'  - .claude/skills/ (Claude Code)'
         )
-        sys.stdout.write(
-            'Skills: tg-inspect, tg-scaffold, tg-shell\n'
+        print(
+            'Skills: tg-inspect, tg-scaffold, tg-shell'
         )
 
 
@@ -75,8 +76,9 @@ def _install_skills(source_skills_dir, target_dir, project_dir):
 
     # Check if target_dir is actually a directory
     if not os.path.isdir(target_dir):
-        sys.stderr.write(
-            f'Target path {target_dir} exists but is not a directory\n'
+        print(
+            f'Target path {target_dir} exists but is not a directory',
+            file=sys.stderr
         )
         sys.exit(1)
 
@@ -87,8 +89,9 @@ def _install_skills(source_skills_dir, target_dir, project_dir):
 
         # Check if source exists
         if not os.path.isdir(source_skill):
-            sys.stderr.write(
-                f'Source skill {skill_name} not found at {source_skill}\n'
+            print(
+                f'Source skill {skill_name} not found at {source_skill}',
+                file=sys.stderr
             )
             continue
 
@@ -104,16 +107,18 @@ def _install_skills(source_skills_dir, target_dir, project_dir):
                     continue
                 else:
                     # Symlink points somewhere else - this might be user-created
-                    sys.stderr.write(
+                    print(
                         f'Skill {skill_name} already exists at {target_skill} '
-                        f'(symlink to {existing_target}) - not overwriting\n'
+                        f'(symlink to {existing_target}) - not overwriting',
+                        file=sys.stderr
                     )
                     continue
             else:
                 # Non-symlink directory exists - user-created, don't overwrite
-                sys.stderr.write(
+                print(
                     f'Skill {skill_name} directory already exists at {target_skill} '
-                    f'- not overwriting (remove it first if you want to reinstall)\n'
+                    f'- not overwriting (remove it first if you want to reinstall)',
+                    file=sys.stderr
                 )
                 continue
 
@@ -126,18 +131,21 @@ def _install_skills(source_skills_dir, target_dir, project_dir):
             installed.append(skill_name)
         except OSError as e:
             # Symlink failed, try copying
-            sys.stderr.write(
-                f'Warning: could not create symlink for {skill_name}: {e}\n'
+            print(
+                f'Warning: could not create symlink for {skill_name}: {e}',
+                file=sys.stderr
             )
             try:
                 _copy_skill(source_skill, target_skill)
                 installed.append(skill_name)
-                sys.stderr.write(
-                    f'  Copied {skill_name} instead of symlinking\n'
+                print(
+                    f'  Copied {skill_name} instead of symlinking',
+                    file=sys.stderr
                 )
             except OSError as copy_error:
-                sys.stderr.write(
-                    f'  Failed to copy {skill_name}: {copy_error}\n'
+                print(
+                    f'  Failed to copy {skill_name}: {copy_error}',
+                    file=sys.stderr
                 )
 
     return installed
