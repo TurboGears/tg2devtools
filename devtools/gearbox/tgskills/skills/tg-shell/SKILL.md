@@ -40,12 +40,7 @@ The `-c` / `--config` option specifies the application configuration file (defau
 Execute a Python script in the loaded application context:
 
 ```bash
-gearbox tgshell -c development.ini -i your_script.py
-```
-
-Or pipe code directly:
-```bash
-echo "from myapp.model import User; print(User.query.count())" | gearbox tgshell -c development.ini
+gearbox tgshell -c development.ini your_script.py
 ```
 
 ### WebTest requests
@@ -53,19 +48,15 @@ echo "from myapp.model import User; print(User.query.count())" | gearbox tgshell
 Use WebTest to make requests against the loaded application:
 
 ```python
-from webtest import TestApp
-
-# In the tgshell context
-app = config['tg.app']
-testapp = TestApp(app)
+# `app` is provided by tgshell as a WebTest TestApp when WebTest is installed.
 
 # Make a GET request
-response = testapp.get('/')
+response = app.get('/')
 print(response.status_int)
 print(response.text)
 
 # Make a POST request with form data
-response = testapp.post('/login', {'username': 'admin', 'password': 'secret'})
+response = app.post('/login', {'username': 'admin', 'password': 'secret'})
 
 # Check response
 assert 'Welcome' in response.text
@@ -75,7 +66,7 @@ assert 'Welcome' in response.text
 
 ```python
 # Follow redirects
-response = testapp.get('/login', status=302)
+response = app.get('/login', status=302)
 response = response.follow()
 
 # Check status codes
@@ -94,11 +85,11 @@ form['password'] = 'test'
 response = form.submit()
 
 # JSON APIs
-response = testapp.get('/api/users', status=200)
+response = app.get('/api/users', status=200)
 data = response.json
 
 # File uploads
-response = testapp.post('/upload', upload_files=[('file', 'content.txt', b'file content')])
+response = app.post('/upload', upload_files=[('file', 'content.txt', b'file content')])
 ```
 
 ### TurboGears request context

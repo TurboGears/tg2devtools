@@ -32,7 +32,7 @@ Generate one or more scaffold items:
 gearbox scaffold <scaffold-name> <target> [options]
 ```
 
-Common scaffold names include: `model`, `controller`, `template`, `crud`, `quickstart`
+Available scaffold names vary by project; discover them before creating files.
 
 Example - create a Photo model:
 ```bash
@@ -60,12 +60,10 @@ This shows the scaffold templates discovered by Gearbox, including template path
 - `--path` or `-p`: Path for template lookup
 - `--subdir`: Subdirectory for output
 - `--no-package`: Disable package creation
-- `--dry-run`: Show what would be created without writing files
-- `--json`: Output in JSON format
 
 Example with options:
 ```bash
-gearbox scaffold controller admin --subdir controllers --dry-run
+gearbox scaffold controller admin --subdir controllers
 ```
 
 ## Next steps after scaffolding
@@ -87,7 +85,7 @@ After using `gearbox scaffold`:
 ## Workflow
 
 1. Use `gearbox tginfo scaffolds --json` to discover available scaffold templates
-2. Use `gearbox scaffold <name> <target> --dry-run --json` to preview what will be created
+2. Review the selected template and choose the exact target name
 3. Run `gearbox scaffold <name> <target>` to create the files
 4. Edit the generated code directly to add your specific behavior
 5. Use `tg-inspect` to verify the new structure appears correctly
