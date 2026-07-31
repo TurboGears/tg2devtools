@@ -122,19 +122,20 @@ class QuickstartCommand(Command):
             pass
         else:
             print('The name "%s" is already in use' % opts.name)
+            return 1
 
         try:
             if importlib.util.find_spec(opts.package):
                 print('The package name "%s" is already in use'
                     % opts.package)
-                return
+                return 1
         except ImportError:
             pass
 
         if os.path.exists(opts.name):
             print('A directory called "%s" already exists. Exiting.'
                 % opts.name)
-            return
+            return 1
 
         opts.cookiesecret = str(uuid.uuid4())
         opts.passwordsalt = str(uuid.uuid4())
@@ -268,20 +269,20 @@ class QuickstartAPICommand(Command):
             pass
         else:
             print('The name "%s" is already in use' % opts.name)
-            return
+            return 1
 
         try:
             if importlib.util.find_spec(opts.package):
                 print('The package name "%s" is already in use'
                     % opts.package)
-                return
+                return 1
         except ImportError:
             pass
 
         if os.path.exists(opts.name):
             print('A directory called "%s" already exists. Exiting.'
                 % opts.name)
-            return
+            return 1
 
         opts.cookiesecret = str(uuid.uuid4())
         opts.passwordsalt = str(uuid.uuid4())
