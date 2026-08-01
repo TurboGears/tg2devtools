@@ -5,122 +5,103 @@ description: Use when you need to run Python code in a fully loaded TurboGears a
 
 # TurboGears Runtime Shell
 
-You are working with a TurboGears project and need to execute code in the fully loaded application context. Use `gearbox tgshell` for runtime checks, debugging, and WebTest requests.
+Use `gearbox tgshell` from an installed TurboGears project root for runtime
+checks. Pass an explicit configuration; use `test.ini` with an in-memory
+quickstart database for isolated checks.
 
-## When to use this skill
+## Prerequisite
 
-Use this skill when you need to:
-- Run Python code in the fully loaded application context
-- Perform runtime checks that require the app to be loaded
-- Make WebTest requests to test application behavior
-- Debug issues that only manifest at runtime
-- Inspect application state, configuration, or services
-
-Do **not** use this skill for:
-- Static project inspection (use `tg-inspect` instead)
-- Creating conventional project files (use `tg-scaffold` instead)
-- Running database migrations or setup-app as routine inspection
-
-## Available commands
-
-All commands should be run from the **TurboGears project root directory** in the project's normal environment.
-
-### Interactive shell
-
-Launch an interactive Python shell with the application loaded:
+WebTest recipes require the generated project's testing extra:
 
 ```bash
-gearbox tgshell -c development.ini
+python -m pip install -e '.[testing]'
 ```
 
-The `-c` / `--config` option specifies the application configuration file (defaults to `development.ini`).
-
-### Running scripts
-
-Execute a Python script in the loaded application context:
+## Run a script
 
 ```bash
-gearbox tgshell -c development.ini your_script.py
+gearbox tgshell -c test.ini debug.py
 ```
 
-### WebTest requests
+Omit `debug.py` for an interactive session. `tgshell` makes `wsgiapp` and
+TurboGears globals including `config` and `request` available. It provides
+`model` only when the application has an importable `<package>.model` module.
+It provides `app` only when WebTest is installed; `app` is a WebTest `TestApp`
+around `wsgiapp`.
 
-Use WebTest to make requests against the loaded application:
+`tgshell` loads the configured WSGI app, then immediately requests
+`/_test_vars`. That may run project imports, application startup, middleware,
+and request hooks. `tgshell` itself does not run `setup-app`, migrations, or
+intentional database writes.
+
+## Inspect locals and make a fake HTTP request
+
+This recipe requires WebTest because it uses `app`.
 
 ```python
-# `app` is provided by tgshell as a WebTest TestApp when WebTest is installed.
+print("locals:", wsgiapp)
+print("app:", app)
+print("package:", config["package_name"])
 
-# Make a GET request
-response = app.get('/')
-print(response.status_int)
-print(response.text)
+response = app.get("/", status=302)
+print("HTTP status:", response.status_int)
 
-# Make a POST request with form data
-response = app.post('/login', {'username': 'admin', 'password': 'secret'})
-
-# Check response
-assert 'Welcome' in response.text
+from tg.util.webtest import test_context
+with test_context(app, "/"):
+    assert request.path == "/"
+    print("request path:", request.path)
 ```
 
-### Common WebTest patterns
+Use `test_context` only when code needs a separately scoped fake request. Do
+not use TurboGears' old request context manager.
+
+## SQLAlchemy quickstart only
+
+This deliberately creates a temporary `TodoItem`, flushes it, and rolls the
+transaction back. It leaves no record behind. Replace `TodoItem` for a project
+that uses a different SQLAlchemy model.
 
 ```python
-# Follow redirects
-response = app.get('/login', status=302)
-response = response.follow()
+TodoItem = model.TodoItem
+print(model.DBSession.query(TodoItem).all())
 
-# Check status codes
-assert response.status_int == 200
+temporary = TodoItem(title="tgshell temporary item")
+model.DBSession.add(temporary)
+model.DBSession.flush()
+temporary_id = temporary.id
+assert model.DBSession.query(TodoItem).filter_by(id=temporary_id).one() is temporary
 
-# Check response content
-assert 'Expected Content' in response.text
-
-# Check headers
-assert response.content_type == 'text/html'
-
-# Form submission
-form = response.forms['login-form']
-form['username'] = 'test'
-form['password'] = 'test'
-response = form.submit()
-
-# JSON APIs
-response = app.get('/api/users', status=200)
-data = response.json
-
-# File uploads
-response = app.post('/upload', upload_files=[('file', 'content.txt', b'file content')])
+model.DBSession.rollback()
+assert model.DBSession.query(TodoItem).filter_by(id=temporary_id).first() is None
+print("SQLAlchemy cleanup complete")
 ```
 
-### TurboGears request context
+## Ming quickstart only
 
-The application provides a request context manager for testing:
+This deliberately creates a temporary `TodoItem`, flushes it, then deletes
+that exact object and clears the Ming session. It leaves no record behind.
+Replace `TodoItem` for a project that uses a different Ming model.
 
 ```python
-from tg import request, response, config
+TodoItem = model.TodoItem
+print(TodoItem.query.find({}).all())
 
-# Within tgshell, you can use the context manager
-with request.context('/'):
-    # request and response objects are available
-    print(request.path)
-    print(response.status)
-    
-    # Access config
-    print(config.get('sqlalchemy.url'))
+temporary = TodoItem(title="tgshell temporary item")
+model.DBSession.flush()
+temporary_id = temporary._id
+assert TodoItem.query.find({"_id": temporary_id}).all() == [temporary]
+
+temporary.delete()
+model.DBSession.flush()
+model.DBSession.clear()
+assert TodoItem.query.find({"_id": temporary_id}).all() == []
+print("Ming cleanup complete")
 ```
 
 ## Safety rules
 
-- `gearbox tgshell` loads the application but **does not run setup-app, migrations, or database writes** as part of inspection
-- Runtime debugging belongs in `tgshell`, not in static inspection tools
-- Use WebTest for programmatic requests, not for browser-driven testing
-- Do not run `setup-app`, migrations, or other database-mutating commands unless the user explicitly asks for that kind of work
-- Be explicit about which configuration file you're using
-
-## Workflow
-
-1. Start with `tg-inspect` for static analysis
-2. Use `gearbox tgshell -c development.ini` when you need runtime access
-3. Import the application's models, controllers, or services as needed
-4. Use WebTest to make requests and verify behavior
-5. Use the TurboGears request context manager when you need request/response objects
+- Use `tg-inspect` for static inspection; use `tgshell` for loaded-runtime checks.
+- Do not run `setup-app`, migrations, or other database-mutating commands
+  unless changing that environment is intentional.
+- The in-memory `test.ini` database is process-local. Its schema may need test
+  setup; that setup is not a normal debugging step.

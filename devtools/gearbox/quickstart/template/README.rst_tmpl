@@ -7,7 +7,7 @@ Installation and Setup
 Install ``{{project}}`` in editable mode with pip::
 
     $ cd {{project}}
-    $ python -m pip install -e .[testing]
+    $ python -m pip install -e '.[testing]'
 
 {{if sqlalchemy}}
 Create the project database for the generated SQLAlchemy models::
