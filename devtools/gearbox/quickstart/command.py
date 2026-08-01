@@ -2,6 +2,7 @@ import re
 import os
 import shlex
 import shutil
+import sys
 import uuid
 import importlib.metadata
 import importlib.util
@@ -121,20 +122,21 @@ class QuickstartCommand(Command):
         except importlib.metadata.PackageNotFoundError:
             pass
         else:
-            print('The name "%s" is already in use' % opts.name)
+            print('The name "%s" is already in use' % opts.name,
+                  file=sys.stderr)
             return 1
 
         try:
             if importlib.util.find_spec(opts.package):
                 print('The package name "%s" is already in use'
-                    % opts.package)
+                    % opts.package, file=sys.stderr)
                 return 1
         except ImportError:
             pass
 
         if os.path.exists(opts.name):
             print('A directory called "%s" already exists. Exiting.'
-                % opts.name)
+                % opts.name, file=sys.stderr)
             return 1
 
         opts.cookiesecret = str(uuid.uuid4())
@@ -268,20 +270,21 @@ class QuickstartAPICommand(Command):
         except importlib.metadata.PackageNotFoundError:
             pass
         else:
-            print('The name "%s" is already in use' % opts.name)
+            print('The name "%s" is already in use' % opts.name,
+                  file=sys.stderr)
             return 1
 
         try:
             if importlib.util.find_spec(opts.package):
                 print('The package name "%s" is already in use'
-                    % opts.package)
+                    % opts.package, file=sys.stderr)
                 return 1
         except ImportError:
             pass
 
         if os.path.exists(opts.name):
             print('A directory called "%s" already exists. Exiting.'
-                % opts.name)
+                % opts.name, file=sys.stderr)
             return 1
 
         opts.cookiesecret = str(uuid.uuid4())
