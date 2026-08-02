@@ -426,13 +426,17 @@ class TgInfoRoutesTests(unittest.TestCase):
                 'application/json': ('json', '', ['tmpl_context'], {}),
             },
             validations=[
-                types.SimpleNamespace(validator=function_error_handler),
-                types.SimpleNamespace(error_handler=function_error_handler),
-                types.SimpleNamespace(error_handler=handlers.method_error_handler),
-                types.SimpleNamespace(error_handler=list.append),
-                types.SimpleNamespace(error_handler=dict.fromkeys),
-                types.SimpleNamespace(error_handler='named error handler'),
-                types.SimpleNamespace(error_handler=callable_error_handler),
+                types.SimpleNamespace(
+                    validators=function_error_handler,
+                    validator=handlers.method_error_handler,
+                    error_handler=callable_error_handler,
+                    chain_validation=function_error_handler,
+                ),
+                types.SimpleNamespace(
+                    validator='named validator',
+                    error_handler='named error handler',
+                    chain_validation=False,
+                ),
             ]
         )
         self.install_fake_tg()
@@ -443,29 +447,25 @@ class TgInfoRoutesTests(unittest.TestCase):
         route = by_path_action[('/data', 'data')]
         self.assertEqual(route['validations'], [
             {
+                'validators': (
+                    f'{function_error_handler.__module__}.{function_error_handler.__qualname__}'
+                ),
                 'validator': (
-                    f'{function_error_handler.__module__}.{function_error_handler.__qualname__}'
-                ),
-            },
-            {
-                'error_handler': (
-                    f'{function_error_handler.__module__}.{function_error_handler.__qualname__}'
-                ),
-            },
-            {
-                'error_handler': (
                     f'{handlers.method_error_handler.__module__}.'
                     f'{handlers.method_error_handler.__qualname__}'
                 ),
-            },
-            {'error_handler': '<builtins.method_descriptor>'},
-            {'error_handler': '<builtins.builtin_function_or_method>'},
-            {'error_handler': 'named error handler'},
-            {
                 'error_handler': (
-                    f'<{type(callable_error_handler).__module__}.'
-                    f'{type(callable_error_handler).__name__}>'
+                    f'{type(callable_error_handler).__module__}.'
+                    f'{type(callable_error_handler).__qualname__}'
                 ),
+                'chain_validation': (
+                    f'{function_error_handler.__module__}.{function_error_handler.__qualname__}'
+                ),
+            },
+            {
+                'validator': 'named validator',
+                'error_handler': 'named error handler',
+                'chain_validation': False,
             },
         ])
         self.assertEqual(repr_calls, [])
