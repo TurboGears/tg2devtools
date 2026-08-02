@@ -12,6 +12,7 @@ import unittest
 from pathlib import Path
 
 from devtools.gearbox.tginfo import TgInfoCommand
+from tg.validation import Convert
 
 class FakeDecoration:
     def __init__(self, engines=None, custom_engines=None, requirements=None, validations=None):
@@ -28,7 +29,7 @@ class FakeRequirement:
 
 
 class FakeValidation:
-    validators = {'name': 'not_empty'}
+    validators = Convert(int)
     error_handler = 'handle_error'
     chain_validation = False
 
@@ -310,7 +311,7 @@ class TgInfoRoutesTests(unittest.TestCase):
         ])
         self.assertEqual(data['action_requires'], ['logged in'])
         self.assertEqual(data['validations'], [{
-            'validators': "{'name': 'not_empty'}",
+            'validators': "Convert(func=builtins.int, msg='Invalid', default=<required>)",
             'error_handler': 'handle_error',
             'chain_validation': False,
         }])
@@ -399,6 +400,75 @@ class TgInfoRoutesTests(unittest.TestCase):
         self.assertEqual(mounted['kind'], 'wsgi_app')
         self.assertEqual(mounted['controller'], 'sampleapp.controllers.root.WSGIAppController')
         json.dumps(routes, sort_keys=True)
+
+    def test_routes_json_formats_error_handlers_without_calling_callable_repr(self):
+        def function_error_handler():
+            return None
+
+        class HandlerMethods:
+            def method_error_handler(self):
+                return None
+
+        repr_calls = []
+
+        class CallableErrorHandler:
+            def __call__(self):
+                return None
+
+            def __repr__(self):
+                repr_calls.append('called')
+                raise AssertionError('tginfo route collection must not call callable error-handler repr')
+
+        handlers = HandlerMethods()
+        callable_error_handler = CallableErrorHandler()
+        self.root_module.RootController.data.decoration = FakeDecoration(
+            engines={
+                'application/json': ('json', '', ['tmpl_context'], {}),
+            },
+            validations=[
+                types.SimpleNamespace(validator=function_error_handler),
+                types.SimpleNamespace(error_handler=function_error_handler),
+                types.SimpleNamespace(error_handler=handlers.method_error_handler),
+                types.SimpleNamespace(error_handler=list.append),
+                types.SimpleNamespace(error_handler=dict.fromkeys),
+                types.SimpleNamespace(error_handler='named error handler'),
+                types.SimpleNamespace(error_handler=callable_error_handler),
+            ]
+        )
+        self.install_fake_tg()
+
+        routes = self.run_tginfo('routes')
+
+        by_path_action = {(row['path'], row['action']): row for row in routes}
+        route = by_path_action[('/data', 'data')]
+        self.assertEqual(route['validations'], [
+            {
+                'validator': (
+                    f'{function_error_handler.__module__}.{function_error_handler.__qualname__}'
+                ),
+            },
+            {
+                'error_handler': (
+                    f'{function_error_handler.__module__}.{function_error_handler.__qualname__}'
+                ),
+            },
+            {
+                'error_handler': (
+                    f'{handlers.method_error_handler.__module__}.'
+                    f'{handlers.method_error_handler.__qualname__}'
+                ),
+            },
+            {'error_handler': '<builtins.method_descriptor>'},
+            {'error_handler': '<builtins.builtin_function_or_method>'},
+            {'error_handler': 'named error handler'},
+            {
+                'error_handler': (
+                    f'<{type(callable_error_handler).__module__}.'
+                    f'{type(callable_error_handler).__name__}>'
+                ),
+            },
+        ])
+        self.assertEqual(repr_calls, [])
 
     def test_routes_subcommand_prints_human_rows(self):
         self.install_fake_tg()

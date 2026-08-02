@@ -798,7 +798,7 @@ class _RouteCollector:
             ):
                 value = self._plain_static_member(validation, source_name)
                 if value is not _MISSING:
-                    item[output_name] = _safe_text(value)
+                    item[output_name] = _validation_text(value)
             validations.append(item or {'value': _safe_text(validation)})
         return validations
 
@@ -905,6 +905,16 @@ def _class_name(cls):
     module = getattr(cls, '__module__', None)
     name = getattr(cls, '__qualname__', getattr(cls, '__name__', None))
     return f'{module}.{name}' if module else name
+
+
+def _validation_text(value):
+    if callable(value):
+        module = getattr(value, '__module__', None)
+        qualname = getattr(value, '__qualname__', None)
+        if module and qualname:
+            return f'{module}.{qualname}'
+        return f'<{type(value).__module__}.{type(value).__name__}>'
+    return _safe_text(value)
 
 
 def _safe_text(value):
