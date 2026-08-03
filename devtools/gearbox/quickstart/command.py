@@ -321,3 +321,7 @@ class QuickstartAPICommand(Command):
             # remove existing migrations directory
             package_migrations_dir = os.path.abspath('migration')
             shutil.rmtree(package_migrations_dir, ignore_errors=True)
+
+        print('To enable TurboGears-aware coding agents for this project, run:\n'
+              'cd %s; gearbox tgskills'
+              % shlex.quote('./' + opts.name if opts.name.startswith('-') else opts.name))

@@ -19,9 +19,13 @@ Quick Start
 
 1. Install the project in development mode::
 
-    pip install -e .
+    pip install -e '.[testing]'
 
-2. Initialize the database and create demo users::
+2. Run the test suite::
+
+    python -m pytest
+
+3. Initialize the database and create demo users::
 
     gearbox setup-app
 
