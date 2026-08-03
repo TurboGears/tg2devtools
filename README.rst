@@ -121,6 +121,13 @@ effects, like any Python module.
   migrations, or other database-mutating commands as routine inspection; use
   them only when intentionally changing a development or test environment.
 
+- **Project Commands:**
+
+  ``tginfo``, ``tgshell``, migration, and i18n commands are available after
+  installing the project in editable mode and entering its directory. If you
+  see "invalid command", ensure you have run ``pip install -e '.[testing]'``
+  from the project directory.
+
 - **Manage Translations:**
 
   ::
