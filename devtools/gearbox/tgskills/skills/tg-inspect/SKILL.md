@@ -84,6 +84,7 @@ gearbox tginfo scaffolds --json
 
 - These commands are **read-only** - they do not modify the project
 - Do not run `setup-app`, migrations, or database-mutating commands as part of routine inspection
+- Loading application code can trigger global module execution like any Python import
 - Source locations in output are relative to the project root for easy navigation
 - Index paths: RootController.index is `/`, subcontroller index is `/subcontroller/`
 - Dynamic dispatch: `_lookup` and exposed `_default` appear as synthetic flat route rows with `*` in the path

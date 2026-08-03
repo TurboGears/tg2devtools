@@ -95,6 +95,8 @@ Usage Examples
   ``tginfo`` is read-only. It can import the target application just like
   ``gearbox tgshell`` or ``gearbox serve``, but it does not run ``setup-app``,
   migrations, database writes, or runtime requests as part of inspection.
+  Loading application code can still execute project-defined import/startup side
+effects, like any Python module.
 
 - **Install Agent Skills:**
 
