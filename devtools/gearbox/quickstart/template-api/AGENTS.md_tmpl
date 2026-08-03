@@ -1,0 +1,21 @@
+# AI Agent Customizations
+
+This is a TurboGears project. Use Gearbox as the entrypoint for TurboGears development commands.
+
+## TurboGears DevTools
+
+To enable TurboGears-aware coding agents for this project, run:
+
+    gearbox tgskills
+
+This installs agent skills that guide AI assistants on how to interact with TurboGears projects:
+
+- **tg-inspect**: Use when inspecting the project to discover routes, controllers, models, templates, or project facts
+- **tg-scaffold**: Use when creating new models, controllers, templates, or other conventional project files
+- **tg-shell**: Use when you need to run Python code in the fully loaded application context for runtime checks or WebTest requests
+
+For runtime debugging, use `gearbox tgshell -c development.ini` with WebTest requests.
+
+## Project Commands
+
+Consult the project README.rst for commands on how to install, serve, and test the project.
