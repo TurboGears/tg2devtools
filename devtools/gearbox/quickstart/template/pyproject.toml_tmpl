@@ -45,6 +45,10 @@ testing = [
   "coverage",
   "gearbox"
 ]
+development = [
+  "{{project}}[testing]",
+  "tg.devtools",
+]
 
 [tool.setuptools]
 include-package-data = true

@@ -18,4 +18,8 @@ For runtime debugging, use `gearbox tgshell -c development.ini` with WebTest req
 
 ## Project Commands
 
-Consult the project README.rst for commands on how to install, serve, and test the project.
+Before using project commands, install development dependencies:
+
+    python -m pip install -e '.[development]'
+
+From the project root, run `gearbox --help` to discover commands. Use `gearbox tginfo` for inspection, `gearbox tgshell` for loaded-app/runtime checks, and `gearbox scaffold` for conventional project files. Consult the project README.rst for install, serve, and test workflows.

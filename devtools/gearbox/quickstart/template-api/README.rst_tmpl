@@ -19,7 +19,7 @@ Quick Start
 
 1. Install the project in development mode::
 
-    pip install -e '.[testing]'
+    pip install -e '.[development]'
 
 2. Run the test suite::
 

@@ -35,6 +35,10 @@ testing = [
     "webtest",
     "pytest",
 ]
+development = [
+    "{{name}}[testing]",
+    "tg.devtools",
+]
 
 [tool.setuptools.packages.find]
 exclude = ["ez_setup", "examples", "tests"]
