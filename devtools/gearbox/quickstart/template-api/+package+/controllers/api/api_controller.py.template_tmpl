@@ -1,0 +1,14 @@
+# -*- coding: utf-8 -*-
+"""REST controller for {{start_braces}}target.lower(){{end_braces}}."""
+
+from tg import expose
+from tg.controllers import RestController
+
+
+class {{start_braces}}target.capitalize(){{end_braces}}Controller(RestController):
+    """REST endpoints for {{start_braces}}target.lower(){{end_braces}}."""
+
+    @expose('json')
+    def get_all(self):
+        """Return the {{start_braces}}target.lower(){{end_braces}} collection."""
+        return dict({{start_braces}}target.lower(){{end_braces}}=[])

@@ -71,7 +71,7 @@ gearbox scaffold controller admin --subdir controllers
 After using `gearbox scaffold`:
 
 1. **Models**: Import the model from the model package if it should be exported. Create/review migrations manually if needed.
-2. **Controllers**: Mount the controller in RootController if a URL is desired.
+2. **Controllers**: Mount page controllers in RootController and API controllers in APIController.
 3. **Templates**: Expose the template from a controller action if it should be reachable.
 4. **Edit directly**: The scaffold generates conventional structure - edit the generated files directly to add your specific logic.
 

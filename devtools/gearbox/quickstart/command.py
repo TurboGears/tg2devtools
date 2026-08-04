@@ -29,8 +29,14 @@ class QuickstartTemplate(GearBoxTemplate):
         if vars['migrations']:
             vars['egg_plugins'].append('tg.devtools')
 
+    def post(self, template_dir, output_dir, vars):
+        if not vars['database']:
+            os.remove(
+                os.path.join(output_dir, vars['package'], 'model', 'model.py.template')
+            )
 
-class QuickstartAPITemplate(GearBoxTemplate):
+
+class QuickstartAPITemplate(QuickstartTemplate):
 
     def pre(self, command, output_dir, vars):
         """Called before API template is applied."""
