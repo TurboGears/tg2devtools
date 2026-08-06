@@ -19,18 +19,23 @@ Use this skill when you need to understand:
 Do **not** use this skill for:
 - Runtime request debugging (use `tg-shell` instead)
 - Creating or modifying project files (use `tg-scaffold` instead)
-- Running database migrations or setup-app
+- Applying database migrations or running setup-app
 
 ## Available commands
 
 All commands should be run from the **TurboGears project root directory** in the project's normal environment so `gearbox` can import the application correctly.
+
+Quickstart creates `development.ini` for local development and `test.ini` for
+tests; `test.ini` references the development configuration. Quickstart does not
+generate `production.ini`, which is deployment-specific. Select the profile
+explicitly and do not infer or switch profiles in agent commands.
 
 ### Project summary
 
 Get factual project basics including package name, renderers, paths, root controller, database state, and auth state:
 
 ```bash
-gearbox tginfo summary --json
+gearbox tginfo summary --project . --config development.ini --json
 ```
 
 Use `--json` for machine-readable output that agents can parse reliably.
@@ -40,7 +45,7 @@ Use `--json` for machine-readable output that agents can parse reliably.
 Inspect the static TurboGears object-dispatch route map:
 
 ```bash
-gearbox tginfo routes --json
+gearbox tginfo routes --project . --config development.ini --json
 ```
 
 This returns flat route/action rows with:
@@ -57,7 +62,7 @@ This returns flat route/action rows with:
 List models exported by the project model package:
 
 ```bash
-gearbox tginfo models --json
+gearbox tginfo models --project . --config development.ini --json
 ```
 
 Includes name, fully-qualified class/module, source, ORM kind (sqlalchemy/ming/unknown), and docstring.
@@ -67,7 +72,7 @@ Includes name, fully-qualified class/module, source, ORM kind (sqlalchemy/ming/u
 Inventory recognized template files:
 
 ```bash
-gearbox tginfo templates --json
+gearbox tginfo templates --project . --config development.ini --json
 ```
 
 Includes template dotted name, file path, renderer/engine, and `exposed_by` list of route paths that expose each template.
@@ -77,21 +82,24 @@ Includes template dotted name, file path, renderer/engine, and `exposed_by` list
 Discover available Gearbox scaffold templates:
 
 ```bash
-gearbox tginfo scaffolds --json
+gearbox tginfo scaffolds --project . --config development.ini --json
 ```
 
 ## Safety rules
 
-- These commands are **read-only** - they do not modify the project
-- Do not run `setup-app`, migrations, or database-mutating commands as part of routine inspection
-- Loading application code can trigger global module execution like any Python import
-- Source locations in output are relative to the project root for easy navigation
-- Index paths: RootController.index is `/`, subcontroller index is `/subcontroller/`
-- Dynamic dispatch: `_lookup` and exposed `_default` appear as synthetic flat route rows with `*` in the path
+- These `tginfo` commands are **read-only** - they do not modify the project.
+- Do not run `setup-app`, migration upgrades, or other database-mutating commands as part of routine inspection.
+- For a read-only migration status check, use `gearbox migrate -c development.ini db_version` only.
+- Loading application code can execute project-defined import, startup, and request-hook code, like any Python import. This applies to both `tginfo` and `tgshell`.
+- Source locations in output are relative to the project root for easy navigation.
+- Index paths: RootController.index is `/`, subcontroller index is `/subcontroller/`.
+- Dynamic dispatch: `_lookup` and exposed `_default` appear as synthetic flat route rows with `*` in the path.
 
 ## Workflow
 
-1. Start with `gearbox tginfo summary --json` to understand the project
-2. Use `gearbox tginfo routes --json` to find the controller/action you need
-3. Use `gearbox tginfo models --json` or `gearbox tginfo templates --json` for specific resources
-4. Use `gearbox tginfo scaffolds --json` before creating new conventional structure
+1. Start with `gearbox tginfo summary --project . --config development.ini --json` to understand the project.
+2. Use `gearbox tginfo routes --project . --config development.ini --json` to find the controller/action you need.
+3. Use `gearbox tginfo models --project . --config development.ini --json` or `gearbox tginfo templates --project . --config development.ini --json` for specific resources.
+4. Use `gearbox tginfo scaffolds --project . --config development.ini --json` before creating new conventional structure.
+5. Run `python -m pytest --collect-only -q` to discover tests without executing them.
+6. For runtime checks or WebTest requests, use `gearbox tgshell -c development.ini` in the fully loaded application context.

@@ -22,4 +22,37 @@ Before using project commands, install development dependencies:
 
     python -m pip install -e '.[development]'
 
-From the project root, run `gearbox --help` to discover commands. Use `gearbox tginfo` for inspection, `gearbox tgshell` for loaded-app/runtime checks, and `gearbox scaffold` for conventional project files. Consult the project README.rst for install, serve, and test workflows.
+Run these commands from the project root in the normal development environment.
+Select the profile explicitly: `development.ini` is for local development and
+`test.ini` is for tests; `test.ini` references the development configuration.
+Do not infer or switch profiles. Quickstart creates those two files only; it
+does not generate `production.ini`, which is deployment-specific.
+
+### Inspection workflow
+
+Use the read-only `tginfo` sequence for structured project facts. Prefer JSON
+so an agent can parse the results:
+
+    gearbox tginfo summary --project . --config development.ini --json
+    gearbox tginfo routes --project . --config development.ini --json
+    gearbox tginfo models --project . --config development.ini --json
+    gearbox tginfo templates --project . --config development.ini --json
+    gearbox tginfo scaffolds --project . --config development.ini --json
+
+Check test discovery without executing tests:
+
+    python -m pytest --collect-only -q
+
+For a read-only migration status check, use only:
+
+    gearbox migrate -c development.ini db_version
+
+Do not run `setup-app`, migration upgrades, or other database-mutating commands
+as routine inspection. `tginfo` and `tgshell` load application code, so
+project-defined import, startup, and request-hook code can execute. For runtime
+checks or WebTest requests, use the fully loaded application context:
+
+    gearbox tgshell -c development.ini
+
+Use `gearbox scaffold` for conventional project files and consult the project
+README.rst for install, serve, and test workflows.

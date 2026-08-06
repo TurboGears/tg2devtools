@@ -35,6 +35,20 @@ Quick Start
 
 5. Open your browser to http://localhost:8080 to see the API demo page.
 
+Configuration Profiles and Checks
+---------------------------------
+
+Quickstart creates ``development.ini`` for local development and ``test.ini``
+for tests; ``test.ini`` references the development configuration. Quickstart
+does not generate ``production.ini`` because production configuration is
+deployment-specific.
+
+For a compact project check::
+
+    $ gearbox tginfo summary --project . --config development.ini --json
+    $ gearbox tginfo routes --project . --config development.ini --json
+    $ python -m pytest --collect-only -q
+
 API Endpoints
 -------------
 
