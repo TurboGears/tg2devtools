@@ -1,6 +1,5 @@
 import re
 import os
-import shlex
 import shutil
 import sys
 import uuid
@@ -10,6 +9,8 @@ import importlib.util
 
 from gearbox.template import GearBoxTemplate
 from gearbox.command import Command
+
+from ..tgskills import TgSkillsCommand
 
 beginning_letter = re.compile(r"^[^a-z]*")
 valid_only = re.compile(r"[^a-z0-9_]")
@@ -183,9 +184,7 @@ class QuickstartCommand(Command):
             package_migrations_dir = os.path.abspath('migration')
             shutil.rmtree(package_migrations_dir, ignore_errors=True)
 
-        print('To enable TurboGears-aware coding agents for this project, run:\n'
-              'cd %s; gearbox tgskills'
-              % shlex.quote('./' + opts.name if opts.name.startswith('-') else opts.name))
+        _install_project_skills()
 
 
 def safe_name(name: str) -> str:
@@ -328,6 +327,10 @@ class QuickstartAPICommand(Command):
             package_migrations_dir = os.path.abspath('migration')
             shutil.rmtree(package_migrations_dir, ignore_errors=True)
 
-        print('To enable TurboGears-aware coding agents for this project, run:\n'
-              'cd %s; gearbox tgskills'
-              % shlex.quote('./' + opts.name if opts.name.startswith('-') else opts.name))
+        _install_project_skills()
+
+
+def _install_project_skills():
+    command = TgSkillsCommand(None, {})
+    opts = command.get_parser('gearbox tgskills').parse_args([])
+    command.run(opts)

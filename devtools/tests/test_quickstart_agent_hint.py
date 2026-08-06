@@ -15,11 +15,11 @@ class TestQuickstartAgentHint(unittest.TestCase):
         base_dir = os.getcwd()
         temp_dir = tempfile.mkdtemp()
         cases = (
-            ('Evo 017 Hint Project', 'Evo-017-Hint-Project', 'Evo-017-Hint-Project'),
-            (' -myapp', '-myapp', './-myapp'),
+            ('Evo 017 Hint Project', 'Evo-017-Hint-Project'),
+            (' -myapp', '-myapp'),
         )
         try:
-            for project_name, project_dir_name, hint_dir in cases:
+            for project_name, project_dir_name in cases:
                 with self.subTest(project_name=project_name):
                     os.chdir(temp_dir)
                     command = QuickstartCommand(None, {})
@@ -30,13 +30,18 @@ class TestQuickstartAgentHint(unittest.TestCase):
                         command.run(opts)
 
                     project_dir = os.path.join(temp_dir, project_dir_name)
-                    expected_hint = (
-                        'To enable TurboGears-aware coding agents for this project, run:\n'
-                        'cd %s; gearbox tgskills' % hint_dir
+                    self.assertIn(
+                        'TurboGears agent skills installed in', stdout.getvalue()
                     )
-                    output_lines = stdout.getvalue().rstrip().splitlines()
-                    self.assertEqual(expected_hint, '\n'.join(output_lines[-2:]))
-                    
+                    self.assertIn('Target: .agents/skills/', stdout.getvalue())
+                    self.assertTrue(os.path.isdir(os.path.join(project_dir, '.agents', 'skills')))
+                    self.assertFalse(os.path.exists(os.path.join(project_dir, '.claude')))
+                    for skill_name in ('tg-inspect', 'tg-scaffold', 'tg-shell'):
+                        skill_path = os.path.join(
+                            project_dir, '.agents', 'skills', skill_name
+                        )
+                        self.assertTrue(os.path.isdir(skill_path), skill_path)
+
                     # AGENTS.md should be generated from template
                     agents_md_path = os.path.join(project_dir, 'AGENTS.md')
                     self.assertTrue(os.path.exists(agents_md_path), 'AGENTS.md should be generated')
@@ -45,6 +50,14 @@ class TestQuickstartAgentHint(unittest.TestCase):
                     with open(agents_md_path) as f:
                         content = f.read()
                     self.assertIn('gearbox tgskills', content)
+                    self.assertIn(
+                        'Quickstart installs TurboGears-aware coding agent skills',
+                        content,
+                    )
+                    self.assertIn('``.agents/skills/``', content)
+                    self.assertIn('gearbox tgskills --claude', content)
+                    self.assertIn('installs only', content)
+                    self.assertNotIn('Delete the installed skills directory', content)
                     self.assertIn('tg-inspect', content)
                     self.assertIn('tg-scaffold', content)
                     self.assertIn('tg-shell', content)
@@ -64,7 +77,9 @@ class TestQuickstartAgentHint(unittest.TestCase):
                     os.chdir(temp_dir)
                     command = command_class(None, {})
                     opts = command.get_parser('tg2devtools-test').parse_args([project_name])
-                    command.run(opts)
+                    stdout = io.StringIO()
+                    with redirect_stdout(stdout):
+                        command.run(opts)
 
                     project_dir = os.path.join(temp_dir, project_name.replace(' ', '-'))
                     with open(os.path.join(project_dir, 'README.rst')) as readme_file:
@@ -80,6 +95,23 @@ class TestQuickstartAgentHint(unittest.TestCase):
                         readme,
                     )
                     self.assertIn('python -m pytest --collect-only -q', readme)
+                    self.assertIn(
+                        'Quickstart also installs optional coding-agent skills', readme
+                    )
+                    self.assertIn('``.agents/skills/`` directory', readme)
+                    self.assertIn(
+                        '``.claude/skills/``. Delete the installed skills directory',
+                        readme,
+                    )
+                    self.assertIn('gearbox tgskills --claude', readme)
+                    project_path = os.path.join(temp_dir, project_name.replace(' ', '-'))
+                    self.assertTrue(os.path.isdir(os.path.join(project_path, '.agents', 'skills')))
+                    self.assertFalse(os.path.exists(os.path.join(project_path, '.claude')))
+                    for skill_name in ('tg-inspect', 'tg-scaffold', 'tg-shell'):
+                        skill_path = os.path.join(
+                            project_path, '.agents', 'skills', skill_name
+                        )
+                        self.assertTrue(os.path.isdir(skill_path), skill_path)
 
                     for command in (
                         'gearbox tginfo summary --project . --config development.ini --json',
@@ -92,6 +124,15 @@ class TestQuickstartAgentHint(unittest.TestCase):
                     self.assertIn('python -m pytest --collect-only -q', agents)
                     self.assertIn('gearbox migrate -c development.ini db_version', agents)
                     self.assertIn('gearbox tgshell -c development.ini', agents)
+                    self.assertIn(
+                        'Quickstart installs TurboGears-aware coding agent skills',
+                        agents,
+                    )
+                    self.assertIn('``.agents/skills/``', agents)
+                    self.assertIn('gearbox tgskills --claude', agents)
+                    self.assertIn('installs only', agents)
+                    self.assertNotIn('Delete the installed skills directory', agents)
+                    self.assertIn('Target: .agents/skills/', stdout.getvalue())
                     self.assertIn('does not generate `production.ini`', agents)
                     self.assertIn('import, startup, and request-hook code', agents)
         finally:

@@ -104,10 +104,14 @@ effects, like any Python module.
 
       gearbox tgskills
 
-  This installs agent skills that guide AI coding assistants on how to interact
-  with TurboGears projects. The skills tell agents to use ``gearbox tginfo`` for
-  inspection, ``gearbox scaffold`` for creating conventional project files, and
-  ``gearbox tgshell`` for runtime debugging with WebTest.
+  By default this installs agent skills into the project-local
+  ``.agents/skills/`` directory. To opt in manually to Claude Code instead, run
+  ``gearbox tgskills --claude``; this installs only ``.claude/skills/``. The
+  skills tell agents to use ``gearbox tginfo`` for inspection,
+  ``gearbox scaffold`` for creating conventional project files, and
+  ``gearbox tgshell`` for runtime debugging with WebTest. To remove installed
+  skills, delete the project-local ``.agents/skills/`` directory or, for a
+  Claude Code installation, the ``.claude/skills/`` directory.
 
 - **Runtime Debugging:**
 

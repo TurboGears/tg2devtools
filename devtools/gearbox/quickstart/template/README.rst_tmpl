@@ -43,6 +43,12 @@ For a compact project check::
     $ gearbox tginfo routes --project . --config development.ini --json
     $ python -m pytest --collect-only -q
 
+Quickstart also installs optional coding-agent skills into the project-local
+``.agents/skills/`` directory. To install them for Claude Code instead, run
+``gearbox tgskills --claude`` from the project root; this installs only
+``.claude/skills/``. Delete the installed skills directory if you do not use
+that assistant.
+
 Generated Demo Code
 ===================
 

@@ -10,7 +10,8 @@ from gearbox.command import Command
 SKILL_NAMES = ['tg-inspect', 'tg-scaffold', 'tg-shell']
 
 # Target directories for skills
-TARGET_DIRS = ['.agents/skills', '.claude/skills']
+AGENTS_SKILLS_DIR = '.agents/skills'
+CLAUDE_SKILLS_DIR = '.claude/skills'
 
 
 class TgSkillsCommand(Command):
@@ -24,6 +25,10 @@ class TgSkillsCommand(Command):
         parser.add_argument(
             '--project', default='.',
             help='project root directory (default: current directory)'
+        )
+        parser.add_argument(
+            '--claude', action='store_true',
+            help='install only in .claude/skills/ (default: .agents/skills/)'
         )
         return parser
 
@@ -45,23 +50,15 @@ class TgSkillsCommand(Command):
             )
             sys.exit(1)
 
-        # Create target directories and install skills
-        for target_dir in TARGET_DIRS:
-            install_dir = os.path.join(project_dir, target_dir)
-            _install_skills(skills_pkg_path, install_dir, project_dir)
+        target_dir = CLAUDE_SKILLS_DIR if opts.claude else AGENTS_SKILLS_DIR
+        install_dir = os.path.join(project_dir, target_dir)
+        _install_skills(skills_pkg_path, install_dir, project_dir)
 
         print(
             f'TurboGears agent skills installed in {project_dir}'
         )
-        print(
-            f'  - .agents/skills/ (Codex, VS Code, Pi, etc.)'
-        )
-        print(
-            f'  - .claude/skills/ (Claude Code)'
-        )
-        print(
-            'Skills: tg-inspect, tg-scaffold, tg-shell'
-        )
+        print(f'  Target: {target_dir}/')
+        print('  Skills: tg-inspect, tg-scaffold, tg-shell')
 
 
 def _install_skills(source_skills_dir, target_dir, project_dir):
@@ -70,6 +67,21 @@ def _install_skills(source_skills_dir, target_dir, project_dir):
     Creates symlinks to the skill directories. If symlinks cannot be created
     (e.g., on Windows without permissions), falls back to copying.
     """
+    try:
+        real_target_dir = os.path.realpath(target_dir)
+        if os.path.commonpath((project_dir, real_target_dir)) != project_dir:
+            print(
+                f'Target path {target_dir} is outside project directory',
+                file=sys.stderr
+            )
+            sys.exit(1)
+    except (OSError, ValueError) as e:
+        print(
+            f'Cannot validate target path {target_dir}: {e}',
+            file=sys.stderr
+        )
+        sys.exit(1)
+
     # Create target directory if it doesn't exist
     if not os.path.exists(target_dir):
         os.makedirs(target_dir, exist_ok=True)

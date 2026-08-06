@@ -4,11 +4,12 @@ This is a TurboGears project. Use Gearbox as the entrypoint for TurboGears devel
 
 ## TurboGears DevTools
 
-To enable TurboGears-aware coding agents for this project, run:
+Quickstart installs TurboGears-aware coding agent skills into the project at
+``.agents/skills/``. To install them for Claude Code instead, run
+``gearbox tgskills --claude`` from the project root; this installs only
+``.claude/skills/``.
 
-    gearbox tgskills
-
-This installs agent skills that guide AI assistants on how to interact with TurboGears projects:
+These skills guide AI assistants on how to interact with TurboGears projects:
 
 - **tg-inspect**: Use when inspecting the project to discover routes, controllers, models, templates, or project facts
 - **tg-scaffold**: Use when creating new models, controllers, templates, or other conventional project files
