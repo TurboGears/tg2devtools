@@ -95,6 +95,13 @@ gearbox tginfo scaffolds --project . --config development.ini --json
 - Index paths: RootController.index is `/`, subcontroller index is `/subcontroller/`.
 - Dynamic dispatch: `_lookup` and exposed `_default` appear as synthetic flat route rows with `*` in the path.
 
+## Output contract
+
+- `--json` writes a single JSON document to **stdout**; application import/startup log lines go to **stderr**. Parse stdout directly without filtering.
+- Exit codes: `0` success; `1` missing subcommand; `2` unknown subcommand or not run inside the project; `4` config file load failure. Treat any nonzero exit as failure and do not trust partial output.
+- Output never contains credentials: database info is `{enabled, orm}` only (no URL), auth is `{enabled}` only. No redaction step is needed.
+- JSON keys are sorted and rows are deterministically ordered; output is byte-stable across runs for the same project.
+
 ## Workflow
 
 1. Start with `gearbox tginfo summary --project . --config development.ini --json` to understand the project.
