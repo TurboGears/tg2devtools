@@ -29,6 +29,7 @@ testing = [
     "genshi",
     "jinja2",
     "mako",
+    "pytest",
     "WebTest"
 ]
 
