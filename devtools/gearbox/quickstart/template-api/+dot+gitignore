@@ -69,3 +69,7 @@ venv.bak/
 # Database
 *.sqlite
 *.db
+
+# Agent skills (machine-local, regenerated from the installed devtools package)
+.agents/
+.claude/

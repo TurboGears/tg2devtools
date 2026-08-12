@@ -13,6 +13,7 @@ Use this skill when you need to create:
 - New models
 - New controllers
 - New templates
+- New functional tests
 - Other conventional TurboGears project structure
 
 Do **not** use this skill for:
@@ -44,6 +45,22 @@ Example - create a Blog controller:
 gearbox scaffold controller blog
 ```
 
+### Create a full feature in one invocation
+
+Pass multiple scaffold names to create a coherent feature increment for one
+target in a single pass:
+
+```bash
+gearbox scaffold model controller template article
+```
+
+This creates `model/article.py`, `controllers/article.py`, and
+`templates/article.xhtml`. Use this form when a resource needs all three;
+prefer single scaffolds for targeted additions. Edit the generated files
+directly for specific behavior - scaffolds provide conventional structure,
+not finished features. Add `controller_test` to the list to generate a WebTest
+functional test for the same target.
+
 ### Discover available scaffolds
 
 First, check what scaffolds are available in this project:
@@ -70,22 +87,25 @@ gearbox scaffold controller admin --subdir controllers
 
 After using `gearbox scaffold`:
 
-1. **Models**: Import the model from the model package if it should be exported. Create/review migrations manually if needed.
-2. **Controllers**: Mount page controllers in RootController and API controllers in APIController.
-3. **Templates**: Expose the template from a controller action if it should be reachable.
-4. **Edit directly**: The scaffold generates conventional structure - edit the generated files directly to add your specific logic.
+1. **Models**: Import the model from the model package if it should be exported.
+2. **Migrations**: Migration generation lives in the `migrate` command, not in scaffolds. After model changes, generate the revision with `gearbox migrate autogenerate <name> -c development.ini` (diffs model metadata against the database), or `gearbox migrate create <name>` for an empty manual revision. Review and edit the generated revision before applying.
+3. **Controllers**: Mount page controllers in RootController and API controllers in APIController.
+4. **Templates**: Expose the template from a controller action if it should be reachable.
+5. **Edit directly**: The scaffold generates conventional structure - edit the generated files directly to add your specific logic.
 
 ## Safety rules
 
 - `gearbox scaffold` uses Gearbox scaffold semantics - do not invent different overwrite or safety behavior
 - Scaffolding writes project files - review generated code before relying on it
-- Do not run `setup-app` or migrations unless explicitly asked
+- `gearbox migrate autogenerate` loads the application and writes a migration revision - run it only when a migration is actually needed, and review the generated revision before applying
+- Do not run `setup-app` or apply migrations (`upgrade`) unless explicitly asked
 - For runtime debugging of scaffolded code, use `tg-shell` with WebTest requests
 
 ## Workflow
 
 1. Use `gearbox tginfo scaffolds --json` to discover available scaffold templates
-2. Review the selected template and choose the exact target name
-3. Run `gearbox scaffold <name> <target>` to create the files
-4. Edit the generated code directly to add your specific behavior
-5. Use `tg-inspect` to verify the new structure appears correctly
+2. Review the selected templates and choose the exact target name
+3. Run `gearbox scaffold model controller template <target>` to create a full feature, or single scaffolds for targeted additions
+4. If the feature changes models, generate the migration with `gearbox migrate autogenerate <name> -c development.ini` and review it
+5. Edit the generated code directly to add your specific behavior
+6. Use `tg-inspect` to verify the new structure appears correctly

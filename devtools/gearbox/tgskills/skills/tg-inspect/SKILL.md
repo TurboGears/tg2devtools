@@ -40,6 +40,11 @@ gearbox tginfo summary --project . --config development.ini --json
 
 Use `--json` for machine-readable output that agents can parse reliably.
 
+The summary reports the capability facts needed for workflow selection:
+database (enabled/ORM), auth, renderers, and root controller. Combine with
+`gearbox tginfo scaffolds --json` and `gearbox migrate --help` for the full
+capability picture (generators, migration subcommands).
+
 ### Routes and actions
 
 Inspect the static TurboGears object-dispatch route map:
