@@ -25,6 +25,8 @@ Key Features
 - **Database Migrations**: Run migration commands for SQLAlchemy and Alembic effortlessly.
 - **Interactive Shell**: Launch a shell preloaded with your app's context for rapid testing.
 - **Internationalization**: Extract, initialize, update, and compile translation catalogs for your application.
+- **Agent Inspection**: Inspect routes, models, templates, and scaffold templates with ``tginfo``.
+- **Agent Skills**: Install TurboGears-aware agent skills for AI coding assistants with ``gearbox tgskills``.
 - **Gearbox Integration**: Seamlessly work with Gearbox to serve and manage your applications.
 
 Getting Started
@@ -78,7 +80,50 @@ Usage Examples
 
   ::
 
-      gearbox tgshell
+      gearbox tgshell -c development.ini
+
+- **Inspect a Project for Agents and Scripts:**
+
+  ::
+
+      gearbox tginfo summary --project . --config development.ini
+      gearbox tginfo routes --project . --config development.ini --json
+      gearbox tginfo models --project . --config development.ini --json
+      gearbox tginfo templates --project . --config development.ini --json
+      gearbox tginfo scaffolds --project . --config development.ini --json
+
+  ``tginfo`` is read-only. It can import the target application just like
+  ``gearbox tgshell`` or ``gearbox serve``, but it does not run ``setup-app``,
+  migrations, database writes, or runtime requests as part of inspection.
+  Loading application code can still execute project-defined import/startup side
+effects, like any Python module.
+
+- **Install Agent Skills:**
+
+  ::
+
+      gearbox tgskills
+
+  By default this installs agent skills into the project-local
+  ``.agents/skills/`` directory. To opt in manually to Claude Code instead, run
+  ``gearbox tgskills --claude``; this installs only ``.claude/skills/``. The
+  skills tell agents to use ``gearbox tginfo`` for inspection,
+  ``gearbox scaffold`` for creating conventional project files, and
+  ``gearbox tgshell`` for runtime debugging with WebTest. To remove installed
+  skills, delete the project-local ``.agents/skills/`` directory or, for a
+  Claude Code installation, the ``.claude/skills/`` directory.
+
+- **Runtime Debugging:**
+
+  Use ``gearbox tgshell -c development.ini`` when you need the fully loaded
+  application context for runtime checks, including WebTest requests. Runtime
+  request debugging belongs in ``tgshell`` rather than ``tginfo``.
+
+- **Safety Boundaries:**
+
+  ``tginfo`` inspection tools are read-only. Do not run ``setup-app``,
+  migrations, or other database-mutating commands as routine inspection; use
+  them only when intentionally changing a development or test environment.
 
 - **Manage Translations:**
 
@@ -93,6 +138,7 @@ Resources
 ---------
 - **TurboGears Website**: `http://www.turbogears.org`
 - **Documentation**: `https://turbogears.readthedocs.io`
+- **Agent Skills**: Agent Skills standard at `https://agentskills.io`
 - **Community & Support**: Join our `Mailing List <http://groups.google.com/group/turbogears>`_ or `Gitter Chatroom <https://gitter.im/turbogears/Lobby>`_ chatroom.
 
 Contributing

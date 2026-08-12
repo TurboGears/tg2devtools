@@ -1,0 +1,21 @@
+{{start_braces}}# gearbox: output-stem=test_{target} {{end_braces}}
+# -*- coding: utf-8 -*-
+"""Functional tests for the {{start_braces}}target.capitalize(){{end_braces}} API controller."""
+
+from {{package}}.tests import TestController, setup_database
+
+
+class Test{{start_braces}}target.capitalize(){{end_braces}}Controller(TestController):
+    """Tests for the mounted {{start_braces}}target.lower(){{end_braces}} API controller."""
+
+    headers = {'Accept': 'application/json'}
+
+    def setup_method(self, method):
+        super().setup_method(method)
+        setup_database()
+
+    def test_get_all(self):
+        response = self.app.get('/api/{{start_braces}}target.lower(){{end_braces}}', headers=self.headers)
+
+        assert response.content_type == 'application/json'
+        assert '{{start_braces}}target.lower(){{end_braces}}' in response.json

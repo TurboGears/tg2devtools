@@ -1,6 +1,7 @@
 recursive-include devtools/gearbox/*/template *
 recursive-include devtools/gearbox/quickstart/template-api *
 recursive-include devtools/gearbox/quickstart/patches *
+recursive-include devtools/gearbox/tgskills/skills *
 
 global-exclude __pycache__/*
 global-exclude *.pyc

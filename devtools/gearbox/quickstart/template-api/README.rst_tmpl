@@ -19,17 +19,41 @@ Quick Start
 
 1. Install the project in development mode::
 
-    pip install -e .
+    pip install -e '.[development]'
 
-2. Initialize the database and create demo users::
+2. Run the test suite::
+
+    python -m pytest
+
+3. Initialize the database and create demo users::
 
     gearbox setup-app
 
-3. Run the development server::
+4. Run the development server::
 
     gearbox serve --reload --debug
 
-4. Open your browser to http://localhost:8080 to see the API demo page.
+5. Open your browser to http://localhost:8080 to see the API demo page.
+
+Configuration Profiles and Checks
+---------------------------------
+
+Quickstart creates ``development.ini`` for local development and ``test.ini``
+for tests; ``test.ini`` references the development configuration. Quickstart
+does not generate ``production.ini`` because production configuration is
+deployment-specific.
+
+For a compact project check::
+
+    $ gearbox tginfo summary --project . --config development.ini --json
+    $ gearbox tginfo routes --project . --config development.ini --json
+    $ python -m pytest --collect-only -q
+
+Quickstart also installs optional coding-agent skills into the project-local
+``.agents/skills/`` directory. To install them for Claude Code instead, run
+``gearbox tgskills --claude`` from the project root; this installs only
+``.claude/skills/``. Delete the installed skills directory if you do not use
+that assistant.
 
 API Endpoints
 -------------

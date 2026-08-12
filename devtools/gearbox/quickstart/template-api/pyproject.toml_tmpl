@@ -35,6 +35,10 @@ testing = [
     "webtest",
     "pytest",
 ]
+development = [
+    "{{name}}[testing]",
+    "tg.devtools",
+]
 
 [tool.setuptools.packages.find]
 exclude = ["ez_setup", "examples", "tests"]
@@ -45,3 +49,6 @@ zip-safe = false
 
 [project.entry-points."paste.app_factory"]
 main = "{{package}}.config.application:make_app"
+
+[project.entry-points."gearbox.plugins"]
+turbogears-devtools = "tg.devtools"

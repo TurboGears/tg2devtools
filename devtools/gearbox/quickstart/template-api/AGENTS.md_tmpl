@@ -1,0 +1,72 @@
+# AI Agent Customizations
+
+This is a TurboGears project. Use Gearbox as the entrypoint for TurboGears development commands.
+
+## TurboGears DevTools
+
+Quickstart installs TurboGears-aware coding agent skills into the project at
+``.agents/skills/``. To install them for Claude Code instead, run
+``gearbox tgskills --claude`` from the project root; this installs only
+``.claude/skills/``.
+
+These skills guide AI assistants on how to interact with TurboGears projects:
+
+- **tg-inspect**: Use when inspecting the project to discover routes, controllers, models, templates, or project facts
+- **tg-scaffold**: Use when creating new models, controllers, templates, or other conventional project files
+- **tg-shell**: Use when you need to run Python code in the fully loaded application context for runtime checks or WebTest requests
+
+For runtime debugging, use `gearbox tgshell -c development.ini` with WebTest requests.
+
+## Project Commands
+
+Before using project commands, install development dependencies:
+
+    python -m pip install -e '.[development]'
+
+Run these commands from the project root in the normal development environment.
+Select the profile explicitly: `development.ini` is for local development and
+`test.ini` is for tests; `test.ini` references the development configuration.
+Do not infer or switch profiles. Quickstart creates those two files only; it
+does not generate `production.ini`, which is deployment-specific.
+
+### Inspection workflow
+
+Use the read-only `tginfo` sequence for structured project facts. Prefer JSON
+so an agent can parse the results:
+
+    gearbox tginfo summary --project . --config development.ini --json
+    gearbox tginfo routes --project . --config development.ini --json
+    gearbox tginfo models --project . --config development.ini --json
+    gearbox tginfo templates --project . --config development.ini --json
+    gearbox tginfo scaffolds --project . --config development.ini --json
+
+Check test discovery without executing tests:
+
+    python -m pytest --collect-only -q
+
+For a read-only migration status check, use only:
+
+    gearbox migrate -c development.ini db_version
+
+Do not run `setup-app`, migration upgrades, or other database-mutating commands
+as routine inspection. `tginfo` and `tgshell` load application code, so
+project-defined import, startup, and request-hook code can execute. For runtime
+checks or WebTest requests, use the fully loaded application context:
+
+    gearbox tgshell -c development.ini
+
+Use `gearbox scaffold` for conventional project files and consult the project
+README.rst for install, serve, and test workflows.
+
+## Documentation
+
+Consult the version-matched reference documentation instead of stale training
+knowledge:
+
+- https://turbogears.readthedocs.io/en/development/reference/reference.html (development installs)
+- https://turbogears.readthedocs.io/en/latest/reference/reference.html (released installs)
+
+The Reference section covers configuration options, runtime topics, and the
+Classes and Functions API reference. Pick the URL matching the installed
+TurboGears version: `en/development/` tracks development installs;
+`en/latest/` matches the latest release.

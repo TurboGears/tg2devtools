@@ -91,18 +91,18 @@ class ShellCommand(Command):
             locs.update(dict(app=TestApp(wsgiapp)))
 
         if opts.script:
-            self._run_script(opts.script, locs)
+            return self._run_script(opts.script, locs)
         else:
             self._run_shell(base_module, locs, opts.disable_ipython)
 
     def _run_script(self, script, locs):
         script_path = os.path.abspath(script)
         if not os.path.exists(script_path):
-            raise IOError('Unable to open %s script' % script_path)
+            print('Unable to open %s script' % script_path)
+            return 1
 
-        import code
-        i = code.InteractiveInterpreter(locals=locs)
-        i.runsource(open(script_path).read(), script_path, 'exec')
+        with open(script_path) as script_file:
+            exec(compile(script_file.read(), script_path, 'exec'), locs)
 
     def _run_shell(self, base_module, locs, disable_ipython):
         banner = "  All objects from %s are available\n" % base_module

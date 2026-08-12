@@ -1,6 +1,7 @@
 import re
 import os
 import shutil
+import sys
 import uuid
 import importlib.metadata
 import importlib.util
@@ -8,6 +9,8 @@ import importlib.util
 
 from gearbox.template import GearBoxTemplate
 from gearbox.command import Command
+
+from ..tgskills import TgSkillsCommand
 
 beginning_letter = re.compile(r"^[^a-z]*")
 valid_only = re.compile(r"[^a-z0-9_]")
@@ -27,8 +30,14 @@ class QuickstartTemplate(GearBoxTemplate):
         if vars['migrations']:
             vars['egg_plugins'].append('tg.devtools')
 
+    def post(self, template_dir, output_dir, vars):
+        if not vars['database']:
+            os.remove(
+                os.path.join(output_dir, vars['package'], 'model', 'model.py.template')
+            )
 
-class QuickstartAPITemplate(GearBoxTemplate):
+
+class QuickstartAPITemplate(QuickstartTemplate):
 
     def pre(self, command, output_dir, vars):
         """Called before API template is applied."""
@@ -120,20 +129,22 @@ class QuickstartCommand(Command):
         except importlib.metadata.PackageNotFoundError:
             pass
         else:
-            print('The name "%s" is already in use' % opts.name)
+            print('The name "%s" is already in use' % opts.name,
+                  file=sys.stderr)
+            return 1
 
         try:
             if importlib.util.find_spec(opts.package):
                 print('The package name "%s" is already in use'
-                    % opts.package)
-                return
+                    % opts.package, file=sys.stderr)
+                return 1
         except ImportError:
             pass
 
         if os.path.exists(opts.name):
             print('A directory called "%s" already exists. Exiting.'
-                % opts.name)
-            return
+                % opts.name, file=sys.stderr)
+            return 1
 
         opts.cookiesecret = str(uuid.uuid4())
         opts.passwordsalt = str(uuid.uuid4())
@@ -172,6 +183,8 @@ class QuickstartCommand(Command):
             # remove existing migrations directory
             package_migrations_dir = os.path.abspath('migration')
             shutil.rmtree(package_migrations_dir, ignore_errors=True)
+
+        _install_project_skills()
 
 
 def safe_name(name: str) -> str:
@@ -262,21 +275,22 @@ class QuickstartAPICommand(Command):
         except importlib.metadata.PackageNotFoundError:
             pass
         else:
-            print('The name "%s" is already in use' % opts.name)
-            return
+            print('The name "%s" is already in use' % opts.name,
+                  file=sys.stderr)
+            return 1
 
         try:
             if importlib.util.find_spec(opts.package):
                 print('The package name "%s" is already in use'
-                    % opts.package)
-                return
+                    % opts.package, file=sys.stderr)
+                return 1
         except ImportError:
             pass
 
         if os.path.exists(opts.name):
             print('A directory called "%s" already exists. Exiting.'
-                % opts.name)
-            return
+                % opts.name, file=sys.stderr)
+            return 1
 
         opts.cookiesecret = str(uuid.uuid4())
         opts.passwordsalt = str(uuid.uuid4())
@@ -312,3 +326,11 @@ class QuickstartAPICommand(Command):
             # remove existing migrations directory
             package_migrations_dir = os.path.abspath('migration')
             shutil.rmtree(package_migrations_dir, ignore_errors=True)
+
+        _install_project_skills()
+
+
+def _install_project_skills():
+    command = TgSkillsCommand(None, {})
+    opts = command.get_parser('gearbox tgskills').parse_args([])
+    command.run(opts)
