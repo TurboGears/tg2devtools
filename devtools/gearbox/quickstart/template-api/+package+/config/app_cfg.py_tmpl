@@ -64,26 +64,66 @@ base_config.update_blueprint({
 # This tells to TurboGears how to retrieve the data for your user
 from tg.configuration.auth import TGAuthMetadata
 {{if auth == "sqlalchemy" or auth == "ming"}}
-class ApplicationAuthMetadata(TGAuthMetadata):
+from zope.interface import implementer
+from repoze.who.interfaces import IIdentifier, IAuthenticator
+
+
+@implementer(IIdentifier)
+class BearerTokenIdentifier(object):
+    """repoze.who identifier that recognizes the ``Authorization: Bearer`` header."""
+
+    def identify(self, environ):
+        auth_header = environ.get('HTTP_AUTHORIZATION', '')
+        if auth_header.startswith('Bearer '):
+            return {'api_token': auth_header[7:].strip()}
+
+    def remember(self, environ, identity):
+        return []
+
+    def forget(self, environ, identity):
+        return []
+
+
+@implementer(IAuthenticator)
+class BearerTokenAuthenticator(object):
+    """repoze.who authenticator that resolves ``api_token`` identities."""
+
     def __init__(self, dbsession, user_class):
         self.dbsession = dbsession
         self.user_class = user_class
 
     def authenticate(self, environ, identity):
-        # Check Authorization header for Bearer token first
-        auth_header = environ.get('HTTP_AUTHORIZATION', '')
-        if auth_header.startswith('Bearer '):
-            token = auth_header[7:].strip()
-            user = self.dbsession.query(self.user_class).filter_by(api_token=token).first()
-            if user:
-                return user.user_name
-            # Token not found, fall through to username/password
+        token = identity.get('api_token')
+        if not token:
+            return None
+        {{if sqlalchemy}}
+        user = self.dbsession.query(self.user_class).filter_by(api_token=token).first()
+        {{elif ming}}
+        user = self.user_class.query.get(api_token=token)
+        {{endif}}
+        if user:
+            return user.user_name
+        return None
 
+
+class ApplicationAuthMetadata(TGAuthMetadata):
+    def __init__(self, dbsession, user_class):
+        self.dbsession = dbsession
+        self.user_class = user_class
+
+    def _find_user(self, **criteria):
+        {{if sqlalchemy}}
+        return self.dbsession.query(self.user_class).filter_by(**criteria).first()
+        {{elif ming}}
+        return self.user_class.query.get(**criteria)
+        {{endif}}
+
+    def authenticate(self, environ, identity):
         # Standard TG username/password auth
         login = identity.get('login')
         password = identity.get('password')
 
-        user = self.dbsession.query(self.user_class).filter_by(user_name=login).first()
+        user = self._find_user(user_name=login)
 
         if not user:
             login = None
@@ -114,9 +154,7 @@ class ApplicationAuthMetadata(TGAuthMetadata):
         return login
 
     def get_user(self, identity, userid):
-        return self.dbsession.query(self.user_class).filter_by(
-            user_name=userid
-        ).first()
+        return self._find_user(user_name=userid)
 
     def get_groups(self, identity, userid):
         return [g.group_name for g in identity['user'].groups]
@@ -148,6 +186,13 @@ base_config.update_blueprint({
     # override this if you would like to provide a different who plugin for
     # managing login and logout of your application
     'sa_auth.form_plugin': None,
+
+    # Recognize the ``Authorization: Bearer`` header for API clients
+    'sa_auth.identifiers': [('bearer', BearerTokenIdentifier()), ('default', None)],
+    'sa_auth.authenticators': [
+        ('bearer', BearerTokenAuthenticator(model.DBSession, model.User)),
+        ('default', None),
+    ],
 
     # You can use a different repoze.who Authenticator if you want to
     # change the way users can login

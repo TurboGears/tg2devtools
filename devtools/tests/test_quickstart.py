@@ -390,6 +390,13 @@ class TestAPIQuickStart(BaseTestQuickStart, unittest.TestCase):
             '/tests/functional/test_root.py::TestRootController::test_openapi_schema_honors_script_name',
             '/tests/functional/test_movies.py::TestMoviesController::test_movie_crud_returns_json',
             '/tests/functional/test_movies.py::TestMoviesController::test_movie_validation_returns_json',
+            '/tests/functional/test_auth.py::TestBearerAuth::test_bearer_token_authenticates',
+            '/tests/functional/test_auth.py::TestBearerAuth::test_cookie_login_authenticates',
+            '/tests/functional/test_auth.py::TestBearerAuth::test_unknown_bearer_token_is_rejected',
+            '/tests/functional/test_auth.py::TestBearerAuth::test_missing_bearer_token_is_rejected',
+            '/tests/functional/test_auth.py::TestSecurePage::test_secure_page_redirects_anonymous_users',
+            '/tests/functional/test_auth.py::TestSecurePage::test_secure_page_accessible_after_login',
+            '/tests/functional/test_auth.py::TestSecurePage::test_login_page_renders',
         ]
 
         for test in tests:
