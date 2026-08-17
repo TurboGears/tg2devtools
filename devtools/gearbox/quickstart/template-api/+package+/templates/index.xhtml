@@ -102,13 +102,28 @@ curl -H "Authorization: Bearer abc123def456ghi789jkl012mno345" \
     <h2>🧹 Cleanup Demo Parts</h2>
     <div class="note">
         <p><strong>Note:</strong> Once you're ready to build your own API, you can remove the demo parts.</p>
-        <p>Run these commands from your project root:</p>
-        <pre><code>cd ${project}
-rm -rf controllers/api/movies.py controllers/demo.py model/movie.py tests/functional/test_movies.py
-gearbox patch controllers/root.py DemoController -d
-gearbox patch controllers/api/__init__.py Movie -d
-gearbox patch model/__init__.py movie -d
-gearbox patch websetup/bootstrap.py movie -d</code></pre>
+        <p>Run these commands from your project root (the directory
+           containing <code>development.ini</code>):</p>
+        <pre><code>rm -rf ${package}/controllers/api/movies.py ${package}/controllers/demo.py ${package}/model/movie.py ${package}/templates/secure.xhtml ${package}/tests/functional/test_movies.py ${package}/tests/functional/test_auth.py
+gearbox patch ${package}/controllers/root.py DemoController -d
+gearbox patch ${package}/controllers/api/__init__.py Movie -d
+gearbox patch ${package}/model/__init__.py movie -d</code></pre>
+        <p>Then, by hand:</p>
+        <ul>
+            <li>delete the <code>secure</code> action from
+                <code>${package}/controllers/root.py</code> (its
+                <code>@expose</code>/<code>@require</code> decorators, the
+                <code>def secure</code> signature and the method body);</li>
+            <li>delete the sample-movies block from
+                <code>${package}/websetup/bootstrap.py</code> (from the
+                <code>from ${package}.model.movie import Movie</code> line
+                through the
+                <code>print(f"⚠ Could not create sample movies: {e}")</code>
+                line);</li>
+            <li>drop the <code>'Movie'</code> entry from
+                <code>__all__</code> in
+                <code>${package}/model/__init__.py</code>.</li>
+        </ul>
     </div>
 
     <hr />

@@ -25,10 +25,16 @@ class RootController(BaseController):
     @expose('{{package}}.templates.index')
     def index(self, **kw):
         """API demo landing page."""
-        return dict(page='index', project='{{package}}')
-
+        return dict(page='index', project='{{package}}', package='{{package}}')
 
 {{if auth == "sqlalchemy" or auth == "ming"}}
+
+    @expose('{{package}}.templates.secure')
+    @require(predicates.not_anonymous(msg=l_('Please login to access this page')))
+    def secure(self, **kw):
+        """Protected web page showcasing the normal login flow."""
+        return dict(page='secure', user=request.identity['user'],
+                    project='{{package}}')
 
     @expose('{{package}}.templates.login')
     def login(self, came_from=lurl('/'), failure=None, login=''):
@@ -44,7 +50,8 @@ class RootController(BaseController):
             flash(_('Wrong credentials'), 'warning')
 
         return dict(page='login', login_counter=str(login_counter),
-                    came_from=came_from, login=login)
+                    came_from=came_from, login=login, failure=failure,
+                    project='{{package}}')
 
     @expose()
     def post_login(self, came_from=lurl('/')):
