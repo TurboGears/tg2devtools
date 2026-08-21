@@ -37,6 +37,7 @@ testing = [
 quickstart = "devtools.gearbox.quickstart:QuickstartCommand"
 quickstart-api = "devtools.gearbox.quickstart:QuickstartAPICommand"
 tgext = "devtools.gearbox.tgext:MakeTGExtCommand"
+tgdocs = "devtools.gearbox.tgdocs:TgDocsCommand"
 tgskills = "devtools.gearbox.tgskills:TgSkillsCommand"
 
 [project.entry-points."gearbox.project_commands"]

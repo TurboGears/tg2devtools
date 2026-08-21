@@ -60,13 +60,15 @@ README.rst for install, serve, and test workflows.
 
 ## Documentation
 
-Consult the version-matched reference documentation instead of stale training
-knowledge:
+For agent-readable plain-text documentation, run from the project root:
 
-- https://turbogears.readthedocs.io/en/development/reference/reference.html (development installs)
-- https://turbogears.readthedocs.io/en/latest/reference/reference.html (released installs)
+    gearbox tgdocs
+
+This provides the version-matched TurboGears documentation in .txt format and
+prints the local cache path. 
+
+Consult the version-matched reference documentation instead of stale training
+knowledge.
 
 The Reference section covers configuration options, runtime topics, and the
-Classes and Functions API reference. Pick the URL matching the installed
-TurboGears version: `en/development/` tracks development installs;
-`en/latest/` matches the latest release.
+Classes and Functions API reference. 
