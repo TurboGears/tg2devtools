@@ -64,7 +64,6 @@ API Endpoints
 - ``PUT /api/movies/{id}`` - Update a movie
 - ``DELETE /api/movies/{id}`` - Delete a movie
 - ``GET /demo/admin`` - Admin-only endpoint (requires 'manage' permission)
-- ``GET /secure`` - Protected demo page (requires login)
 - ``GET /api/openapi.json`` - OpenAPI specification
 - ``GET /api/docs`` - Interactive API documentation (Redoc)
 
@@ -99,24 +98,17 @@ Cleanup
 Once you're ready to build your own API, you can remove the demo parts::
 
     rm -rf {{package}}/controllers/api/movies.py {{package}}/controllers/demo.py \
-           {{package}}/model/movie.py {{package}}/templates/secure.xhtml \
+           {{package}}/model/movie.py {{package}}/websetup/bootstrap_movies.py \
            {{package}}/tests/functional/test_movies.py \
            {{package}}/tests/functional/test_auth.py
     gearbox patch {{package}}/controllers/root.py DemoController -d
     gearbox patch {{package}}/controllers/api/__init__.py Movie -d
-    gearbox patch {{package}}/model/__init__.py movie -d
+    gearbox patch {{package}}/controllers/api/__init__.py movies -d
+    gearbox patch {{package}}/model/__init__.py Movie -d
+    gearbox patch {{package}}/websetup/bootstrap.py bootstrap_movies -d
 
 Run the commands from the project root (the directory containing
-``development.ini``). Then, by hand:
-
-- delete the ``secure`` action from ``{{package}}/controllers/root.py``
-  (its ``@expose``/``@require`` decorators, the ``def secure`` signature
-  and the method body);
-- delete the sample-movies block from ``{{package}}/websetup/bootstrap.py``
-  (from the ``from {{package}}.model.movie import Movie`` line through the
-  ``print(f"⚠ Could not create sample movies: {e}")`` line);
-- drop the ``'Movie'`` entry from ``__all__`` in
-  ``{{package}}/model/__init__.py``.
+``development.ini``).
 
 The demo tests (``test_movies.py`` and ``test_auth.py``) are removed
 together with the demo parts because they exercise the endpoints above.

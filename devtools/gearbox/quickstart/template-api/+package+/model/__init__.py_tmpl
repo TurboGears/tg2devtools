@@ -24,7 +24,17 @@ from .auth import Group, Permission, User
 {{endif}}
 from .movie import Movie
 
-__all__ = ['DBSession', 'DeclarativeBase', 'metadata', {{if auth}}'User', 'Group', 'Permission', {{endif}}'Movie']
+__all__ = [
+    'DBSession',
+    'DeclarativeBase',
+    'metadata',
+    {{if auth}}
+    'User',
+    'Group',
+    'Permission',
+    {{endif}}
+    'Movie',
+]
 {{elif ming}}
 from .session import mainsession, DBSession
 
@@ -33,7 +43,15 @@ from .auth import Group, Permission, User
 {{endif}}
 from .movie import Movie
 
-__all__ = ['DBSession', {{if auth}}'User', 'Group', 'Permission', {{endif}}'Movie']
+__all__ = [
+    'DBSession',
+    {{if auth}}
+    'User',
+    'Group',
+    'Permission',
+    {{endif}}
+    'Movie',
+]
 {{else}}
 # No database configured
 DBSession = None

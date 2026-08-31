@@ -85,23 +85,19 @@ class TestBearerAuth(TestController):
         response = self.app.get('/demo/admin')
         assert response.json['user'] == 'manager'
 
-
-class TestSecurePage(TestBearerAuth):
-    """Tests for the protected web page (normal login flow)."""
-
     def test_login_page_renders(self):
         response = self.app.get('/login')
         assert response.status_int == 200
         assert '<h1>Login</h1>' in response.text
 
-    def test_secure_page_redirects_anonymous_users(self):
-        response = self.app.get('/secure', status=302)
+    def test_admin_page_redirects_anonymous_users(self):
+        response = self.app.get('/demo/admin', status=302)
         assert '/login' in response.headers['Location']
 
-    def test_secure_page_accessible_after_login(self):
+    def test_admin_page_accessible_after_login(self):
         self.app.post(
             '/login_handler',
             {'login': 'manager', 'password': 'managepass'},
         )
-        response = self.app.get('/secure')
-        assert 'Example manager' in response.text
+        response = self.app.get('/demo/admin')
+        assert response.json['user'] == 'manager'

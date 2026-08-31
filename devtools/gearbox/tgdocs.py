@@ -5,6 +5,7 @@ import shutil
 import stat
 import sys
 import tempfile
+import urllib.error
 import urllib.request
 import uuid
 import zipfile
@@ -198,6 +199,9 @@ def _fetch_etag(cache_directory):
         req = urllib.request.Request(url, method="HEAD")
         with urllib.request.urlopen(req, timeout=30) as response:
             return response.headers.get("ETag")
+    except urllib.error.HTTPError as error:
+        error.close()
+        return None
     except Exception:
         return None
 

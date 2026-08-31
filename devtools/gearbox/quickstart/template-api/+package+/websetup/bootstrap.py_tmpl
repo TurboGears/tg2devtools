@@ -4,6 +4,9 @@
 import transaction
 {{endif}}
 from {{package}} import model
+{{if sqlalchemy or ming}}
+from {{package}}.websetup.bootstrap_movies import bootstrap_movies
+{{endif}}
 
 
 def bootstrap(command, conf, vars):
@@ -104,35 +107,8 @@ def bootstrap(command, conf, vars):
         model.DBSession.clear()
     {{endif}}
 
-    # Create sample movies for the demo
     {{if sqlalchemy or ming}}
-    from {{package}}.model.movie import Movie
-    
-    try:
-        {{if sqlalchemy}}
-        has_sample_movies = model.DBSession.query(Movie).filter_by(title="Inception").first()
-        {{elif ming}}
-        has_sample_movies = Movie.query.get(title="Inception")
-        {{endif}}
-        if has_sample_movies:
-            print('Sample movies already exist, continuing with bootstrapping...')
-        else:
-            inception = Movie(title="Inception", year=2010, description="A mind-bending movie about dreams within dreams")
-            matrix = Movie(title="The Matrix", year=1999, description="Red pill or blue pill?")
-            pulp = Movie(title="Pulp Fiction", year=1994, description="A nonlinear crime film")
-
-            {{if sqlalchemy}}
-            model.DBSession.add_all([inception, matrix, pulp])
-            model.DBSession.flush()
-            transaction.commit()
-            {{else}}
-            model.DBSession.flush()
-            model.DBSession.clear()
-            {{endif}}
-
-            print("✓ Created sample movies: Inception, The Matrix, Pulp Fiction")
-    except Exception as e:
-        print(f"⚠ Could not create sample movies: {e}")
+    bootstrap_movies()
     {{endif}}
 
     # <websetup.bootstrap.after.auth>
