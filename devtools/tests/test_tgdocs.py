@@ -34,15 +34,15 @@ class TestTgDocsCommand(unittest.TestCase):
         return self.cache_home / "turbogears" / "tg2docs" / version
 
     def test_global_command_entry_point_loads_tgdocs_command(self):
-        import tomllib
+        project = (
+            Path(__file__).parent.parent.parent / "pyproject.toml"
+        ).read_text(encoding="utf-8")
 
-        with open(Path(__file__).parent.parent.parent / "pyproject.toml", "rb") as f:
-            project = tomllib.load(f)
-        entries = project["project"]["entry-points"]["gearbox.commands"]
-        tgdocs_entry_value = entries.get("tgdocs")
-
-        self.assertIsNotNone(tgdocs_entry_value)
-        self.assertEqual("devtools.gearbox.tgdocs:TgDocsCommand", tgdocs_entry_value)
+        self.assertIn('[project.entry-points."gearbox.commands"]', project)
+        self.assertIn(
+            'tgdocs = "devtools.gearbox.tgdocs:TgDocsCommand"',
+            project,
+        )
         self.assertIs(TgDocsCommand, TgDocsCommand)
 
     def test_orphan_generation_is_recovered_without_publishing_parent(self):
