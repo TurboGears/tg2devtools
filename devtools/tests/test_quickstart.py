@@ -122,7 +122,7 @@ class BaseTestQuickStart(object):
         cls.command.run(opts)
 
         # Install quickstarted project dependencies
-        cls.run_pip(['install', '--pre', '-e', '%s[testing]' % cls.proj_dir])
+        cls.run_pip(['install', '--pre', '-e', '%s[development]' % cls.proj_dir])
 
         # Mark the packages as installed even outside the virtualenv
         # so we can load app in tests which are not executed inside
@@ -392,6 +392,8 @@ class TestAPIQuickStart(BaseTestQuickStart, unittest.TestCase):
             '/tests/functional/test_movies.py::TestMoviesController::test_movie_validation_returns_json',
             '/tests/functional/test_auth.py::TestBearerAuth::test_bearer_token_authenticates',
             '/tests/functional/test_auth.py::TestBearerAuth::test_cookie_login_authenticates',
+            '/tests/functional/test_auth.py::TestBearerAuth::test_cookie_login_still_authenticates_after_bearer_request',
+            '/tests/functional/test_auth.py::TestBearerAuth::test_failed_cookie_login_redirects_to_login',
             '/tests/functional/test_auth.py::TestBearerAuth::test_unknown_bearer_token_is_rejected',
             '/tests/functional/test_auth.py::TestBearerAuth::test_missing_bearer_token_is_rejected',
             '/tests/functional/test_auth.py::TestBearerAuth::test_admin_page_redirects_anonymous_users',

@@ -44,12 +44,14 @@ Check test discovery without executing tests:
 
     python -m pytest --collect-only -q
 
-For a read-only migration status check, use only:
-
-    gearbox migrate -c development.ini db_version
-
+{{if sqlalchemy and migrations}}
+Migration commands live in README.rst under "Database Migrations".
 Do not run `setup-app`, migration upgrades, or other database-mutating commands
-as routine inspection. `tginfo` and `tgshell` load application code, so
+as routine inspection; `gearbox migrate db_version` is the only read-only check.
+{{else}}
+Do not run `setup-app` or other database-mutating commands as routine inspection.
+{{endif}}
+`tginfo` and `tgshell` load application code, so
 project-defined import, startup, and request-hook code can execute. For runtime
 checks or WebTest requests, use the fully loaded application context:
 

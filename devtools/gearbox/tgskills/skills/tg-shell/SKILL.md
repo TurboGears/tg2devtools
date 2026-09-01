@@ -19,27 +19,36 @@ python -m pip install -e '.[testing]'
 
 ## Run a script
 
+The optional positional argument is a script filename. It is not Python source
+from stdin, and `-` is not a stdin alias. Do not pipe code to `tgshell` or use
+`gearbox tgshell -`; write a temporary file instead:
+
 ```bash
-gearbox tgshell -c test.ini debug.py
+cat > /tmp/tg-check.py <<'PY'
+print("package:", config["package_name"])
+print("app:", wsgiapp)
+PY
+gearbox tgshell -c test.ini /tmp/tg-check.py
 ```
 
-Omit `debug.py` for an interactive session. `tgshell` makes `wsgiapp` and
-TurboGears globals including `config` and `request` available. It provides
-`model` only when the application has an importable `<package>.model` module.
-It provides `app` only when WebTest is installed; `app` is a WebTest `TestApp`
-around `wsgiapp`.
+The script runs after the application is loaded. Do not call `loadapp` again;
+`tgshell` already provides `wsgiapp`, `config`, `request`, and other
+TurboGears globals. It provides `model` only when the application has an
+importable `<package>.model` module. It provides `app` only when WebTest is
+installed; `app` is a WebTest `TestApp` around `wsgiapp`. Omit the filename for
+an interactive session.
 
 `tgshell` loads the configured WSGI app, then immediately requests
 `/_test_vars`. That may run project imports, application startup, middleware,
 and request hooks. `tgshell` itself does not run `setup-app`, migrations, or
 intentional database writes.
 
-## Inspect locals and make a fake HTTP request
+## Inspect locals and make a runtime request
 
 This recipe requires WebTest because it uses `app`.
 
 ```python
-print("locals:", wsgiapp)
+print("wsgiapp:", wsgiapp)
 print("app:", app)
 print("package:", config["package_name"])
 

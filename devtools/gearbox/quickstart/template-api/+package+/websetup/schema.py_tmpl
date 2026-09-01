@@ -1,19 +1,33 @@
 # -*- coding: utf-8 -*-
-"""Create the {{project}} database schema."""
-
+"""Setup the {{project}} application"""
+from tg import config
 {{if sqlalchemy}}
 import transaction
-
-from tg import config
-
-
-def setup_schema(command, conf, vars):
-    """Create the SQLAlchemy tables."""
-    from {{package}} import model
-
-    model.metadata.create_all(bind=config['tg.app_globals'].sa_engine)
-    transaction.commit()
-{{else}}
-def setup_schema(command, conf, vars):
-    """Set up the {{project}} database."""
 {{endif}}
+
+
+def setup_schema(command, conf, vars):
+    """Place any commands to setup {{package}} here"""
+    {{if sqlalchemy}}
+    # Load the models
+
+    # <websetup.websetup.schema.before.model.import>
+    from {{package}} import model
+    # <websetup.websetup.schema.after.model.import>
+
+    # <websetup.websetup.schema.before.metadata.create_all>
+    print("Creating tables")
+    model.metadata.create_all(bind=config['tg.app_globals'].sa_engine)
+    # <websetup.websetup.schema.after.metadata.create_all>
+    transaction.commit()
+    {{endif}}
+
+    {{if sqlalchemy and migrations}}
+    print('Initializing Migrations')
+    import alembic.config
+    alembic_cfg = alembic.config.Config()
+    alembic_cfg.set_main_option("script_location", "migration")
+    alembic_cfg.set_main_option("sqlalchemy.url", config['sqlalchemy.url'])
+    import alembic.command
+    alembic.command.stamp(alembic_cfg, "head")
+    {{endif}}

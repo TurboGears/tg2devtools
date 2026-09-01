@@ -25,9 +25,6 @@ dependencies = [
   "zope.sqlalchemy >= 1.2",
   "sqlalchemy < 3.0",
   {{endif}}
-  {{if sqlalchemy and migrations}}
-  "alembic",
-  {{endif}}
   {{if ming}}
   "ming>=0.4.3",
   {{endif}}
@@ -48,6 +45,9 @@ testing = [
 development = [
   "{{project}}[testing]",
   "tg.devtools",
+  {{if sqlalchemy and migrations}}
+  "alembic",
+  {{endif}}
 ]
 
 [tool.setuptools]

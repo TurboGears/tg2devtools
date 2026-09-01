@@ -49,6 +49,24 @@ For a compact project check::
     $ gearbox tginfo routes --project . --config development.ini --json
     $ python -m pytest --collect-only -q
 
+{{if sqlalchemy and migrations}}
+Database Migrations
+-------------------
+
+Alembic is included in the development dependencies. Migrations are usually
+not needed during ordinary development. To read the current database revision
+without changing it, run::
+
+    $ gearbox migrate -c development.ini db_version
+
+Creating a revision, autogenerating a revision, and upgrading a database are
+deliberate schema or deployment operations::
+
+    $ gearbox migrate -c development.ini create 'Describe the schema change'
+    $ gearbox migrate -c development.ini autogenerate 'Describe the schema change'
+    $ gearbox migrate -c development.ini upgrade
+{{endif}}
+
 Quickstart also installs optional coding-agent skills into the project-local
 ``.agents/skills/`` directory. To install them for Claude Code instead, run
 ``gearbox tgskills --claude`` from the project root; this installs only

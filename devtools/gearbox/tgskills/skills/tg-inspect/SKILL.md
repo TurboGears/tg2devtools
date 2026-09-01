@@ -42,8 +42,9 @@ Use `--json` for machine-readable output that agents can parse reliably.
 
 The summary reports the capability facts needed for workflow selection:
 database (enabled/ORM), auth, renderers, and root controller. Combine with
-`gearbox tginfo scaffolds --json` and `gearbox migrate --help` for the full
-capability picture (generators, migration subcommands).
+`gearbox tginfo scaffolds --json` for the full scaffold picture. Migration
+support is project-specific; follow the project's generated `AGENTS.md` or
+`README.rst` instead of assuming a migration command exists.
 
 ### Routes and actions
 
@@ -55,7 +56,12 @@ gearbox tginfo routes --project . --config development.ini --json
 
 This returns flat route/action rows with:
 - path
-- kind (controller, action, dynamic_lookup, dynamic_default)
+- kind (controller, action, rest_collection, rest_item, dynamic_lookup, dynamic_default)
+
+For RestController resources, collection methods such as get_all and post are
+reported at the collection path, while item methods such as get_one and
+post_delete are reported at the item path with a wildcard. These routes are
+static descriptions of REST dispatch; use tg-shell for runtime request checks.
 - controller fully-qualified name and source location
 - action name and source location
 - controller and action docstrings
@@ -93,8 +99,7 @@ gearbox tginfo scaffolds --project . --config development.ini --json
 ## Safety rules
 
 - These `tginfo` commands are **read-only** - they do not modify the project.
-- Do not run `setup-app`, migration upgrades, or other database-mutating commands as part of routine inspection.
-- For a read-only migration status check, use `gearbox migrate -c development.ini db_version` only.
+- Do not run `setup-app` or other database-mutating commands as part of routine inspection.
 - Loading application code can execute project-defined import, startup, and request-hook code, like any Python import. This applies to both `tginfo` and `tgshell`.
 - Source locations in output are relative to the project root for easy navigation.
 - Index paths: RootController.index is `/`, subcontroller index is `/subcontroller/`.

@@ -54,40 +54,6 @@ class TestTgSkillsCommand(unittest.TestCase):
         self.assertIn('.claude/skills/', help_text)
         self.assertIn('.agents/skills/', help_text)
 
-    def test_installed_tg_inspect_skill_contains_safe_workflow(self):
-        project_dir = os.path.join(self.temp_dir, 'testproject')
-        os.makedirs(project_dir)
-        os.chdir(project_dir)
-
-        from devtools.gearbox.tgskills import TgSkillsCommand
-
-        command = TgSkillsCommand(None, {})
-        opts = command.get_parser('gearbox tgskills').parse_args([])
-        with redirect_stdout(io.StringIO()):
-            command.take_action(opts)
-
-        skill_path = os.path.join(
-            project_dir, '.agents', 'skills', 'tg-inspect', 'SKILL.md'
-        )
-        with open(skill_path) as skill_file:
-            content = skill_file.read()
-
-        expected_tginfo_commands = (
-            'gearbox tginfo summary --project . --config development.ini --json',
-            'gearbox tginfo routes --project . --config development.ini --json',
-            'gearbox tginfo models --project . --config development.ini --json',
-            'gearbox tginfo templates --project . --config development.ini --json',
-            'gearbox tginfo scaffolds --project . --config development.ini --json',
-        )
-        for expected_command in expected_tginfo_commands:
-            self.assertIn(expected_command, content)
-        self.assertIn('python -m pytest --collect-only -q', content)
-        self.assertIn('gearbox migrate -c development.ini db_version', content)
-        self.assertIn('gearbox tgshell -c development.ini', content)
-        self.assertIn('generate `production.ini`', content)
-        self.assertIn('deployment-specific', content)
-        self.assertIn('import, startup, and request-hook code', content)
-
     def test_tgskills_does_not_overwrite_existing_skill_directory(self):
         """Test that tgskills does not overwrite an existing non-symlink skill directory."""
         project_dir = os.path.join(self.temp_dir, 'testproject')

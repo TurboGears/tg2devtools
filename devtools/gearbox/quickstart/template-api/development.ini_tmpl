@@ -6,9 +6,15 @@ server.socket_port = 8080
 # Application configuration
 full_stack = true
 
+{{if sqlalchemy}}
 # SQLAlchemy configuration (SQLite file for development)
 sqlalchemy.url = sqlite:///%(here)s/devdata.db
 sqlalchemy.echo = false
+{{elif ming}}
+# Ming configuration
+ming.url = mongodb://localhost:27017/
+ming.db = {{package}}
+{{endif}}
 
 # Authentication
 sa_auth.cookie_secret = {{cookiesecret}}

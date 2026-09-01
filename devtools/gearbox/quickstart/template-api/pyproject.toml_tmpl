@@ -38,6 +38,9 @@ testing = [
 development = [
     "{{name}}[testing]",
     "tg.devtools",
+    {{if sqlalchemy and migrations}}
+    "alembic",
+    {{endif}}
 ]
 
 [tool.setuptools.packages.find]

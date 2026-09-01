@@ -14,9 +14,14 @@ class ShellCommand(Command):
     This allows you to test your mapper, models, and simulate web requests
     using ``WebTest``.
 
+    The optional positional argument is a Python script filename. It does not
+    read Python source from stdin and ``-`` is not a stdin alias. The script
+    runs with the already-loaded ``wsgiapp`` and application objects in scope;
+    it must not call ``loadapp`` again.
+
     Example::
 
-        $ gearbox tgshell -c my-development.ini
+        $ gearbox tgshell -c my-development.ini check.py
 
     """
     def get_description(self):
@@ -36,7 +41,7 @@ class ShellCommand(Command):
 
         parser.add_argument('script',
             nargs='?',
-            help='script to run, if omitted will open an interactive session')
+            help='Python script filename; omit for an interactive session (not stdin or -)')
 
         return parser
 

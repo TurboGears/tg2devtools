@@ -12,7 +12,10 @@ import unittest
 from pathlib import Path
 
 from devtools.gearbox.tginfo import TgInfoCommand
+from tg import expose
+from tg.controllers import RestController
 from tg.validation import Convert
+
 
 class FakeDecoration:
     def __init__(self, engines=None, custom_engines=None, requirements=None, validations=None):
@@ -400,6 +403,34 @@ class TgInfoRoutesTests(unittest.TestCase):
         self.assertEqual(mounted['kind'], 'wsgi_app')
         self.assertEqual(mounted['controller'], 'sampleapp.controllers.root.WSGIAppController')
         json.dumps(routes, sort_keys=True)
+
+    def test_routes_discovers_nested_rest_controller_and_uses_rest_paths(self):
+        class MoviesController(RestController):
+            @expose('json')
+            def get_all(self):
+                return {'movies': []}
+
+            @expose('json')
+            def get_one(self, movie_id):
+                return {'movie_id': movie_id}
+
+        class APIController(object):
+            movies = MoviesController()
+
+        class RootController(object):
+            api = APIController()
+
+        self.install_fake_tg(RootController())
+
+        routes = self.run_tginfo('routes')
+        by_path_action = {(row['path'], row['action']): row for row in routes}
+
+        collection = by_path_action[('/api/movies/', 'get_all')]
+        self.assertEqual(collection['kind'], 'rest_collection')
+        item = by_path_action[('/api/movies/*', 'get_one')]
+        self.assertEqual(item['kind'], 'rest_item')
+        self.assertNotIn(('/api/movies/get_all', 'get_all'), by_path_action)
+        self.assertNotIn(('/api/movies/get_one', 'get_one'), by_path_action)
 
     def test_routes_json_formats_error_handlers_without_calling_callable_repr(self):
         def function_error_handler():

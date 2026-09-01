@@ -85,6 +85,27 @@ class TestBearerAuth(TestController):
         response = self.app.get('/demo/admin')
         assert response.json['user'] == 'manager'
 
+    def test_cookie_login_still_authenticates_after_bearer_request(self):
+        self.app.get(
+            '/demo/admin',
+            headers={'Authorization': 'Bearer not-a-real-token'},
+            status=302,
+        )
+        self.app.post(
+            '/login_handler',
+            {'login': 'manager', 'password': 'managepass'},
+        )
+        response = self.app.get('/demo/admin')
+        assert response.json['user'] == 'manager'
+
+    def test_failed_cookie_login_redirects_to_login(self):
+        response = self.app.post(
+            '/login_handler',
+            {'login': 'manager', 'password': 'wrong-password'},
+            status=302,
+        )
+        assert '/login' in response.location
+
     def test_login_page_renders(self):
         response = self.app.get('/login')
         assert response.status_int == 200

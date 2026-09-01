@@ -645,8 +645,12 @@ class _RouteCollector:
                     continue
 
                 if callable(value) and self._is_exposed(value):
-                    kind = 'index' if name == 'index' else 'action'
-                    self.rows.append(self._row(controller, self._action_path(segments, name), kind, name, value))
+                    if self._is_rest_controller(controller):
+                        path, kind = self._rest_action_path(segments, name, value)
+                    else:
+                        kind = 'index' if name == 'index' else 'action'
+                        path = self._action_path(segments, name)
+                    self.rows.append(self._row(controller, path, kind, name, value))
         finally:
             active.remove(identity)
 
@@ -697,17 +701,47 @@ class _RouteCollector:
                     members.append((name, value))
         return members
 
-    def _is_controller(self, value):
+    def _is_controller(self, value, active=None):
         if value is None or isinstance(value, (str, bytes, bytearray, int, float, bool, tuple, list, dict, set)):
             return False
         if self._is_wsgi_controller(value):
             return True
-        for name, member in self._dispatch_members(value):
-            if name in self._DISPATCH_PRIVATE_NAMES and callable(member):
-                return True
-            if not name.startswith('_') and callable(member) and self._is_exposed(member):
-                return True
-        return False
+
+        active = set() if active is None else active
+        identity = id(value)
+        if identity in active:
+            return False
+        active.add(identity)
+        try:
+            for name, member in self._dispatch_members(value):
+                if name in self._DISPATCH_PRIVATE_NAMES and callable(member):
+                    return True
+                if name.startswith('_') or name == 'decoration':
+                    continue
+                if callable(member) and self._is_exposed(member):
+                    return True
+                if inspect.ismethod(member) or inspect.isfunction(member):
+                    continue
+                if self._is_controller(member, active):
+                    return True
+            return False
+        finally:
+            active.remove(identity)
+
+    def _is_rest_controller(self, value):
+        controller_class = value if inspect.isclass(value) else value.__class__
+        return any(cls.__name__ == 'RestController' for cls in controller_class.mro())
+
+    def _rest_action_path(self, segments, name, action):
+        collection_methods = {'get', 'get_all', 'options', 'post'}
+        item_methods = {'delete', 'get_delete', 'get_one', 'post_delete', 'put'}
+        if name in collection_methods:
+            return self._action_path(segments, 'index'), 'rest_collection'
+        if name in item_methods:
+            return self._dispatch_path(segments), 'rest_item'
+        if name == 'edit':
+            return self._action_path(segments + ['*'], name), 'rest_item'
+        return self._action_path(segments, name), 'action'
 
     def _is_wsgi_controller(self, value):
         return (
