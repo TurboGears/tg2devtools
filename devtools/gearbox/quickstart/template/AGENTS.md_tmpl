@@ -34,11 +34,11 @@ does not generate `production.ini`, which is deployment-specific.
 Use the read-only `tginfo` sequence for structured project facts. Prefer JSON
 so an agent can parse the results:
 
-    gearbox tginfo summary --project . --config development.ini --json
-    gearbox tginfo routes --project . --config development.ini --json
-    gearbox tginfo models --project . --config development.ini --json
-    gearbox tginfo templates --project . --config development.ini --json
-    gearbox tginfo scaffolds --project . --config development.ini --json
+    gearbox tginfo summary --project . --config development.ini
+    gearbox tginfo routes --project . --config development.ini
+    gearbox tginfo models --project . --config development.ini
+    gearbox tginfo templates --project . --config development.ini
+    gearbox tginfo scaffolds --project . --config development.ini
 
 Check test discovery without executing tests:
 

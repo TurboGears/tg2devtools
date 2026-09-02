@@ -45,8 +45,8 @@ deployment-specific.
 
 For a compact project check::
 
-    $ gearbox tginfo summary --project . --config development.ini --json
-    $ gearbox tginfo routes --project . --config development.ini --json
+    $ gearbox tginfo summary --project . --config development.ini
+    $ gearbox tginfo routes --project . --config development.ini
     $ python -m pytest --collect-only -q
 
 {{if sqlalchemy and migrations}}
