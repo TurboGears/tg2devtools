@@ -66,7 +66,7 @@ functional test for the same target.
 First, check what scaffolds are available in this project:
 
 ```bash
-gearbox tginfo scaffolds --json
+gearbox tginfo scaffolds
 ```
 
 This shows the scaffold templates discovered by Gearbox, including template path, relative directory, and output extension.
@@ -103,7 +103,7 @@ After using `gearbox scaffold`:
 
 ## Workflow
 
-1. Use `gearbox tginfo scaffolds --json` to discover available scaffold templates
+1. Use `gearbox tginfo scaffolds` to discover available scaffold templates
 2. Review the selected templates and choose the exact target name
 3. Run `gearbox scaffold model controller template <target>` to create a full feature, or single scaffolds for targeted additions
 4. If the feature changes models, generate the migration with `gearbox migrate autogenerate <name> -c development.ini` and review it

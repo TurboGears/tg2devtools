@@ -201,7 +201,7 @@ class TgInfoRoutesTests(unittest.TestCase):
         return stdout.getvalue(), stderr.getvalue()
 
     def run_tginfo(self, subcommand):
-        stdout, _ = self.take_tginfo(subcommand, '--json')
+        stdout, _ = self.take_tginfo(subcommand, '--json', '--full')
         return json.loads(stdout)
 
     def install_fake_tg(self, root_controller=None):

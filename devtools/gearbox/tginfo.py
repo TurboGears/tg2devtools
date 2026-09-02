@@ -33,6 +33,8 @@ class TgInfoCommand(Command):
                              help='application config file to read (default: development.ini)')
             sub.add_argument('--json', action='store_true', dest='as_json',
                              help='emit JSON output')
+            sub.add_argument('--full', action='store_true', dest='full',
+                             help='include source paths, docstrings, params, and validation metadata (routes only)')
 
         app_args = getattr(self, 'app_args', None)
         help_args = getattr(app_args, 'cmd', ())
@@ -48,6 +50,8 @@ class TgInfoCommand(Command):
             )
 
         subcommand = subcommand_class(opts.project, opts.config_file)
+        if hasattr(subcommand, 'set_full'):
+            subcommand.set_full(getattr(opts, 'full', False))
         result = subcommand.collect()
         if opts.as_json:
             print(json.dumps(result, indent=2, sort_keys=True))
@@ -190,6 +194,10 @@ class _RoutesSubcommand:
     def __init__(self, project, config):
         self.project_root = os.path.realpath(os.path.abspath(os.path.expanduser(project)))
         self.config = config
+        self._full = False
+
+    def set_full(self, full):
+        self._full = full
 
     def collect(self):
         with _project_import_context(self.project_root), redirect_stdout(sys.stderr):
@@ -199,7 +207,7 @@ class _RoutesSubcommand:
             root_controller = _root_controller_object(package_name, tg_config)
             if root_controller is None:
                 return []
-            return _RouteCollector(self.project_root, tg_config).collect(root_controller)
+            return _RouteCollector(self.project_root, tg_config, self._full).collect(root_controller)
 
     def format(self, routes):
         if not routes:
@@ -596,10 +604,11 @@ class _RouteCollector:
     _DISPATCH_PRIVATE_NAMES = {'_lookup', '_default'}
     _IGNORED_PRIVATE_NAMES = {'_before', '_after', '_visit'}
 
-    def __init__(self, project_root, tg_config):
+    def __init__(self, project_root, tg_config, full=False):
         self.project_root = project_root
         self.template_resolver = _TemplateResolver(project_root, tg_config)
         self.rows = []
+        self._full = full
 
     def collect(self, root_controller):
         self._walk(root_controller, [], set())
@@ -656,27 +665,32 @@ class _RouteCollector:
 
     def _row(self, controller, path, kind, action_name, action=None):
         controller_class = controller if inspect.isclass(controller) else controller.__class__
+        decoration = self._decoration(action)
+        row = {
+            'path': path,
+            'kind': kind,
+            'controller': _class_name(controller_class),
+            'action': action_name,
+            'exposes': self._exposes(decoration),
+        }
+        if not self._full:
+            return row
         controller_source = _source_info(controller_class, self.project_root).get('source')
         controller_allow_only = self._plain_static_member(controller, 'allow_only')
         if controller_allow_only is _MISSING:
             controller_allow_only = None
         action_source = _source_info(action, self.project_root).get('source') if action is not None else None
-        decoration = self._decoration(action)
-        return {
-            'path': path,
-            'kind': kind,
-            'controller': _class_name(controller_class),
+        row.update({
             'controller_source': controller_source,
             'controller_doc': inspect.getdoc(controller_class),
             'controller_allow_only': _safe_text(controller_allow_only) if controller_allow_only is not None else None,
-            'action': action_name,
             'action_source': action_source,
             'action_doc': inspect.getdoc(action) if action is not None else None,
             'params': self._params(action),
             'action_requires': self._requirements(decoration),
             'validations': self._validations(decoration),
-            'exposes': self._exposes(decoration),
-        }
+        })
+        return row
 
     def _dispatch_members(self, controller):
         seen = set()
