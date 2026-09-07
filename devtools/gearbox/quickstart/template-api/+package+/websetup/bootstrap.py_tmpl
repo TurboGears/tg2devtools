@@ -4,7 +4,7 @@
 import transaction
 {{endif}}
 from {{package}} import model
-{{if sqlalchemy or ming}}
+{{if (sqlalchemy or ming) and not minimal}}
 from {{package}}.websetup.bootstrap_movies import bootstrap_movies
 {{endif}}
 
@@ -107,7 +107,7 @@ def bootstrap(command, conf, vars):
         model.DBSession.clear()
     {{endif}}
 
-    {{if sqlalchemy or ming}}
+    {{if (sqlalchemy or ming) and not minimal}}
     bootstrap_movies()
     {{endif}}
 

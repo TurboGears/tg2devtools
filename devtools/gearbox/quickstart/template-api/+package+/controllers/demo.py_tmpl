@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Demo JSON endpoints."""
+"""Demo controller."""
 
 from tg import expose, predicates, require, request
 from tg.i18n import lazy_ugettext as l_
@@ -7,7 +7,12 @@ from {{package}}.lib.base import BaseController
 
 
 class DemoController(BaseController):
-    """Demo JSON controller."""
+    """Demo controller."""
+
+    @expose('{{package}}.templates.demo.index')
+    def index(self, **kw):
+        """Show the API demo landing page."""
+        return dict(page='index', project='{{package}}', package='{{package}}')
 
     @expose('json')
     @require(predicates.has_permission('manage', msg=l_('Requires manage permission')))

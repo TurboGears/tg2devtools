@@ -7,9 +7,9 @@ from markupsafe import Markup
 from tg import expose, url
 from tgext.apispec.openapi import get_spec
 from {{package}}.lib.base import BaseController
-{{if sqlalchemy or ming}}
+{{if (sqlalchemy or ming) and not minimal}}
 from .movies import Movie, MoviesController
-{{else}}
+{{elif not minimal}}
 from .movies import MoviesController
 {{endif}}
 
@@ -17,7 +17,9 @@ from .movies import MoviesController
 class APIController(BaseController):
     """API root controller."""
 
+{{if not minimal}}
     movies = MoviesController()
+{{endif}}
 
     @expose('json')
     def openapi(self):
@@ -37,7 +39,9 @@ class APIController(BaseController):
             version="1.0.0",
             description="API server for {{project}}",
             endpoints={
+{{if not minimal}}
                 "movies": "/api/movies",
+{{endif}}
                 "openapi": "/api/openapi.json",
                 "docs": "/api/docs"
             }
@@ -46,7 +50,7 @@ class APIController(BaseController):
     def _openapi_schema(self):
         """Build the public API schema for Redoc and OpenAPI clients."""
         schema = get_spec(self, prefix=url('/api')).to_dict()
-        {{if sqlalchemy or ming}}
+        {{if (sqlalchemy or ming) and not minimal}}
         schema['components']['schemas']['Movie'] = Movie.__API_SCHEMA__
         {{endif}}
         schema['servers'] = [{'url': '/'}]

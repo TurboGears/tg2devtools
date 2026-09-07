@@ -7,9 +7,13 @@ from {{package}}.tests import TestController
 class TestRootController(TestController):
     """Tests for the generated root controller."""
 
-    def test_index_renders_api_demo(self):
-        response = self.app.get('/')
+{{if not minimal}}
+    def test_index_redirects_to_demo(self):
+        response = self.app.get('/', status=302)
+        assert response.location == 'http://localhost/demo'
 
+    def test_demo_renders_api_demo(self):
+        response = self.app.get('/demo')
         assert 'API Demo' in response
 
     def test_docs_renders_openapi_schema(self):
@@ -33,3 +37,8 @@ class TestRootController(TestController):
 
         assert '/prefix/api' in spec['paths']
         assert '/prefix/api/openapi' not in spec['paths']
+{{else}}
+    def test_index_renders_welcome_page(self):
+        response = self.app.get('/', status=200)
+        assert 'Hello World' in response
+{{endif}}

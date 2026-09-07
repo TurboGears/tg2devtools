@@ -22,7 +22,9 @@ zope.sqlalchemy.register(DBSession)
 {{if auth}}
 from .auth import Group, Permission, User
 {{endif}}
+{{if not minimal}}
 from .movie import Movie
+{{endif}}
 
 __all__ = [
     'DBSession',
@@ -33,7 +35,9 @@ __all__ = [
     'Group',
     'Permission',
     {{endif}}
+    {{if not minimal}}
     'Movie',
+    {{endif}}
 ]
 {{elif ming}}
 from .session import mainsession, DBSession
@@ -41,7 +45,9 @@ from .session import mainsession, DBSession
 {{if auth}}
 from .auth import Group, Permission, User
 {{endif}}
+{{if not minimal}}
 from .movie import Movie
+{{endif}}
 
 __all__ = [
     'DBSession',
@@ -50,7 +56,9 @@ __all__ = [
     'Group',
     'Permission',
     {{endif}}
+    {{if not minimal}}
     'Movie',
+    {{endif}}
 ]
 {{else}}
 # No database configured

@@ -6,6 +6,12 @@ from {{package}}.tests import TestController
 class TestRootController(TestController):
     """Tests for the generated root controller."""
 
+{{if not minimal}}
     def test_index_redirects_to_demo(self):
         response = self.app.get('/', status=302)
         assert response.location == 'http://localhost/demo'
+{{else}}
+    def test_index_renders_welcome_page(self):
+        response = self.app.get('/', status=200)
+        assert 'Hello World' in response
+{{endif}}

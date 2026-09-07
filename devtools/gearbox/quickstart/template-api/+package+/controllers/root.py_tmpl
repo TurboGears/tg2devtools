@@ -9,7 +9,9 @@ from tg.i18n import ugettext as _, lazy_ugettext as l_
 
 from {{package}}.lib.base import BaseController
 from {{package}}.controllers.api import APIController
+{{if not minimal}}
 from {{package}}.controllers.demo import DemoController
+{{endif}}
 
 
 __all__ = ['RootController']
@@ -19,12 +21,19 @@ class RootController(BaseController):
     """The root controller for the {{project}} application."""
 
     api = APIController()
+{{if not minimal}}
     demo = DemoController()
+{{endif}}
 
-    @expose('{{package}}.templates.index')
+    @expose()
     def index(self, **kw):
-        """API demo landing page."""
-        return dict(page='index', project='{{package}}', package='{{package}}')
+{{if not minimal}}
+        """Send visitors to the API demo."""
+        redirect('/demo')
+{{else}}
+        """Show a minimal welcome page."""
+        return 'Hello World'
+{{endif}}
 
 {{if auth == "sqlalchemy" or auth == "ming"}}
 

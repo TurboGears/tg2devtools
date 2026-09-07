@@ -104,7 +104,7 @@ curl -H "Authorization: Bearer abc123def456ghi789jkl012mno345" \
         <p><strong>Note:</strong> Once you're ready to build your own API, you can remove the demo parts.</p>
         <p>Run these commands from your project root (the directory
            containing <code>development.ini</code>):</p>
-        <pre><code>rm -rf ${package}/controllers/api/movies.py ${package}/controllers/demo.py ${package}/model/movie.py ${package}/websetup/bootstrap_movies.py ${package}/tests/functional/test_movies.py ${package}/tests/functional/test_auth.py
+        <pre><code>rm -rf ${package}/controllers/api/movies.py ${package}/controllers/demo.py ${package}/model/movie.py ${package}/websetup/bootstrap_movies.py ${package}/templates/demo ${package}/tests/functional/test_movies.py ${package}/tests/functional/test_auth.py
 gearbox patch ${package}/controllers/root.py DemoController -d
 gearbox patch ${package}/controllers/api/__init__.py Movie -d
 gearbox patch ${package}/controllers/api/__init__.py movies -d

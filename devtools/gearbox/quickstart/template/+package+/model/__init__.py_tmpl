@@ -74,11 +74,11 @@ def init_model(engine):
 {{endif}}
 
 # Import your model modules here.
-{{if sqlalchemy or ming}}
+{{if (sqlalchemy or ming) and not minimal}}
 from {{package}}.model.todo import TodoItem
 {{endif}}
 {{if auth}}
 from {{package}}.model.auth import User, Group, Permission
 {{endif}}
 
-__all__ = ({{if sqlalchemy or ming}}'TodoItem', {{endif}}{{if auth}}'User', 'Group', 'Permission'{{endif}})
+__all__ = ({{if (sqlalchemy or ming) and not minimal}}'TodoItem', {{endif}}{{if auth}}'User', 'Group', 'Permission'{{endif}})

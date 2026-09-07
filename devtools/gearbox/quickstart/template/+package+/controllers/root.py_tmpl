@@ -6,7 +6,9 @@ from tg.i18n import ugettext as _
 from tg.exceptions import HTTPFound
 
 from {{package}}.lib.base import BaseController
+{{if not minimal}}
 from {{package}}.controllers.demo import DemoController
+{{endif}}
 from {{package}}.controllers.error import ErrorController
 
 __all__ = ['RootController']
@@ -15,13 +17,20 @@ __all__ = ['RootController']
 class RootController(BaseController):
     """The root controller for the {{project}} application."""
 
+{{if not minimal}}
     demo = DemoController()
+{{endif}}
     error = ErrorController()
 
     @expose()
     def index(self):
+{{if not minimal}}
         """Send visitors to the generated demo."""
         redirect('/demo')
+{{else}}
+        """Show a minimal welcome page."""
+        return 'Hello World'
+{{endif}}
 
 {{if auth == "sqlalchemy" or auth == "ming"}}
 

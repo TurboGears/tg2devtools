@@ -384,7 +384,8 @@ class TestAPIQuickStart(BaseTestQuickStart, unittest.TestCase):
             self.env_cmd, self.python_cmd, self.proj_dir,
         )
         tests = [
-            '/tests/functional/test_root.py::TestRootController::test_index_renders_api_demo',
+            '/tests/functional/test_root.py::TestRootController::test_index_redirects_to_demo',
+            '/tests/functional/test_root.py::TestRootController::test_demo_renders_api_demo',
             '/tests/functional/test_root.py::TestRootController::test_docs_renders_openapi_schema',
             '/tests/functional/test_root.py::TestRootController::test_openapi_schema_lists_api_paths',
             '/tests/functional/test_root.py::TestRootController::test_openapi_schema_honors_script_name',
@@ -441,6 +442,50 @@ class TestAPIMingQuickStart(TestAPIQuickStart):
 
         assert any(item['title'] == 'Inception' for item in movies)
         assert detail['title'] == 'Inception'
+
+
+class TestMinimalQuickStart(BaseTestQuickStart, unittest.TestCase):
+    args = '--minimal'
+
+    def test_index_and_demo_files(self):
+        response = self.app.get('/', status=200)
+        assert response.text == 'Hello World'
+        self.app.get('/demo', status=404)
+
+        package = os.path.basename(self.proj_dir).lower().replace('-', '')
+        for relative_path in (
+            'controllers/demo.py',
+            'tests/functional/test_demo.py',
+            'model/todo.py',
+            'templates/demo',
+        ):
+            assert not os.path.exists(
+                os.path.join(self.proj_dir, package, *relative_path.split('/'))
+            )
+
+
+class TestMinimalAPIQuickStart(BaseTestQuickStart, unittest.TestCase):
+    command_class = QuickstartAPICommand
+    args = '--minimal'
+
+    def test_index_and_demo_files(self):
+        response = self.app.get('/', status=200)
+        assert response.text == 'Hello World'
+        self.app.get('/demo', status=404)
+
+        package = os.path.basename(self.proj_dir).lower().replace('-', '')
+        for relative_path in (
+            'controllers/api/movies.py',
+            'controllers/demo.py',
+            'model/movie.py',
+            'websetup/bootstrap_movies.py',
+            'tests/functional/test_movies.py',
+            'tests/functional/test_auth.py',
+            'templates/demo',
+        ):
+            assert not os.path.exists(
+                os.path.join(self.proj_dir, package, *relative_path.split('/'))
+            )
 
 
 class TestNoDBQuickStart(CommonTestQuickStart, unittest.TestCase):

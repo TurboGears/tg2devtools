@@ -39,6 +39,7 @@ dependencies = [
 testing = [
   "WebTest >= 1.2.3",
   "pytest",
+  "pytest-cov",
   "coverage",
   "gearbox"
 ]

@@ -33,7 +33,7 @@ Quick Start
 
     gearbox serve --reload --debug
 
-5. Open your browser to http://localhost:8080 to see the API demo page.
+5. Open your browser to http://localhost:8080; it redirects to the API demo page.
 
 Configuration Profiles and Checks
 ---------------------------------
@@ -81,6 +81,7 @@ API Endpoints
 - ``GET /api/movies/{id}`` - Get a specific movie
 - ``PUT /api/movies/{id}`` - Update a movie
 - ``DELETE /api/movies/{id}`` - Delete a movie
+- ``GET /demo`` - API demo landing page
 - ``GET /demo/admin`` - Admin-only endpoint (requires 'manage' permission)
 - ``GET /api/openapi.json`` - OpenAPI specification
 - ``GET /api/docs`` - Interactive API documentation (Redoc)
@@ -117,6 +118,7 @@ Once you're ready to build your own API, you can remove the demo parts::
 
     rm -rf {{package}}/controllers/api/movies.py {{package}}/controllers/demo.py \
            {{package}}/model/movie.py {{package}}/websetup/bootstrap_movies.py \
+           {{package}}/templates/demo \
            {{package}}/tests/functional/test_movies.py \
            {{package}}/tests/functional/test_auth.py
     gearbox patch {{package}}/controllers/root.py DemoController -d

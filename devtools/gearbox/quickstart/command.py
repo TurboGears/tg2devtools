@@ -5,6 +5,7 @@ import sys
 import uuid
 import importlib.metadata
 import importlib.util
+from pathlib import Path
 
 
 from gearbox.template import GearBoxTemplate
@@ -36,6 +37,9 @@ class QuickstartTemplate(GearBoxTemplate):
                 os.path.join(output_dir, vars['package'], 'model', 'model.py.template')
             )
 
+        if vars.get('minimal'):
+            _remove_minimal_files(output_dir, vars['package'], _STANDARD_MINIMAL_REMOVALS)
+
 
 class QuickstartAPITemplate(QuickstartTemplate):
 
@@ -46,6 +50,15 @@ class QuickstartAPITemplate(QuickstartTemplate):
             package_logger = 'app'
         vars['package_logger'] = package_logger
         vars['template_engine'] = 'kajiki'
+
+    def post(self, template_dir, output_dir, vars):
+        if not vars['database']:
+            os.remove(
+                os.path.join(output_dir, vars['package'], 'model', 'model.py.template')
+            )
+
+        if vars.get('minimal'):
+            _remove_minimal_files(output_dir, vars['package'], _API_MINIMAL_REMOVALS)
 
 
 class QuickstartCommand(Command):
@@ -85,6 +98,10 @@ class QuickstartCommand(Command):
         parser.add_argument("--disable-migrations",
             help="disable alembic model migrations",
             action="store_false", dest="migrations", default=True)
+
+        parser.add_argument("--minimal",
+            help="generate a project without the demo content",
+            action="store_true", dest="minimal", default=False)
 
         return parser
 
@@ -194,7 +211,6 @@ def safe_name(name: str) -> str:
     """
     return re.sub('[^A-Za-z0-9.]+', '-', name)
 
-
 class QuickstartAPICommand(Command):
     """Command to create a new TurboGears2 API project."""
 
@@ -233,6 +249,10 @@ class QuickstartAPICommand(Command):
         parser.add_argument("--disable-migrations",
             help="disable alembic model migrations",
             action="store_false", dest="migrations", default=True)
+
+        parser.add_argument("--minimal",
+            help='generate a project without demo content (no movies, demo, or demo tests)',
+            action="store_true", dest="minimal", default=False)
 
         return parser
 
@@ -328,6 +348,35 @@ class QuickstartAPICommand(Command):
             shutil.rmtree(package_migrations_dir, ignore_errors=True)
 
         _install_project_skills()
+
+
+_STANDARD_MINIMAL_REMOVALS = [
+    'controllers/demo.py',
+    'tests/functional/test_demo.py',
+    'model/todo.py',
+    'templates/demo',
+]
+
+_API_MINIMAL_REMOVALS = [
+    'controllers/api/movies.py',
+    'controllers/demo.py',
+    'model/movie.py',
+    'websetup/bootstrap_movies.py',
+    'tests/functional/test_movies.py',
+    'tests/functional/test_auth.py',
+    'templates/demo',
+]
+
+
+def _remove_minimal_files(output_dir, package, removals):
+    """Remove demo files that templates omit when --minimal is set."""
+    project_dir = Path(output_dir) / package
+    for relpath in removals:
+        path = project_dir / relpath
+        if path.is_dir():
+            shutil.rmtree(path, ignore_errors=True)
+        elif path.is_file():
+            path.unlink()
 
 
 def _install_project_skills():

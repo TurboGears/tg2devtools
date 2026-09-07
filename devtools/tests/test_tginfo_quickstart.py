@@ -105,7 +105,7 @@ class TgInfoQuickstartCommandTests(unittest.TestCase):
 
     def test_tginfo_reports_quickstart_facts_without_runtime_side_effects(self):
         summary = self.run_tginfo('summary', '--project', str(self.project_root), '--json')
-        routes = self.run_tginfo('routes', '--project', str(self.project_root), '--config', 'test.ini', '--json')
+        routes = self.run_tginfo('routes', '--project', str(self.project_root), '--config', 'test.ini', '--json', '--full')
         models = self.run_tginfo('models', '--project', str(self.project_root), '--json')
         templates = self.run_tginfo('templates', '--project', str(self.project_root), '--json')
         scaffolds = self.run_tginfo('scaffolds', '--project', str(self.project_root), '--json')
