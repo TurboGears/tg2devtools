@@ -5,53 +5,29 @@ description: Use when you need to run Python code in a fully loaded TurboGears a
 
 # TurboGears Runtime Shell
 
-Use `gearbox tgshell` from an installed TurboGears project root for runtime
-checks. Pass an explicit configuration; use `test.ini` with an in-memory
-quickstart database for isolated checks.
+Use `uv run gearbox tgshell -c test.ini` from the project root for runtime
+checks. `test.ini` uses an in-memory quickstart database for isolated checks.
 
-## Prerequisite
+The positional argument is a script filename, not stdin. Do not pipe code to
+`tgshell` or use `-`; write a temporary file:
 
-WebTest recipes require the generated project's testing extra:
+    cat > /tmp/tg-check.py <<'PY'
+    print("package:", config["package_name"])
+    print("app:", wsgiapp)
+    PY
+    uv run gearbox tgshell -c test.ini /tmp/tg-check.py
 
-```bash
-python -m pip install -e '.[testing]'
-```
+`tgshell` already provides `wsgiapp`, `config`, `request`, and other TurboGears
+globals after the app is loaded. Do not call `loadapp` again. It provides
+`model` only when the app has an importable `<package>.model` module, and `app`
+(a WebTest `TestApp`) only when WebTest is installed. Omit the filename for an
+interactive session.
 
-## Run a script
+## WebTest request
 
-The optional positional argument is a script filename. It is not Python source
-from stdin, and `-` is not a stdin alias. Do not pipe code to `tgshell` or use
-`gearbox tgshell -`; write a temporary file instead:
-
-```bash
-cat > /tmp/tg-check.py <<'PY'
-print("package:", config["package_name"])
-print("app:", wsgiapp)
-PY
-gearbox tgshell -c test.ini /tmp/tg-check.py
-```
-
-The script runs after the application is loaded. Do not call `loadapp` again;
-`tgshell` already provides `wsgiapp`, `config`, `request`, and other
-TurboGears globals. It provides `model` only when the application has an
-importable `<package>.model` module. It provides `app` only when WebTest is
-installed; `app` is a WebTest `TestApp` around `wsgiapp`. Omit the filename for
-an interactive session.
-
-`tgshell` loads the configured WSGI app, then immediately requests
-`/_test_vars`. That may run project imports, application startup, middleware,
-and request hooks. `tgshell` itself does not run `setup-app`, migrations, or
-intentional database writes.
-
-## Inspect locals and make a runtime request
-
-This recipe requires WebTest because it uses `app`.
+Requires WebTest (`app`):
 
 ```python
-print("wsgiapp:", wsgiapp)
-print("app:", app)
-print("package:", config["package_name"])
-
 response = app.get("/", status=302)
 print("HTTP status:", response.status_int)
 
@@ -61,56 +37,25 @@ with test_context(app, "/"):
     print("request path:", request.path)
 ```
 
-Use `test_context` only when code needs a separately scoped fake request. Do
-not use TurboGears' old request context manager.
+Use `test_context` only when code needs a separately scoped fake request.
 
-## SQLAlchemy quickstart only
-
-This deliberately creates a temporary `TodoItem`, flushes it, and rolls the
-transaction back. It leaves no record behind. Replace `TodoItem` for a project
-that uses a different SQLAlchemy model.
+## SQLAlchemy: temporary record (rolls back)
 
 ```python
 TodoItem = model.TodoItem
-print(model.DBSession.query(TodoItem).all())
-
 temporary = TodoItem(title="tgshell temporary item")
 model.DBSession.add(temporary)
 model.DBSession.flush()
 temporary_id = temporary.id
 assert model.DBSession.query(TodoItem).filter_by(id=temporary_id).one() is temporary
-
 model.DBSession.rollback()
 assert model.DBSession.query(TodoItem).filter_by(id=temporary_id).first() is None
-print("SQLAlchemy cleanup complete")
 ```
 
-## Ming quickstart only
+Replace `TodoItem` with a project model. The record is never committed.
 
-This deliberately creates a temporary `TodoItem`, flushes it, then deletes
-that exact object and clears the Ming session. It leaves no record behind.
-Replace `TodoItem` for a project that uses a different Ming model.
+## Rules
 
-```python
-TodoItem = model.TodoItem
-print(TodoItem.query.find({}).all())
-
-temporary = TodoItem(title="tgshell temporary item")
-model.DBSession.flush()
-temporary_id = temporary._id
-assert TodoItem.query.find({"_id": temporary_id}).all() == [temporary]
-
-temporary.delete()
-model.DBSession.flush()
-model.DBSession.clear()
-assert TodoItem.query.find({"_id": temporary_id}).all() == []
-print("Ming cleanup complete")
-```
-
-## Safety rules
-
-- Use `tg-inspect` for static inspection; use `tgshell` for loaded-runtime checks.
-- Do not run `setup-app`, migrations, or other database-mutating commands
-  unless changing that environment is intentional.
-- The in-memory `test.ini` database is process-local. Its schema may need test
-  setup; that setup is not a normal debugging step.
+- Use `tg-inspect` for static inspection; `tgshell` for loaded-runtime checks.
+- Do not run `setup-app`, migrations, or other database-mutating commands unless changing that environment is intentional.
+- The in-memory `test.ini` database is process-local; its schema may need test setup, which is not a normal debugging step.

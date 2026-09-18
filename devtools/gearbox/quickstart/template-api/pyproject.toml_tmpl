@@ -51,6 +51,9 @@ exclude = ["ez_setup", "examples", "tests"]
 include-package-data = true
 zip-safe = false
 
+[tool.pytest.ini_options]
+addopts = "--cov={{package}} --cov-report=term-missing --cov-fail-under=90"
+
 [project.entry-points."paste.app_factory"]
 main = "{{package}}.config.application:make_app"
 

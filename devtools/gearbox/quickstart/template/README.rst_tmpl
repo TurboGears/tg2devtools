@@ -27,7 +27,7 @@ While developing you may want the server to reload after changes are saved::
 
     $ gearbox serve --reload --debug
 
-Then open http://localhost:8080/ and you will be redirected to the demo.
+Then open http://localhost:8080/ to see the running application.
 
 Configuration Profiles and Checks
 =================================
@@ -67,6 +67,7 @@ Quickstart also installs optional coding-agent skills into the project-local
 ``.claude/skills/``. Delete the installed skills directory if you do not use
 that assistant.
 
+{{if not minimal}}
 Generated Demo Code
 ===================
 
@@ -90,3 +91,4 @@ When you are ready to build your own application, delete
 ``{{package}}/controllers/demo.py``, ``{{package}}/model/todo.py`` if present,
 and ``{{package}}/templates/demo``. Then change ``RootController.index`` to
 redirect or render your own starting page.
+{{endif}}

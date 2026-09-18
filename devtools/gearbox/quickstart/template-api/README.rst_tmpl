@@ -33,7 +33,7 @@ Quick Start
 
     gearbox serve --reload --debug
 
-5. Open your browser to http://localhost:8080; it redirects to the API demo page.
+5. Open your browser to http://localhost:8080 to see the running application.
 
 Configuration Profiles and Checks
 ---------------------------------
@@ -76,6 +76,7 @@ that assistant.
 API Endpoints
 -------------
 
+{{if not minimal}}
 - ``GET /api/movies`` - List all movies
 - ``POST /api/movies`` - Create a new movie
 - ``GET /api/movies/{id}`` - Get a specific movie
@@ -83,6 +84,7 @@ API Endpoints
 - ``DELETE /api/movies/{id}`` - Delete a movie
 - ``GET /demo`` - API demo landing page
 - ``GET /demo/admin`` - Admin-only endpoint (requires 'manage' permission)
+{{endif}}
 - ``GET /api/openapi.json`` - OpenAPI specification
 - ``GET /api/docs`` - Interactive API documentation (Redoc)
 
@@ -94,6 +96,7 @@ This API supports two authentication methods:
 1. **Bearer Token**: Use the ``Authorization: Bearer <token>`` header
 2. **Cookie Auth**: Use the standard TurboGears login flow
 
+{{if not minimal}}
 Demo users created by ``gearbox setup-app``:
 
 - **manager**: password=managepass, token=abc123def456ghi789jkl012mno345 (has 'manage' permission)
@@ -132,6 +135,7 @@ Run the commands from the project root (the directory containing
 
 The demo tests (``test_movies.py`` and ``test_auth.py``) are removed
 together with the demo parts because they exercise the endpoints above.
+{{endif}}
 
 License
 -------

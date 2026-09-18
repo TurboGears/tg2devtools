@@ -2,75 +2,80 @@
 
 This is a TurboGears project. Use Gearbox as the entrypoint for TurboGears development commands.
 
-## TurboGears DevTools
+## Project setup
 
-Quickstart installs TurboGears-aware coding agent skills into the project at
-``.agents/skills/``. To install them for Claude Code instead, run
-``gearbox tgskills --claude`` from the project root; this installs only
-``.claude/skills/``.
+Use the project-local environment for every command. Run `uv sync --extra development`
+before the first `uv run` so the project environment is fully provisioned.
 
-These skills guide AI assistants on how to interact with TurboGears projects:
+`development.ini` is for local development; `test.ini` is for tests and references
+the development configuration.
 
-- **tg-inspect**: Use when inspecting the project to discover routes, controllers, models, templates, or project facts
-- **tg-scaffold**: Use when creating new models, controllers, templates, or other conventional project files
-- **tg-shell**: Use when you need to run Python code in the fully loaded application context for runtime checks or WebTest requests
+## Inspection before guessing
 
-For runtime debugging, use `gearbox tgshell -c development.ini` with WebTest requests.
+Do not guess TurboGears APIs, predicates, or dispatch semantics. Before importing
+an unfamiliar framework symbol, run `uv run gearbox tgdocs`, then search only the
+cache path it prints. If the documentation is insufficient, report the gap
+instead of inspecting installed package internals or searching outside the project.
 
-## Project Commands
+Inspect the project with compact read-only commands before reading files:
 
-Before using project commands, install development dependencies:
+    uv run gearbox tginfo summary --project . --config development.ini
+    uv run gearbox tginfo routes --project . --config development.ini
+    uv run python -m pytest --collect-only -q
 
-    python -m pip install -e '.[development]'
+Do not dump whole packages with `find`/`sed` or read every file up front. Use
+`tginfo` to locate the specific file, then read only that file.
 
-Run these commands from the project root in the normal development environment.
-Select the profile explicitly: `development.ini` is for local development and
-`test.ini` is for tests; `test.ini` references the development configuration.
-Do not infer or switch profiles. Quickstart creates those two files only; it
-does not generate `production.ini`, which is deployment-specific.
+## Project structure
 
-### Inspection workflow
+- `{{package}}/controllers/root.py` — RootController: HTML pages, login/logout
+- `{{package}}/controllers/error.py` — error handler controller
+- `{{package}}/model/__init__.py` — DBSession, DeclarativeBase, model exports
+- `{{package}}/model/auth.py` — User, Group, Permission (repoze.who auth models)
+- `{{package}}/model/<resource>.py` — your resource model; create with `gearbox scaffold model`
+- `{{package}}/config/app_cfg.py` — application configurator: renderers, auth, database
+- `{{package}}/config/application.py` — WSGI app factory
+- `{{package}}/websetup/bootstrap.py` — seed data (runs via `gearbox setup-app`)
+- `{{package}}/websetup/schema.py` — schema creation (runs via `gearbox setup-app`)
+- `{{package}}/templates/` — Kajiki XHTML templates; `master.xhtml` layout, `login.xhtml` for the login page
+- `{{package}}/public/` — static files (css, img) served from the application root
+- `{{package}}/i18n/` — translation catalogs
+- `{{package}}/tests/__init__.py` — TestController base and `setup_database()` helper
+- `{{package}}/tests/functional/` — WebTest functional tests (`test_root.py`, `test_authentication.py`)
+- `{{package}}/tests/models/` — model unit tests
+- `development.ini` — development config (database URL, auth, debug)
+- `test.ini` — test config (in-memory database, references development.ini)
+{{if sqlalchemy and migrations}}- `migration/` — Alembic migrations{{endif}}
 
-Use the read-only `tginfo` sequence for structured project facts. Prefer JSON
-so an agent can parse the results:
+## Skills
 
-    gearbox tginfo summary --project . --config development.ini
-    gearbox tginfo routes --project . --config development.ini
-    gearbox tginfo models --project . --config development.ini
-    gearbox tginfo templates --project . --config development.ini
-    gearbox tginfo scaffolds --project . --config development.ini
+Quickstart installs TurboGears skills into ``.agents/skills/``. Read only the
+skill needed for the current operation; do not preload all skills.
 
-Check test discovery without executing tests:
+- **tg-inspect**: discover routes, controllers, models, templates, or project facts
+- **tg-scaffold**: create conventional models, controllers, templates, or tests
+- **tg-shell**: run Python in the loaded application context for runtime checks
 
-    python -m pytest --collect-only -q
+For runtime debugging, use `uv run gearbox tgshell -c test.ini` with WebTest requests.
+
+## Other commands
+
+Use `--json` only when a script must parse the result.
+Static files under `{{package}}/public/` are served from the application root;
+for example, `public/app.js` is available at `/app.js`.
+
+{{if sqlalchemy}}
+For SQLAlchemy WebTest fixtures, use `test.ini`, commit setup data with
+`transaction.commit()`, and call `model.DBSession.remove()` between tests.
+{{endif}}
+Use `uv run gearbox scaffold` for conventional new files.
 
 {{if sqlalchemy and migrations}}
 Migration commands live in README.rst under "Database Migrations".
 Do not run `setup-app`, migration upgrades, or other database-mutating commands
-as routine inspection; `gearbox migrate db_version` is the only read-only check.
+as routine inspection; `uv run gearbox migrate -c development.ini db_version` is the only read-only check.
 {{else}}
 Do not run `setup-app` or other database-mutating commands as routine inspection.
 {{endif}}
-`tginfo` and `tgshell` load application code, so
-project-defined import, startup, and request-hook code can execute. For runtime
-checks or WebTest requests, use the fully loaded application context:
-
-    gearbox tgshell -c development.ini
-
-Use `gearbox scaffold` for conventional project files and consult the project
-README.rst for install, serve, and test workflows.
-
-## Documentation
-
-For agent-readable plain-text documentation, run from the project root:
-
-    gearbox tgdocs
-
-This provides the version-matched TurboGears documentation in .txt format and
-prints the local cache path. 
-
-Consult the version-matched reference documentation instead of stale training
-knowledge.
-
-The Reference section covers configuration options, runtime topics, and the
-Classes and Functions API reference. 
+`tginfo` and `tgshell` load application code, so project-defined startup code
+can execute.
