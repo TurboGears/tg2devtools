@@ -7,6 +7,7 @@ import sys
 import site
 import tempfile
 import unittest
+from unittest.mock import patch
 
 from webtest import TestApp
 from itertools import count
@@ -24,6 +25,25 @@ ENV_NAME = 'TESTENV'
 CLEANUP = True
 COUNTER = count()
 QUIET = '-q'  # Set this to -v to enable installed packages logging, or to -q to disable it
+DEPENDENCY_MODE = os.environ.get('TG_TEST_DEPENDENCIES', 'git')
+DEPENDENCIES = {
+    'git': {
+        'tempita': 'git+https://github.com/TurboGears/tempita',
+        'crank': 'git+https://github.com/TurboGears/crank',
+        'backlash': 'git+https://github.com/TurboGears/backlash',
+        'debugbar': 'git+https://github.com/TurboGears/tgext.debugbar',
+        'turbogears': 'git+https://github.com/TurboGears/tg2.git@development',
+        'devtools': ['-e', '.'],
+    },
+    'pypi': {
+        'tempita': 'Tempita',
+        'crank': 'crank',
+        'backlash': 'backlash',
+        'debugbar': 'tgext.debugbar',
+        'turbogears': 'TurboGears2',
+        'devtools': ['tg.devtools'],
+    },
+}
 
 
 def get_passed_and_failed(env_cmd, python_cmd, testpath):
@@ -59,6 +79,11 @@ class BaseTestQuickStart(object):
     preinstall = []
 
     @classmethod
+    def install_turbogears_and_devtools(cls, dependencies):
+        cls.run_pip(['install', '--pre', '-I', dependencies['turbogears']])
+        cls.run_pip(['install', '--pre'] + dependencies['devtools'])
+
+    @classmethod
     def setUpClass(cls):
         cls.command = cls.command_class(None, {})
         cls.parser = cls.command.get_parser('tg2devtools-test')
@@ -86,24 +111,23 @@ class BaseTestQuickStart(object):
         # Reinstall gearbox to force it being installed inside the
         # virtualenv using supported PBR version
         cls.run_pip(['install', '-U', 'setuptools', 'pip', 'wheel'])
-        cls.run_pip(['install', '-I', 'git+https://github.com/TurboGears/tempita'])
+
+        dependencies = DEPENDENCIES[DEPENDENCY_MODE]
+        cls.run_pip(['install', '-I', dependencies['tempita']])
         cls.run_pip(['install', '--pre', '-I', 'gearbox'])
 
         # Then install specific requirements
         for p in cls.preinstall:
             cls.run_pip(['install', '--pre', '-I', p])
 
-        cls.run_pip(['install', '-I', 'git+https://github.com/TurboGears/crank'])
-        cls.run_pip(['install', '-I', 'git+https://github.com/TurboGears/backlash'])
-        cls.run_pip(['install', '-I', 'git+https://github.com/TurboGears/tgext.debugbar'])
+        cls.run_pip(['install', '-I', dependencies['crank']])
+        cls.run_pip(['install', '-I', dependencies['backlash']])
+        cls.run_pip(['install', '-I', dependencies['debugbar']])
 
-        # Install TurboGears from development branch to test future compatibility
+        # Install TurboGears to test future compatibility
         cls.venv_uninstall('WebOb')
         cls.venv_uninstall('TurboGears2')
-        cls.run_pip(['install', '--pre', '-I', 'git+https://github.com/TurboGears/tg2.git@development'])
-
-        # Install tg.devtools inside the virtualenv
-        cls.run_pip(['install', '--pre', '-e', cls.base_dir])
+        cls.install_turbogears_and_devtools(dependencies)
 
         # Install All Template Engines inside the virtualenv so that
         # They all get configured as we share a single python process
@@ -122,7 +146,9 @@ class BaseTestQuickStart(object):
         cls.command.run(opts)
 
         # Install quickstarted project dependencies
-        cls.run_pip(['install', '--pre', '-e', '%s[development]' % cls.proj_dir])
+        cls.run_pip(['install', '--pre'] +
+                    (['-e'] if DEPENDENCY_MODE == 'git' else []) +
+                    ['%s[development]' % cls.proj_dir])
 
         # Mark the packages as installed even outside the virtualenv
         # so we can load app in tests which are not executed inside
@@ -216,6 +242,19 @@ class BaseTestQuickStart(object):
         # multiple versions of the same package might be installed concurrently.
         for i in range(5):
             cls.run_pip(['uninstall', '-y', package])
+
+
+class TestPyPIDependencyMode(unittest.TestCase):
+
+    def test_pypi_dependencies_use_package_names(self):
+        with patch.object(BaseTestQuickStart, 'run_pip') as run_pip:
+            BaseTestQuickStart.install_turbogears_and_devtools(DEPENDENCIES['pypi'])
+
+        calls = [call.args[0] for call in run_pip.call_args_list]
+        self.assertEqual(calls, [
+            ['install', '--pre', '-I', 'TurboGears2'],
+            ['install', '--pre', 'tg.devtools'],
+        ])
 
 
 class CommonTestQuickStart(BaseTestQuickStart):

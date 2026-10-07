@@ -31,5 +31,7 @@ jobs:
           pip install git+https://github.com/TurboGears/tg2@development
           pip install -U --upgrade-strategy=eager --pre -e .[testing]
       - name: Test with unittest
+        env:
+          TG_TEST_DEPENDENCIES: git
         run: |
           python -m unittest discover -v devtools/tests -f
