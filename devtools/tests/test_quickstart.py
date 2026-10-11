@@ -22,7 +22,7 @@ from gearbox.commands.setup_app import SetupAppCommand
 PY_VERSION = sys.version_info[:2]
 PROJECT_NAME = 'TGTest-%02d'
 ENV_NAME = 'TESTENV'
-CLEANUP = True
+CLEANUP = os.environ.get('PRESERVE_TEST_ARTIFACTS') != '1'
 COUNTER = count()
 QUIET = '-q'  # Set this to -v to enable installed packages logging, or to -q to disable it
 DEPENDENCY_MODE = os.environ.get('TG_TEST_DEPENDENCIES', 'git')
