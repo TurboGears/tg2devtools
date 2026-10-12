@@ -16,7 +16,7 @@ authors = [
 license = { text = "MIT" }
 urls = { Homepage = "http://www.turbogears.org" }
 dependencies = [
-    "TurboGears2 >= 2.5.1dev1",
+    "TurboGears2 >= 2.5.1",
     "tgext.apispec >= 0.1.1",
     "kajiki",
     {{if sqlalchemy}}
